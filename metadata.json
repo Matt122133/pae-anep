@@ -1,0 +1,7 @@
+{
+  "name": "Legajo Escolar - Comedores & Visitas de Campo",
+  "description": "Sistema digital ágil e intuitivo para el seguimiento de legajos, visitas técnicas a comedores y cocinas escolares, auxiliares, menú, remitos y resolución de observaciones.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

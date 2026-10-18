@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b" />
+      <stop offset="40%" stop-color="#047857" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="icon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.45" />
+    </filter>
+  </defs>
+
+  <!-- Background with rounded corners -->
+  <rect width="512" height="512" rx="112" fill="url(#bg-grad)" />
+
+  <!-- Subtle glow inner circle -->
+  <circle cx="256" cy="256" r="190" fill="#ffffff" fill-opacity="0.04" />
+  <circle cx="256" cy="256" r="160" fill="none" stroke="#34d399" stroke-opacity="0.15" stroke-width="4" stroke-dasharray="8 8" />
+
+  <!-- Main Plate & Utensils Icon group -->
+  <g filter="url(#shadow)" transform="translate(0, -10)">
+    <!-- Plate base -->
+    <circle cx="256" cy="245" r="115" fill="#0f172a" stroke="url(#icon-grad)" stroke-width="12" />
+    <circle cx="256" cy="245" r="90" fill="#1e293b" stroke="#34d399" stroke-width="4" stroke-opacity="0.4" />
+    
+    <!-- Food / Fresh Nutrition Leaf Emblem -->
+    <path d="M256 185 C230 185 210 205 210 235 C210 270 256 300 256 300 C256 300 302 270 302 235 C302 205 282 185 256 185 Z" fill="url(#icon-grad)" />
+    <path d="M256 195 L256 280" stroke="#064e3b" stroke-width="4" stroke-linecap="round" />
+    <path d="M256 225 C242 220 230 226 226 238" stroke="#064e3b" stroke-width="3" stroke-linecap="round" fill="none" />
+    <path d="M256 245 C270 240 282 246 286 258" stroke="#064e3b" stroke-width="3" stroke-linecap="round" fill="none" />
+
+    <!-- Fork on Left -->
+    <g transform="translate(100, 165)">
+      <path d="M25 0 L25 50 C25 65 35 75 45 75 L45 155 C45 160 41 165 35 165 C29 165 25 160 25 155 L25 75 C35 75 45 65 45 50" stroke="#f8fafc" stroke-width="6" stroke-linecap="round" fill="none" />
+      <line x1="30" y1="0" x2="30" y2="40" stroke="#f8fafc" stroke-width="5" stroke-linecap="round" />
+      <line x1="40" y1="0" x2="40" y2="40" stroke="#f8fafc" stroke-width="5" stroke-linecap="round" />
+      <line x1="50" y1="0" x2="50" y2="40" stroke="#f8fafc" stroke-width="5" stroke-linecap="round" />
+      <path d="M30 45 C30 60 50 60 50 45" stroke="#f8fafc" stroke-width="5" fill="none" stroke-linecap="round" />
+      <line x1="40" y1="58" x2="40" y2="155" stroke="#f8fafc" stroke-width="6" stroke-linecap="round" />
+    </g>
+
+    <!-- Spoon on Right -->
+    <g transform="translate(330, 165)">
+      <ellipse cx="40" cy="30" rx="18" ry="28" fill="#f8fafc" />
+      <line x1="40" y1="58" x2="40" y2="155" stroke="#f8fafc" stroke-width="6" stroke-linecap="round" />
+    </g>
+  </g>
+
+  <!-- PAE Badge Banner at Bottom -->
+  <g transform="translate(136, 380)" filter="url(#shadow)">
+    <rect width="240" height="54" rx="16" fill="#0f172a" stroke="url(#gold-grad)" stroke-width="3" />
+    <text x="120" y="36" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="900" fill="#fbbf24" text-anchor="middle" letter-spacing="4">
+      PAE URUGUAY
+    </text>
+  </g>
+
+  <!-- Small star on top -->
+  <g transform="translate(256, 85)" fill="#fbbf24">
+    <path d="M0 -14 L4 -4 L14 0 L4 4 L0 14 L-4 4 L-14 0 L-4 -4 Z" />
+  </g>
+</svg>

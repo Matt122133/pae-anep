@@ -1,0 +1,614 @@
+import React, { useState } from 'react';
+import { School, PAE_TEAM_MEMBERS } from '../types';
+import { 
+  UtensilsCrossed, 
+  Building2, 
+  LayoutDashboard, 
+  Search, 
+  FileSpreadsheet, 
+  ShieldAlert, 
+  Plus, 
+  X, 
+  Menu,
+  Calendar,
+  ChevronRight,
+  UserCheck,
+  ChevronDown,
+  Sparkles,
+  History,
+  Wifi,
+  WifiOff,
+  CloudUpload,
+  RefreshCw,
+  Download,
+  Smartphone
+} from 'lucide-react';
+import { PWAInstallButton } from './PWAInstallButton';
+
+interface NavbarProps {
+  currentView: 'dashboard' | 'schools' | 'school-detail';
+  onNavigate: (view: 'dashboard' | 'schools') => void;
+  onNavigateToCalendar?: () => void;
+  onNavigateToBitacora?: () => void;
+  schools: School[];
+  onSelectSchool: (school: School) => void;
+  onOpenExportModal: () => void;
+  onOpenNewSchoolModal: () => void;
+  totalAlerts: number;
+  activityLogsCount?: number;
+  activeUserId?: string;
+  onSetActiveUserId?: (id: string) => void;
+  isOnline?: boolean;
+  pendingSyncCount?: number;
+  onOpenSyncModal?: () => void;
+  onToggleSimulatedOffline?: () => void;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({
+  currentView,
+  onNavigate,
+  onNavigateToCalendar,
+  onNavigateToBitacora,
+  schools,
+  onSelectSchool,
+  onOpenExportModal,
+  onOpenNewSchoolModal,
+  totalAlerts,
+  activityLogsCount = 0,
+  activeUserId = 'valentina',
+  onSetActiveUserId,
+  isOnline = true,
+  pendingSyncCount = 0,
+  onOpenSyncModal,
+  onToggleSimulatedOffline
+}) => {
+  const [quickSearch, setQuickSearch] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showMobileSearchInput, setShowMobileSearchInput] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const activeUser = PAE_TEAM_MEMBERS.find(m => m.id === activeUserId) || PAE_TEAM_MEMBERS[0];
+
+  const searchResults = quickSearch.trim()
+    ? schools.filter(s => 
+        s.number.toString().includes(quickSearch.trim()) ||
+        s.name.toLowerCase().includes(quickSearch.toLowerCase()) ||
+        s.address.toLowerCase().includes(quickSearch.toLowerCase())
+      ).slice(0, 6)
+    : [];
+
+  const handleSelectFromSearch = (school: School) => {
+    onSelectSchool(school);
+    setQuickSearch('');
+    setIsSearchOpen(false);
+    setShowMobileSearchInput(false);
+  };
+
+  const handleSelectUser = (id: string) => {
+    if (onSetActiveUserId) {
+      onSetActiveUserId(id);
+    }
+    setUserMenuOpen(false);
+  };
+
+  return (
+    <header className="sticky top-0 z-40 bg-slate-900 text-white border-b border-slate-800 shadow-md">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4">
+          
+          {/* Logo and App Title */}
+          <div 
+            onClick={() => {
+              onNavigate('dashboard');
+              setShowMobileSearchInput(false);
+            }}
+            className="flex items-center gap-2 sm:gap-3 cursor-pointer group shrink-0"
+          >
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-md shadow-emerald-900/30 group-hover:scale-105 transition shrink-0">
+              <UtensilsCrossed className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm sm:text-base font-extrabold tracking-tight text-white group-hover:text-emerald-400 transition truncate">
+                  Legajo Escolar
+                </span>
+                <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider bg-emerald-500/30 text-emerald-300 px-1 py-0.2 rounded">
+                  PAE
+                </span>
+              </div>
+              <p className="text-[10px] sm:text-[11px] text-slate-400 leading-none hidden sm:block truncate">
+                Tacuarembó • Cocinas & Visitas
+              </p>
+            </div>
+          </div>
+
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-1">
+            <button
+              onClick={() => onNavigate('dashboard')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+                currentView === 'dashboard'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              Panel General
+            </button>
+
+            <button
+              onClick={() => onNavigate('schools')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+                currentView === 'schools' || currentView === 'school-detail'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <Building2 className="w-4 h-4" />
+              140 Escuelas
+            </button>
+
+            {onNavigateToCalendar && (
+              <button
+                onClick={onNavigateToCalendar}
+                className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-2"
+              >
+                <Calendar className="w-4 h-4 text-sky-400" />
+                Calendario
+              </button>
+            )}
+
+            {onNavigateToBitacora && (
+              <button
+                onClick={onNavigateToBitacora}
+                className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-2"
+              >
+                <History className="w-4 h-4 text-emerald-400" />
+                <span>Bitácora</span>
+                {activityLogsCount > 0 && (
+                  <span className="text-[10px] bg-emerald-500/25 text-emerald-300 border border-emerald-400/30 px-1.5 py-0.2 rounded-full font-bold">
+                    {activityLogsCount}
+                  </span>
+                )}
+              </button>
+            )}
+          </nav>
+
+          {/* Quick Search Jump to School (Desktop) */}
+          <div className="relative flex-1 max-w-xs hidden lg:block">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={quickSearch}
+                onChange={e => {
+                  setQuickSearch(e.target.value);
+                  setIsSearchOpen(true);
+                }}
+                onFocus={() => setIsSearchOpen(true)}
+                placeholder="Buscar N° (ej: 14) o nombre..."
+                className="w-full pl-8 pr-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+              />
+              {quickSearch && (
+                <button
+                  onClick={() => {
+                    setQuickSearch('');
+                    setIsSearchOpen(false);
+                  }}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Quick search popup results */}
+            {isSearchOpen && quickSearch.trim() && (
+              <div className="absolute left-0 right-0 top-full mt-1 bg-slate-800 border border-slate-700 rounded-xl shadow-xl overflow-hidden z-50 text-xs">
+                {searchResults.length > 0 ? (
+                  <div className="divide-y divide-slate-700/60 max-h-60 overflow-y-auto">
+                    {searchResults.map(s => (
+                      <div
+                        key={s.id}
+                        onClick={() => handleSelectFromSearch(s)}
+                        className="p-2.5 hover:bg-slate-700/80 cursor-pointer transition flex items-center justify-between"
+                      >
+                        <div>
+                          <span className="font-bold text-white">Escuela N° {s.number}</span>
+                          <span className="text-slate-400 block text-[11px] truncate">{s.name}</span>
+                        </div>
+                        <span className="text-[10px] text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded">
+                          {s.totalVisits} visitas
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-3 text-slate-400 text-center">
+                    No se encontró escuela con "{quickSearch}"
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Right Action buttons */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            
+            {/* Mobile Search Toggle Button */}
+            <button
+              onClick={() => setShowMobileSearchInput(!showMobileSearchInput)}
+              className="lg:hidden p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition"
+              title="Buscar escuela"
+              aria-label="Buscar escuela"
+            >
+              <Search className="w-4 h-4 text-emerald-400" />
+            </button>
+
+            {/* Pending Sync Indicator Badge */}
+            {pendingSyncCount > 0 && onOpenSyncModal && (
+              <button
+                type="button"
+                onClick={onOpenSyncModal}
+                className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 bg-gradient-to-r from-amber-500/25 to-orange-500/25 hover:from-amber-500/35 hover:to-orange-500/35 text-amber-200 border border-amber-400/50 rounded-xl text-xs font-bold transition shadow-xs group"
+                title={`${pendingSyncCount} visitas realizadas sin conexión pendientes de sincronizar con el servidor central PAE.`}
+              >
+                <div className="relative">
+                  <CloudUpload className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 group-hover:scale-110 transition-transform shrink-0" />
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full animate-ping" />
+                </div>
+                <span className="font-extrabold text-[11px] sm:text-xs text-amber-100">{pendingSyncCount}</span>
+                <span className="hidden sm:inline text-[11px] text-amber-200 font-semibold">por sincronizar</span>
+              </button>
+            )}
+
+            {/* Online / Offline Connection Status Pill */}
+            {onOpenSyncModal && (
+              <button
+                type="button"
+                onClick={onOpenSyncModal}
+                className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-bold border transition shrink-0 ${
+                  isOnline
+                    ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                    : 'bg-amber-950/60 hover:bg-amber-900/60 text-amber-200 border-amber-500/60 shadow-xs'
+                }`}
+                title={
+                  isOnline 
+                    ? 'Conexión activa con el servidor PAE Tacuarembó. Clic para ver centro de sincronización.' 
+                    : 'Modo sin conexión activo. Las visitas se guardan localmente en el dispositivo. Clic para gestionar o sincronizar.'
+                }
+              >
+                {isOnline ? (
+                  <>
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span className="hidden lg:inline text-[11px] text-emerald-300 font-bold">En línea</span>
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="w-3.5 h-3.5 text-amber-400 animate-pulse shrink-0" />
+                    <span className="text-[11px] text-amber-300 font-black">Offline</span>
+                  </>
+                )}
+              </button>
+            )}
+
+            {totalAlerts > 0 && (
+              <button
+                onClick={() => onNavigate('schools')}
+                className="flex items-center gap-1 px-2 py-1 bg-rose-500/20 text-rose-300 border border-rose-500/30 rounded-lg text-xs font-bold hover:bg-rose-500/30 transition"
+                title={`${totalAlerts} alertas activas`}
+              >
+                <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+                <span className="text-[11px] sm:text-xs">{totalAlerts}</span>
+                <span className="hidden sm:inline text-xs">alertas</span>
+              </button>
+            )}
+
+            <button
+              onClick={onOpenExportModal}
+              className="hidden sm:flex p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg text-xs font-medium transition items-center gap-1 border border-slate-700"
+              title="Respaldo y Excel"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+              <span className="hidden md:inline">Respaldo / Excel</span>
+            </button>
+
+            {/* Active User Switcher */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold border border-slate-700 transition"
+                title="Cambiar técnico activo (determina quién visita por defecto)"
+              >
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${activeUser.avatarColor}`}>
+                  {activeUser.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
+                </div>
+                <span className="hidden xl:inline truncate max-w-[130px]">{activeUser.name}</span>
+                <span className="hidden sm:inline xl:hidden text-[11px] text-slate-300 font-semibold">{activeUser.shortName.split(' ')[0]}</span>
+                <ChevronDown className="w-3 h-3 text-slate-400" />
+              </button>
+
+              {userMenuOpen && (
+                <div className="absolute right-0 top-full mt-1.5 w-64 bg-slate-800 border border-slate-700 rounded-2xl shadow-xl overflow-hidden z-50 text-xs py-1.5">
+                  <div className="px-3 py-2 border-b border-slate-700/80">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                      Técnico / Visitador Activo
+                    </span>
+                    <span className="text-[11px] text-slate-300">
+                      Usuario conectado al sistema PAE
+                    </span>
+                  </div>
+                  <div className="py-1">
+                    {PAE_TEAM_MEMBERS.map(member => {
+                      const isCurrent = member.id === activeUser.id;
+                      return (
+                        <button
+                          key={member.id}
+                          type="button"
+                          onClick={() => handleSelectUser(member.id)}
+                          className={`w-full text-left px-3 py-2 flex items-center justify-between hover:bg-slate-700/70 transition ${
+                            isCurrent ? 'bg-emerald-950/60 text-emerald-300' : 'text-slate-200'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black ${member.avatarColor}`}>
+                              {member.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
+                            </div>
+                            <div>
+                              <span className="font-bold block leading-tight">{member.name}</span>
+                              <span className="text-[10px] text-slate-400 block">{member.role}</span>
+                            </div>
+                          </div>
+                          {isCurrent && <UserCheck className="w-4 h-4 text-emerald-400" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* PWA Install Button */}
+            <PWAInstallButton variant="navbar" />
+
+            <button
+              onClick={onOpenNewSchoolModal}
+              className="px-2.5 sm:px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-xs"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Nueva Escuela</span>
+              <span className="sm:hidden text-xs">Escuela</span>
+            </button>
+
+            {/* Mobile burger toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
+              aria-label="Menú principal"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Expandable Search Bar */}
+        {showMobileSearchInput && (
+          <div className="lg:hidden pb-3 pt-1 border-t border-slate-800/80 relative">
+            <div className="relative">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                autoFocus
+                value={quickSearch}
+                onChange={e => setQuickSearch(e.target.value)}
+                placeholder="Buscar por N° (ej: 42), nombre..."
+                className="w-full pl-9 pr-8 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+              {quickSearch && (
+                <button
+                  onClick={() => setQuickSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {quickSearch.trim() && (
+              <div className="mt-1 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden text-xs max-h-52 overflow-y-auto divide-y divide-slate-700/60">
+                {searchResults.length > 0 ? (
+                  searchResults.map(s => (
+                    <div
+                      key={s.id}
+                      onClick={() => handleSelectFromSearch(s)}
+                      className="p-3 hover:bg-slate-700/80 cursor-pointer transition flex items-center justify-between"
+                    >
+                      <div>
+                        <span className="font-bold text-white text-sm">Escuela N° {s.number}</span>
+                        <span className="text-slate-300 block text-xs truncate">{s.name} ({s.zone})</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-emerald-400 shrink-0" />
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-3 text-slate-400 text-center">
+                    No se encontró escuela con "{quickSearch}"
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Mobile Menu Dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden py-3 border-t border-slate-800 space-y-1 animate-in fade-in">
+            <button
+              onClick={() => {
+                onNavigate('dashboard');
+                setMobileMenuOpen(false);
+              }}
+              className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 transition ${
+                currentView === 'dashboard' ? 'bg-emerald-600/30 text-emerald-300' : 'text-slate-300 hover:bg-slate-800'
+              }`}
+            >
+              <LayoutDashboard className="w-4 h-4 text-emerald-400" />
+              <span>Panel General</span>
+            </button>
+
+            <button
+              onClick={() => {
+                onNavigate('schools');
+                setMobileMenuOpen(false);
+              }}
+              className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 transition ${
+                currentView === 'schools' ? 'bg-emerald-600/30 text-emerald-300' : 'text-slate-300 hover:bg-slate-800'
+              }`}
+            >
+              <Building2 className="w-4 h-4 text-emerald-400" />
+              <span>Directorio de 140 Escuelas</span>
+            </button>
+
+            {onNavigateToCalendar && (
+              <button
+                onClick={() => {
+                  onNavigateToCalendar();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 text-slate-300 hover:bg-slate-800 transition"
+              >
+                <Calendar className="w-4 h-4 text-sky-400" />
+                <span>Calendario de Visitas</span>
+              </button>
+            )}
+
+            {onNavigateToBitacora && (
+              <button
+                onClick={() => {
+                  onNavigateToBitacora();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 text-slate-300 hover:bg-slate-800 transition"
+              >
+                <History className="w-4 h-4 text-emerald-400" />
+                <span>Bitácora de Actividad</span>
+                {activityLogsCount > 0 && (
+                  <span className="text-[10px] bg-emerald-500/25 text-emerald-300 border border-emerald-400/30 px-1.5 py-0.2 rounded-full font-bold ml-auto">
+                    {activityLogsCount}
+                  </span>
+                )}
+              </button>
+            )}
+
+            {onOpenSyncModal && (
+              <button
+                onClick={() => {
+                  onOpenSyncModal();
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition ${
+                  pendingSyncCount > 0
+                    ? 'bg-amber-950/40 text-amber-300 border border-amber-500/40'
+                    : 'text-slate-300 hover:bg-slate-800'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  {isOnline ? (
+                    <CloudUpload className="w-4 h-4 text-emerald-400" />
+                  ) : (
+                    <WifiOff className="w-4 h-4 text-amber-400" />
+                  )}
+                  <span>Sincronización de Campo</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-md font-extrabold ${
+                    isOnline ? 'bg-emerald-950/80 text-emerald-300' : 'bg-amber-900/80 text-amber-200'
+                  }`}>
+                    {isOnline ? 'ONLINE' : 'OFFLINE'}
+                  </span>
+                  {pendingSyncCount > 0 && (
+                    <span className="text-[10px] bg-amber-500 text-slate-900 px-1.5 py-0.2 rounded-full font-black">
+                      {pendingSyncCount}
+                    </span>
+                  )}
+                </div>
+              </button>
+            )}
+
+            <button
+              onClick={() => {
+                onOpenExportModal();
+                setMobileMenuOpen(false);
+              }}
+              className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 text-slate-300 hover:bg-slate-800 transition"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+              <span>Descargar Respaldo / Excel</span>
+            </button>
+
+            {/* PWA Mobile Install Option */}
+            <div className="py-1">
+              <PWAInstallButton 
+                variant="navbar" 
+                className="w-full justify-center py-2.5 text-xs font-black shadow-md" 
+              />
+            </div>
+
+            <button
+              onClick={() => {
+                onOpenNewSchoolModal();
+                setMobileMenuOpen(false);
+              }}
+              className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 text-emerald-400 hover:bg-slate-800 transition"
+            >
+              <Plus className="w-4 h-4 text-emerald-400" />
+              <span>+ Registrar Nueva Escuela</span>
+            </button>
+
+            {/* Mobile User Switcher */}
+            <div className="pt-2 border-t border-slate-800 mt-2 px-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-2 mb-1.5">
+                Técnico Activo (Usuario Actual)
+              </span>
+              <div className="space-y-1">
+                {PAE_TEAM_MEMBERS.map(member => {
+                  const isCurrent = member.id === activeUser.id;
+                  return (
+                    <button
+                      key={member.id}
+                      type="button"
+                      onClick={() => {
+                        handleSelectUser(member.id);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between text-xs transition ${
+                        isCurrent ? 'bg-emerald-900/40 text-emerald-300 font-bold border border-emerald-700/50' : 'text-slate-300 hover:bg-slate-800'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black ${member.avatarColor}`}>
+                          {member.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
+                        </div>
+                        <div>
+                          <span className="block leading-tight">{member.name}</span>
+                          <span className="text-[10px] text-slate-400 block font-normal">{member.role}</span>
+                        </div>
+                      </div>
+                      {isCurrent && <UserCheck className="w-4 h-4 text-emerald-400" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </header>
+  );
+};
