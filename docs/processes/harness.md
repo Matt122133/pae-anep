@@ -1,0 +1,167 @@
+---
+owner: pae-anep
+status: stable
+last_reviewed: 2026-10-18
+update_trigger: on-harness-change
+---
+
+# Harness - Operating Manual
+
+The day-to-day manual for how work gets done in this repo with a coding agent.
+The why lives in [ADR harness-design](../decisions/harness-design.md) and
+[ADR speckit-harness-integration](../decisions/speckit-harness-integration.md).
+
+## Operating principle
+
+**If it is not in the repo, it does not exist.**
+
+Anything the agent must reason over must live as versioned markdown, code, or
+schema inside this repo. When a piece of context is load-bearing, capture it
+here first. When you finish a session, ask "did I leave anything only in the
+chat?" — if yes, move it into the repo or mark it non-authoritative.
+
+## Session bootstrap
+
+Every session starts the same way:
+
+1. Read `AGENTS.md`.
+2. Read `docs/README.md`.
+3. Scan `specs/*/plan.md` for `status: active`; hold its `covers:` prefixes in
+   working context.
+4. Scan `docs/decisions/`.
+5. Read `ARCHITECTURE.md` before touching code.
+
+## The Workflow
+
+The harness governs spec-kit's artifact pipeline.
+
+| # | Phase | Command(s) | Artifact |
+|---|---|---|---|
+| 1 | Brief | `/speckit-specify`, `/speckit-clarify` | `specs/<feature>/spec.md` |
+| 2 | Decide | manual ADR when warranted | `docs/decisions/<slug>.md` |
+| 3 | Plan | `/speckit-plan`, `/speckit-tasks`, `/speckit-analyze` | `specs/<feature>/plan.md`, `tasks.md` |
+| 4 | Execute | `/speckit-implement`, `verify:`, `/speckit-converge` | code, tests, docs |
+
+The attended half ends at the human gate: a person reads the analyze output,
+fills `analyzed:`, and promotes `plan.md` from `status: draft` to
+`status: active`. The unattended half starts only after that gate.
+
+## Hooks
+
+`.specify/extensions.yml` registers five mandatory hooks:
+
+- `before_plan` -> `/speckit-clarify`: no ambiguous spec reaches planning.
+- `after_tasks` -> `/speckit-analyze`: inconsistencies surface before the
+  human gate.
+- `before_implement` -> `/harness-gate`: implementation requires an active,
+  analyzed plan and `tasks.md`.
+- `after_implement` -> `/harness-verify`: every implementation pass runs the
+  plan's `verify:` command.
+- `after_converge` -> `/harness-loop`: the loop prints `continue`,
+  `stop-converged`, or `stop-cap`.
+
+These hooks are soft controls because skills execute them by instruction. The
+hard control is `scripts/harness/check_plan_coverage.py` at pre-commit *when
+wired* — `python3 scripts/harness/check_plan_coverage.py --doctor` reports
+whether this clone's active hook actually calls it. See [harness-design.md §
+Sensor attachment].
+
+## Loop Termination
+
+`scripts/harness/speckit_gate.py loop` maintains
+`specs/<feature>/.loop-state.json` and caps unattended execution at five
+iterations.
+
+- `continue` means unchecked tasks remain, or verification is still failing,
+  and the cap has not been reached.
+- `stop-converged` means no unchecked tasks remain and `verify:` is green.
+- `stop-cap` means iteration 5 was reached. The command prints remaining
+  unchecked tasks for a partial PR comment.
+
+## Phase Gates
+
+| To enter | Required |
+|---|---|
+| Decide | The feature brief exists in `spec.md` |
+| Plan | Ambiguity reviewed by `/speckit-clarify` |
+| Execute | One `plan.md` is `active`, `analyzed:` is filled, `tasks.md` exists |
+| Done | All tasks complete, `verify:` green, plan set to `completed` |
+
+Do not skip gates under time pressure.
+
+## Session Exit
+
+When the user signals "we're done" / "close out" / "ttyl", before responding:
+
+1. **Build/verify** — if code was touched, run the plan's `verify:` (or the
+   build command in `dev-setup.md`). A regression blocks; report it.
+2. **Plan state** — the active plan's Progress reflects reality. Split any
+   partially-done step into done / remaining.
+3. **Doc coherence** — every new/edited doc is indexed in `docs/README.md`.
+4. **Chat-sweep** — move any load-bearing knowledge still living only in the
+   chat into the repo: rejected options → Decision Log; surprises or follow-up
+   work → `docs/tech-debt-tracker.md`; a cross-plan principle → a new ADR.
+
+## Como se ejecuta el `verify:`
+
+`scripts/harness/speckit_gate.py` corre el `verify:` del plan con
+`subprocess.run(..., shell=True)`. En Windows eso es **`cmd.exe`**, y hay dos
+consecuencias que no son obvias y que ya costaron una corrida fallada:
+
+- **Los parentesis NO crean un subshell.** `(cd web && ...) && (cd backend && ...)`
+  se ve portable y no lo es: en `cmd` el `cd` persiste fuera del grupo, asi que
+  la segunda mitad busca `web/backend` y falla con *"El sistema no puede
+  encontrar la ruta especificada"*. La forma que funciona en las dos shells es la
+  relativa: `cd web && ... && cd ../backend && ...`.
+- **El comando corre en un proceso nuevo cada vez**, asi que el `cd` acumulado
+  entre corridas no es un problema que haya que resolver.
+- **`./` no es sintaxis de `cmd`, y el nombre pelado tampoco alcanza.** Un
+  `verify:` que llame a un script del repositorio tiene que escribirlo
+  con prefijo **`.\`** y extension explicita (p. ej. `.\gradlew.bat`). Los tres
+  intentos, en el orden en que fallaron en el repo de origen del harness
+  (`flash-urbano`, feature `012`):
+  - `./gradlew` — `./` no existe en `cmd`. Lo encontro el `/speckit-analyze`
+    antes de que rompiera nada.
+  - `gradlew.bat` — parece la correccion obvia y **falla igual** cuando el `cmd`
+    lo lanza un shell tipo MSYS (Git Bash), porque hereda
+    `NoDefaultCurrentDirectoryInExePath` y `cmd` deja de buscar en el directorio
+    actual. En una consola `cmd` de verdad anda, que es lo que hace que el
+    defecto aparezca en unas maquinas y en otras no.
+  - `.\gradlew.bat` — funciona en los dos casos. Es la forma que hay que
+    escribir.
+
+  Aparece con cada herramienta nueva que trae su lanzador. La regla corta:
+  **prefijo `.\`, extension explicita**.
+
+Escrito el 2026-08-22 en `flash-urbano`, despues de "arreglar" un `verify:` que
+funcionaba y romperlo; se porta tal cual porque esta maquina es la misma. El hallazgo venia de un `/speckit-analyze` que sonaba razonable: **la
+correccion se cayo al ejecutarla, no al razonarla**.
+
+## Un `verify:` verde puede no haber probado nada
+
+Las pruebas del backend que necesitan Postgres **se saltean solas** sin
+`TEST_DATABASE_URL` (ver `backend/README.md`, cuando exista). Un `verify:` que
+las incluya va a decir `ok` igual habiendolas salteado todas.
+
+En `flash-urbano` mordio dos veces: el `go test ./...` daba verde con 23
+salteadas **sobre el paquete que el feature estaba cambiando**, y al conectar la
+base aparecieron cuatro fallas reales. Este repo hereda el riesgo desde el
+primer dia del backend.
+
+**Antes de creerle a un `verify:` verde que incluya Go, mirar el conteo de
+skips**, o correrlo con la base de pruebas levantada. Es un **sensor faltante**
+del harness, no una distraccion de quien lo corre.
+
+## Steering Loop
+
+The harness is maintained, not built once. Whenever the agent gets something
+wrong — bad plan, wrong code, skipped phase, reinvented an existing helper —
+ask one question: **guide missing, or sensor missing?**
+
+- **Missing guide** — the agent didn't know the right thing to do. Fix:
+  extend `AGENTS.md`, an ADR, `ARCHITECTURE.md`, or the plan template.
+- **Missing sensor** — the agent did the wrong thing and nothing caught it.
+  Fix: add a test, a lint rule, or a pre-commit check.
+
+**Never answer "just prompt harder."** A repeat failure is a harness bug.
+Every steering pass lands either a guide update or a sensor addition.

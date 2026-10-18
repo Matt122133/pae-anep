@@ -6,3 +6,10 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Harness
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.claude/settings.local.json
+specs/**/.loop-state.json
