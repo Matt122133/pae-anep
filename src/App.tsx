@@ -18,7 +18,6 @@ import { ExportImportModal } from './components/ExportImportModal';
 import { SchoolReportModal } from './components/SchoolReportModal';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { BorradoresModal } from './components/BorradoresModal';
-import { PWAPromptBanner } from './components/PWAPromptBanner';
 import { Loader2, WifiOff, X } from 'lucide-react';
 
 // Respuesta de GET /legajo: la forma de DatabaseState más las cuentas del
@@ -484,8 +483,6 @@ export default function App() {
   return (
     <EquipoProvider equipo={equipo}>
       <div className="min-h-screen bg-slate-100 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
-        <PWAPromptBanner />
-
         <Navbar
           currentView={currentView}
           onNavigate={(v) => {

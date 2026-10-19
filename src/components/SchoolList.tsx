@@ -468,7 +468,7 @@ export const SchoolList: React.FC<SchoolListProps> = ({
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
                 <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 shrink-0" />
-                Directorio Oficial • 140 Escuelas de Tacuarembó
+                Directorio Oficial • {schools.length} Escuelas de Tacuarembó
               </h1>
               <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300">
                 PAE • DGEIP
@@ -618,7 +618,7 @@ export const SchoolList: React.FC<SchoolListProps> = ({
                 onChange={e => setSortBy(e.target.value as any)}
                 className="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer w-full"
               >
-                <option value="number">N° Escuela (1 - 140)</option>
+                <option value="number">N° Escuela</option>
                 <option value="last_visit_desc">Última Visita (Más reciente)</option>
                 <option value="last_visit_asc">Última Visita (Más antigua / Sin visita)</option>
                 <option value="issues">Nivel de Riesgo (Más casos abiertos)</option>

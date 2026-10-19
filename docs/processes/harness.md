@@ -137,6 +137,18 @@ Escrito el 2026-08-22 en `flash-urbano`, despues de "arreglar" un `verify:` que
 funcionaba y romperlo; se porta tal cual porque esta maquina es la misma. El hallazgo venia de un `/speckit-analyze` que sonaba razonable: **la
 correccion se cayo al ejecutarla, no al razonarla**.
 
+## `npm ci` en el `verify:` con un servidor de desarrollo abierto
+
+En Windows, un `npm run dev` corriendo tiene tomados archivos nativos de
+`node_modules` (p. ej. `lightningcss.win32-x64-msvc.node`). `npm ci` empieza
+**borrando `node_modules`**, falla con `EPERM` en ese archivo y deja la carpeta
+**a medio borrar**: el servidor abierto sigue andando desde memoria, pero no
+vuelve a arrancar (faltan `vite`, `tsc`, `vitest`). Pasó el 2026-10-19 en `002`.
+
+- Antes de correr un `verify:` con `npm ci`, **cortar el `npm run dev`**.
+- Si ya pasó: `npm install` repone lo que falta sin tocar el archivo tomado, y
+  `package-lock.json` no cambia.
+
 ## Un `verify:` verde puede no haber probado nada
 
 Las pruebas del backend que necesitan Postgres **se saltean solas** sin
