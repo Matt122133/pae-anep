@@ -71,7 +71,7 @@ distintos y sin dependencias pendientes.
 
 **Prueba independiente**: offline, guardar visita, cerrar y reabrir, volver online, reenviar dos veces: una sola visita en el servidor.
 
-- [ ] T042 [P] [US3] `src/services/borradores.ts` + `src/services/borradores.test.ts`: agregar, listar, reenviar (borra solo si el servidor confirmó), descartar; sobrevive a recargar; qué errores generan borrador (red, 401, 5xx) y cuáles no (400, 409); un reenvío que da 400/409 deja el borrador con el error y la opción "Abrir en el formulario" (D14)
+- [x] T042 [P] [US3] `src/services/borradores.ts` + `src/services/borradores.test.ts`: agregar, listar, reenviar (borra solo si el servidor confirmó), descartar; sobrevive a recargar; qué errores generan borrador (red, 401, 5xx) y cuáles no (400, 409); un reenvío que da 400/409 deja el borrador con el error y la opción "Abrir en el formulario" (D14)
 - [x] T043 [US3] Integrar borradores en `src/App.tsx`: un guardado fallido por red/401/5xx crea borrador y avisa "no enviado" sin cerrar el formulario; 401 además pide reingresar
 - [x] T044 [US3] `src/components/BorradoresModal.tsx` y contador en `src/components/Navbar.tsx` / `src/components/MobileBottomNav.tsx`; descartar con confirmación; aviso al cerrar sesión con borradores pendientes
 - [x] T045 [US3] Eliminar `src/components/SyncModal.tsx`, el toggle de offline simulado y todo indicador de "sincronizado" (`src/App.tsx`, `src/components/Dashboard.tsx`, `src/components/SchoolDetail.tsx`, `src/components/SchoolList.tsx`); quitar `isOfflinePendingSync`/`offlineSavedAt`/`syncedAt` de `src/types/index.ts` y la migración que los inventa en `src/services/storage.ts` (FR-027, SC-007)
