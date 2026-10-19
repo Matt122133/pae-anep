@@ -95,6 +95,12 @@ type Entrada struct {
 // sesion y hora del servidor (now() de Postgres). Pide una pgx.Tx y no un pool
 // a proposito: asi no se puede escribir la entrada por fuera del cambio.
 func Escribir(ctx context.Context, tx pgx.Tx, autor *cuentas.Cuenta, e Entrada) error {
+	return EscribirConID(ctx, tx, NuevoID(), autor, e)
+}
+
+// EscribirConID es Escribir con un id dado: las notas administrativas traen el
+// suyo, generado en el dispositivo, para que reenviarlas no las duplique.
+func EscribirConID(ctx context.Context, tx pgx.Tx, id string, autor *cuentas.Cuenta, e Entrada) error {
 	etiquetas := e.Etiquetas
 	if len(etiquetas) == 0 {
 		etiquetas = []string{EtiquetaDeCategoria(e.Categoria)}
@@ -116,7 +122,7 @@ func Escribir(ctx context.Context, tx pgx.Tx, autor *cuentas.Cuenta, e Entrada) 
 		(id, escuela_id, escuela_numero, escuela_nombre, cuenta_id, autor_nombre, autor_rol,
 		 accion, categoria, etiqueta, etiquetas, resumen, detalle, notas)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
-		NuevoID(), escID, escNumero, escNombre, autor.ID, autor.Nombre, autor.Rol,
+		id, escID, escNumero, escNombre, autor.ID, autor.Nombre, autor.Rol,
 		e.Accion, e.Categoria, etiquetas[0], etiquetas, e.Resumen, dj, e.Notas)
 	return err
 }

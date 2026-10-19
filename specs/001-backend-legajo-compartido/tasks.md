@@ -57,10 +57,10 @@ distintos y sin dependencias pendientes.
 - [x] T030 [US2] `backend/internal/legajo/personal.go` + test: alta, edición con versión, baja lógica, `POST /personal/{id}/traslado` con `personal_asignaciones` y bitácora en ambas escuelas (FR-033)
 - [x] T031 [US2] `backend/internal/legajo/visitas.go` + test: `POST /visitas` con `newIssues` en una transacción, número correlativo con reintento ante choque, `contenido` validado con `DisallowUnknownFields`, `PUT` con versión, `DELETE` solo de no realizadas; escuela inactiva → 400 `schoolId: "escuela inactiva"`; prueba de dos altas simultáneas en la misma escuela
 - [x] T032 [US2] `backend/internal/legajo/incidencias.go` + test: alta, edición/cambio de estado con versión y regla `Resuelto ⇔ fecha_resolucion`, baja
-- [ ] T033 [US2] `backend/internal/legajo/notas.go` + test: `POST /bitacora/notas`; `PUT`/`DELETE` sobre `/bitacora` → 405
-- [ ] T034 [US2] Prueba en `backend/internal/legajo/autor_test.go`: un cuerpo con `userId`/`inspectorName`/`timestamp` falsos queda atribuido a la dueña de la sesión (SC-002)
-- [ ] T035 [P] [US2] `backend/internal/presencia/presencia.go` + test: mapa en memoria con latidos, vence a 60 s, `PUT`/`DELETE /presencia/{tipo}/{id}` (D8)
-- [ ] T036 [US2] Montar rutas de US2 en `backend/cmd/api/main.go`
+- [x] T033 [US2] `backend/internal/legajo/notas.go` + test: `POST /bitacora/notas`; `PUT`/`DELETE` sobre `/bitacora` → 405
+- [x] T034 [US2] Prueba en `backend/internal/legajo/autor_test.go`: un cuerpo con `userId`/`inspectorName`/`timestamp` falsos queda atribuido a la dueña de la sesión (SC-002)
+- [x] T035 [P] [US2] `backend/internal/presencia/presencia.go` + test: mapa en memoria con latidos, vence a 60 s, `PUT`/`DELETE /presencia/{tipo}/{id}` (D8)
+- [x] T036 [US2] Montar rutas de US2 en `backend/cmd/api/main.go`
 - [ ] T037 [US2] `src/App.tsx`: cada `handleSave*`/`handleDelete*`/`handleToggleIssueStatus` llama a la API y reemplaza el registro con la respuesta; deja de armar bitácora y contadores en el cliente; los logs vienen del servidor
 - [ ] T038 [US2] Cuentas del servidor en lugar de `PAE_TEAM_MEMBERS`: `src/components/TeamVisitorSelector.tsx`, `src/components/NewVisitModal.tsx`, `src/components/ScheduleVisitModal.tsx`, `src/components/SchoolDetail.tsx`, `src/components/ActivityLogView.tsx`, `src/components/Dashboard.tsx`, `src/components/SchoolReportModal.tsx`; `formatTeamVisitors` en `src/types/index.ts` recibe la lista de cuentas. **Borrar** `PAE_TEAM_MEMBERS`, los nombres fijos de `formatTeamVisitors` y `generateSeedActivityLogs` de `src/services/storage.ts` (nombres reales en repo público, tech-debt)
 - [ ] T039 [P] [US2] `src/components/PresenciaAviso.tsx` + uso en los modales de edición (latido cada 20 s, `DELETE` al cerrar)
@@ -75,7 +75,7 @@ distintos y sin dependencias pendientes.
 - [ ] T043 [US3] Integrar borradores en `src/App.tsx`: un guardado fallido por red/401/5xx crea borrador y avisa "no enviado" sin cerrar el formulario; 401 además pide reingresar
 - [ ] T044 [US3] `src/components/BorradoresModal.tsx` y contador en `src/components/Navbar.tsx` / `src/components/MobileBottomNav.tsx`; descartar con confirmación; aviso al cerrar sesión con borradores pendientes
 - [ ] T045 [US3] Eliminar `src/components/SyncModal.tsx`, el toggle de offline simulado y todo indicador de "sincronizado" (`src/App.tsx`, `src/components/Dashboard.tsx`, `src/components/SchoolDetail.tsx`, `src/components/SchoolList.tsx`); quitar `isOfflinePendingSync`/`offlineSavedAt`/`syncedAt` de `src/types/index.ts` y la migración que los inventa en `src/services/storage.ts` (FR-027, SC-007)
-- [ ] T046 [US3] Prueba de idempotencia en `backend/internal/legajo/idempotencia_test.go`: mismo `POST` dos veces → un registro y una entrada de bitácora; mismo id con otro contenido → 409
+- [x] T046 [US3] Prueba de idempotencia en `backend/internal/legajo/idempotencia_test.go`: mismo `POST` dos veces → un registro y una entrada de bitácora; mismo id con otro contenido → 409
 
 ## Phase 6: User Story 4 — La administradora gestiona cuentas (P2)
 
