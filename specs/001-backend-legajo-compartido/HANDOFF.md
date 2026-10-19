@@ -1,54 +1,52 @@
-# Handoff — dónde quedó 001 (2026-10-18)
+# Handoff — dónde quedó 001 (2026-10-19)
 
 Archivo de traspaso entre sesiones. Se borra en T059, antes del PR.
 
 ## Estado
 
-- Rama `001-backend-legajo-compartido`. Harness portado y spec escrito,
-  commiteados (commit `14275d9`, con `HARNESS_BYPASS` por ser el bootstrap).
-  **No pusheado.**
-- Fase: **Brief**. `spec.md` listo; `/speckit-clarify` hecho el 2026-10-18
-  (ver sección *Clarifications* del spec), incluidos los dos seguimientos: rechazo +
-  aviso de presencia (co-edición en vivo → 003) y borradores sin señal en 001.
-- **Plan activo; implementando.** `tasks.md` tiene los checkboxes al día
-  (fuente de verdad del avance). Base de pruebas: contenedor `pae-pg-test` en
-  **:55442** (no 55432, lo usa flash-urbano); `go test ./...` falla si está
-  apagada (`docker start pae-pg-test`).
-- **Backend COMPLETO** (US1, US2, US4, US5 y T046; falta solo su README, T054).
-  Queda el frontend: T026, T027, T037–T045, T053, y el pulido T054–T059. Orden elegido: backend
-  antes que el frontend; después
-  UNA reescritura de `src/App.tsx` que cubre T026, T027, T037, T038, T043 y T045
-  juntas (todas tocan el mismo archivo). `Login.tsx`, `api.ts` y `sesion.ts` ya
-  existen; `App.tsx` todavía usa `localStorage`.
+- Rama `001-backend-legajo-compartido`, **sin push**. Plan `active`.
+- **57 de 59 tareas hechas** (`tasks.md` es la fuente de verdad del avance).
+  Backend completo, frontend reescrito contra la API, docs al día.
+- `verify:` del plan **verde**, sin pruebas salteadas.
+- Prueba de humo del API levantado: OK (CORS, ingreso, lectura, escritura con
+  bitácora, salida). Encontró y se arregló un bug real en `cmd/cuentas` (pipe).
+
+## Lo que falta
+
+1. **T058 — probar la interfaz en un navegador y en un teléfono.** Nunca se
+   abrió la app nueva en un navegador. Los 15 escenarios y cuáles faltan están
+   al final de `quickstart.md`. Para levantar todo:
+   ```bash
+   docker start pae-pg-test pae-pg-dev        # pruebas :55442, desarrollo :55443
+   cd backend && cp .env.example .env && ./dev.sh    # API en :8080
+   # en otra terminal, cuentas de prueba (pide contraseña):
+   cd backend && set -a && . ./.env && set +a && go run ./cmd/cuentas crear -usuario valentina -nombre "Valentina (prueba)" -rol "Ecónoma del PAE"
+   go run ./cmd/importar -archivo cmd/importar/testdata/ejemplo.json   # si la base está vacía
+   # frontend, en la raíz:
+   VITE_API_URL=http://localhost:8080 npm run dev     # http://localhost:3000
+   ```
+   La base de desarrollo `pae-pg-dev` ya tiene cuentas `valentina` y `karina`
+   (contraseña `contraseña de prueba`) y el ejemplo importado, con alguna
+   edición de la prueba de humo.
+2. **T059 — antes del PR**: borrar este archivo, correr el chequeo de datos
+   personales de `AGENTS.md` (hoy da limpio), poner el plan en `completed`.
 
 ## Decisiones ya tomadas por el dueño del repo (no volver a preguntar)
 
-- Backend en **Go**, Postgres, en **Railway**; frontend estático en **GitHub
-  Pages**. ADR `backend-persistence-stack` aceptado.
-- Login **usuario + contraseña con hash**, sin "me olvidé la contraseña";
-  cuentas por comando del servidor.
-- Datos reales: el dueño arma un **JSON con su propio script** desde Excel y
-  Word. El backend importa con la forma del respaldo actual
-  (`schools`, `staff`, `visits`, `issues`, `activityLogs`). El archivo nunca
-  entra al repo.
-- Alcance: **online primero** (001); sincronización automática en **002**. Sin
-  red → borrador local "no enviado" con reenvío manual.
+- Go + Postgres en Railway; frontend en GitHub Pages. Usuario + contraseña con
+  hash, sin recuperación; cuentas por comando. JSON real armado por su script,
+  forma del respaldo actual, en `datos/` (ignorado).
+- 001 online; borradores "no enviados" sí en 001; todo lo demás offline en 002.
+- Co-edición en vivo → feature 003; en 001, rechazo del segundo guardado +
+  aviso de presencia.
+- Sesión 30 días sin uso; bajas lógicas; traslado de personal conserva historial.
 
-## Para `/speckit-clarify`: defaults elegidos sin preguntar
+## Para después de 001
 
-Sesión 30 días; 5 intentos fallidos → bloqueo 15 min; contraseña ≥ 10
-caracteres; bajas que ocultan pero conservan historia; mismos permisos para
-todas; conflicto de edición = rechazo del segundo guardado; copia de solo
-lectura sin conexión (Historia 6, P3) que se borra al cerrar sesión.
-
-## Siguiente paso
-
-1. ~~Clarify~~ hecho. ~~`/speckit-plan`~~ hecho.
-2. ~~tasks~~ y ~~analyze~~ hechos; correcciones U1, U2, U3, I1, I2 aplicadas.
-   **Plan `active` y `analyzed: 2026-10-18`** con aprobación explícita del dueño
-   ("demosle de una"). Siguiente: implementar desde T001 (`/speckit-implement`). El `covers:` va a
-   necesitar al menos `backend/`, `src/`, `.gitignore` (patrón del JSON real),
-   `package.json`, `.env.example`. Modelo de backend: `flash-urbano/backend`
-   (`cmd/api`, `internal/<dominio>`, `migrations/` embebidas, tests con
-   `TEST_DATABASE_URL` que se saltean sin base: mirar el conteo de skips).
-3. El dueño promueve el plan a `active` y completa `analyzed:`.
+- **Despliegue** (feature propio): Railway (servicio + Postgres, variables,
+  `railway run` para `cuentas`/`importar`), GitHub Pages (`base` de Vite para
+  `/pae-anep/`, workflow, `VITE_API_URL` como variable del repo), CORS con el
+  origen de Pages.
+- **002**: lectura sin conexión y sincronización automática de borradores.
+- Pendientes en `docs/tech-debt-tracker.md` (nombres reales en el historial de
+  git, `.gitattributes`, etc.).
