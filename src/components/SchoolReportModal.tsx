@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { School, StaffMember, Visit, SchoolIssue } from '../types';
+import { School, StaffMember, Visit, SchoolIssue, formatTeamVisitors } from '../types';
+import { useEquipo } from '../services/equipo';
 import { getHealthCardStatus } from '../services/storage';
 import { 
   Printer, 
@@ -50,9 +51,14 @@ export const SchoolReportModal: React.FC<SchoolReportModalProps> = ({
     visits.length > 0 ? visits[visits.length - 1].id : ''
   );
   
-  // Customization options
-  const [inspectorName, setInspectorName] = useState('Ecónomas del PAE Valentina Suárez y Shaja Rodríguez');
-  const [nutritionistName, setNutritionistName] = useState('Lic. en Nutrición Ana Laura Cuadrado');
+  // Firmantes por defecto: el equipo actual del servidor (editable en el informe).
+  const equipo = useEquipo();
+  const firmaEquipo = formatTeamVisitors(
+    equipo.filter(m => m.role === 'Ecónoma del PAE').map(m => m.id),
+    equipo,
+  );
+  const [inspectorName, setInspectorName] = useState(firmaEquipo.inspectorName);
+  const [nutritionistName, setNutritionistName] = useState(firmaEquipo.nutritionistName);
   const [reportDate, setReportDate] = useState(new Date().toISOString().slice(0, 10));
   
   // Toggles for sections in integral report
@@ -180,7 +186,7 @@ export const SchoolReportModal: React.FC<SchoolReportModalProps> = ({
       text += `• Menúes especiales: ${activeVisit.specialMenusNotes || 'Certificado médico y Acta según Circular 6/2024'}\n\n`;
       text += `Observaciones del personal: ${activeVisit.staffFeedbackNotes || 'Conformidad con las orientaciones'}\n\n`;
       text += `Sin más que agregar, quedan a las órdenes ante cualquier duda o consulta.\n`;
-      text += `Ecónoma de Zona Valentina Suárez y Shaja Rodríguez\n`;
+      text += `${inspectorName}\n`;
     } else {
       text = `ANEP - DGEIP | INFORME TÉCNICO DE COMEDOR ESCOLAR\nESCUELA N° ${school.number} - ${school.name}\n`;
       text += `Ámbito: ${school.areaType} | Modalidad: ${school.modality} | Tacuarembó\n`;
@@ -552,7 +558,7 @@ export const SchoolReportModal: React.FC<SchoolReportModalProps> = ({
                   </p>
                   <div className="pt-6 font-bold text-slate-950 flex flex-col items-center">
                     <div className="w-64 border-t border-slate-700 mb-1"></div>
-                    <div>Ecónoma de Zona Valentina Suárez y Shaja Rodríguez</div>
+                    <div>{inspectorName}</div>
                     <div className="text-xs font-normal text-slate-600">Programa de Alimentación Escolar (PAE) • DGEIP Tacuarembó</div>
                   </div>
                 </div>
@@ -721,13 +727,13 @@ export const SchoolReportModal: React.FC<SchoolReportModalProps> = ({
                   <div className="pt-8 flex justify-around text-center text-xs print-avoid-break">
                     <div>
                       <div className="w-48 border-t border-slate-600 mb-1"></div>
-                      <p className="font-bold">Ecónomas del PAE</p>
-                      <p className="text-slate-500">Valentina Suárez y Shaja Rodríguez</p>
+                      <p className="font-bold">Equipo PAE</p>
+                      <p className="text-slate-500">{inspectorName}</p>
                     </div>
                     <div>
                       <div className="w-48 border-t border-slate-600 mb-1"></div>
                       <p className="font-bold">Lic. en Nutrición</p>
-                      <p className="text-slate-500">Ana Laura Cuadrado</p>
+                      <p className="text-slate-500">{nutritionistName}</p>
                     </div>
                     <div>
                       <div className="w-48 border-t border-slate-600 mb-1"></div>

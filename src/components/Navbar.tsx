@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { School, PAE_TEAM_MEMBERS } from '../types';
+import { School } from '../types';
+import { useEquipo } from '../services/equipo';
 import { 
   UtensilsCrossed, 
   Building2, 
@@ -21,7 +22,8 @@ import {
   CloudUpload,
   RefreshCw,
   Download,
-  Smartphone
+  Smartphone,
+  LogOut
 } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 
@@ -37,11 +39,13 @@ interface NavbarProps {
   totalAlerts: number;
   activityLogsCount?: number;
   activeUserId?: string;
-  onSetActiveUserId?: (id: string) => void;
+  /** Nombre de la cuenta con sesión (el selector de usuaria ya no existe, FR-025). */
+  nombreSesion?: string;
+  onCerrarSesion?: () => void;
   isOnline?: boolean;
-  pendingSyncCount?: number;
-  onOpenSyncModal?: () => void;
-  onToggleSimulatedOffline?: () => void;
+  /** Borradores "no enviados" guardados en este dispositivo (FR-028). */
+  borradoresCount?: number;
+  onOpenBorradores?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -55,20 +59,25 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenNewSchoolModal,
   totalAlerts,
   activityLogsCount = 0,
-  activeUserId = 'valentina',
-  onSetActiveUserId,
+  activeUserId = '',
+  nombreSesion = '',
+  onCerrarSesion,
   isOnline = true,
-  pendingSyncCount = 0,
-  onOpenSyncModal,
-  onToggleSimulatedOffline
+  borradoresCount = 0,
+  onOpenBorradores
 }) => {
+  const equipo = useEquipo();
   const [quickSearch, setQuickSearch] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showMobileSearchInput, setShowMobileSearchInput] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
-  const activeUser = PAE_TEAM_MEMBERS.find(m => m.id === activeUserId) || PAE_TEAM_MEMBERS[0];
+  const activeUser = equipo.find(m => m.id === activeUserId) || {
+    id: activeUserId, name: nombreSesion || 'Sesión', role: '', shortName: nombreSesion || 'Sesión',
+    avatarColor: 'bg-emerald-600 text-white',
+  };
+  const iniciales = (nombre: string) => nombre.split(' ').map(n => n[0]).slice(0, 2).join('');
 
   const searchResults = quickSearch.trim()
     ? schools.filter(s => 
@@ -85,11 +94,10 @@ export const Navbar: React.FC<NavbarProps> = ({
     setShowMobileSearchInput(false);
   };
 
-  const handleSelectUser = (id: string) => {
-    if (onSetActiveUserId) {
-      onSetActiveUserId(id);
-    }
+  const cerrarSesion = () => {
     setUserMenuOpen(false);
+    setMobileMenuOpen(false);
+    onCerrarSesion?.();
   };
 
   return (
@@ -246,54 +254,29 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Search className="w-4 h-4 text-emerald-400" />
             </button>
 
-            {/* Pending Sync Indicator Badge */}
-            {pendingSyncCount > 0 && onOpenSyncModal && (
+            {/* Borradores "no enviados": cuentan lo que el servidor NO confirmó (FR-028) */}
+            {borradoresCount > 0 && onOpenBorradores && (
               <button
                 type="button"
-                onClick={onOpenSyncModal}
-                className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 bg-gradient-to-r from-amber-500/25 to-orange-500/25 hover:from-amber-500/35 hover:to-orange-500/35 text-amber-200 border border-amber-400/50 rounded-xl text-xs font-bold transition shadow-xs group"
-                title={`${pendingSyncCount} visitas realizadas sin conexión pendientes de sincronizar con el servidor central PAE.`}
+                onClick={onOpenBorradores}
+                className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 bg-amber-500/25 hover:bg-amber-500/35 text-amber-200 border border-amber-400/50 rounded-xl text-xs font-bold transition"
+                title={`${borradoresCount} guardado(s) que no llegaron al servidor. Tocá para reenviar.`}
               >
-                <div className="relative">
-                  <CloudUpload className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 group-hover:scale-110 transition-transform shrink-0" />
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full animate-ping" />
-                </div>
-                <span className="font-extrabold text-[11px] sm:text-xs text-amber-100">{pendingSyncCount}</span>
-                <span className="hidden sm:inline text-[11px] text-amber-200 font-semibold">por sincronizar</span>
+                <CloudUpload className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0" />
+                <span className="font-extrabold text-[11px] sm:text-xs text-amber-100">{borradoresCount}</span>
+                <span className="hidden sm:inline text-[11px] text-amber-200 font-semibold">no enviado{borradoresCount > 1 ? 's' : ''}</span>
               </button>
             )}
 
-            {/* Online / Offline Connection Status Pill */}
-            {onOpenSyncModal && (
-              <button
-                type="button"
-                onClick={onOpenSyncModal}
-                className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-bold border transition shrink-0 ${
-                  isOnline
-                    ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
-                    : 'bg-amber-950/60 hover:bg-amber-900/60 text-amber-200 border-amber-500/60 shadow-xs'
-                }`}
-                title={
-                  isOnline 
-                    ? 'Conexión activa con el servidor PAE Tacuarembó. Clic para ver centro de sincronización.' 
-                    : 'Modo sin conexión activo. Las visitas se guardan localmente en el dispositivo. Clic para gestionar o sincronizar.'
-                }
+            {/* Estado real de la conexión del navegador */}
+            {!isOnline && (
+              <span
+                className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-bold border bg-amber-950/60 text-amber-200 border-amber-500/60 shrink-0"
+                title="Sin conexión. Lo que guardes queda como borrador no enviado."
               >
-                {isOnline ? (
-                  <>
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    <span className="hidden lg:inline text-[11px] text-emerald-300 font-bold">En línea</span>
-                  </>
-                ) : (
-                  <>
-                    <WifiOff className="w-3.5 h-3.5 text-amber-400 animate-pulse shrink-0" />
-                    <span className="text-[11px] text-amber-300 font-black">Offline</span>
-                  </>
-                )}
-              </button>
+                <WifiOff className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span className="text-[11px] text-amber-300 font-black">Sin conexión</span>
+              </span>
             )}
 
             {totalAlerts > 0 && (
@@ -317,58 +300,36 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="hidden md:inline">Respaldo / Excel</span>
             </button>
 
-            {/* Active User Switcher */}
+            {/* Cuenta con sesión */}
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold border border-slate-700 transition"
-                title="Cambiar técnico activo (determina quién visita por defecto)"
+                title="Sesión iniciada"
               >
                 <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${activeUser.avatarColor}`}>
-                  {activeUser.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
+                  {iniciales(activeUser.name)}
                 </div>
                 <span className="hidden xl:inline truncate max-w-[130px]">{activeUser.name}</span>
-                <span className="hidden sm:inline xl:hidden text-[11px] text-slate-300 font-semibold">{activeUser.shortName.split(' ')[0]}</span>
                 <ChevronDown className="w-3 h-3 text-slate-400" />
               </button>
 
               {userMenuOpen && (
                 <div className="absolute right-0 top-full mt-1.5 w-64 bg-slate-800 border border-slate-700 rounded-2xl shadow-xl overflow-hidden z-50 text-xs py-1.5">
                   <div className="px-3 py-2 border-b border-slate-700/80">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                      Técnico / Visitador Activo
-                    </span>
-                    <span className="text-[11px] text-slate-300">
-                      Usuario conectado al sistema PAE
-                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Sesión iniciada</span>
+                    <span className="font-bold block text-slate-100">{activeUser.name}</span>
+                    {activeUser.role && <span className="text-[10px] text-slate-400 block">{activeUser.role}</span>}
                   </div>
-                  <div className="py-1">
-                    {PAE_TEAM_MEMBERS.map(member => {
-                      const isCurrent = member.id === activeUser.id;
-                      return (
-                        <button
-                          key={member.id}
-                          type="button"
-                          onClick={() => handleSelectUser(member.id)}
-                          className={`w-full text-left px-3 py-2 flex items-center justify-between hover:bg-slate-700/70 transition ${
-                            isCurrent ? 'bg-emerald-950/60 text-emerald-300' : 'text-slate-200'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black ${member.avatarColor}`}>
-                              {member.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
-                            </div>
-                            <div>
-                              <span className="font-bold block leading-tight">{member.name}</span>
-                              <span className="text-[10px] text-slate-400 block">{member.role}</span>
-                            </div>
-                          </div>
-                          {isCurrent && <UserCheck className="w-4 h-4 text-emerald-400" />}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <button
+                    type="button"
+                    onClick={cerrarSesion}
+                    className="w-full text-left px-3 py-2 flex items-center gap-2 text-rose-300 hover:bg-slate-700/70 transition"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span className="font-bold">Cerrar sesión</span>
+                  </button>
                 </div>
               )}
             </div>
@@ -505,38 +466,25 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
-            {onOpenSyncModal && (
+            {onOpenBorradores && (
               <button
                 onClick={() => {
-                  onOpenSyncModal();
+                  onOpenBorradores();
                   setMobileMenuOpen(false);
                 }}
                 className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition ${
-                  pendingSyncCount > 0
+                  borradoresCount > 0
                     ? 'bg-amber-950/40 text-amber-300 border border-amber-500/40'
                     : 'text-slate-300 hover:bg-slate-800'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  {isOnline ? (
-                    <CloudUpload className="w-4 h-4 text-emerald-400" />
-                  ) : (
-                    <WifiOff className="w-4 h-4 text-amber-400" />
-                  )}
-                  <span>Sincronización de Campo</span>
+                  {isOnline ? <CloudUpload className="w-4 h-4 text-emerald-400" /> : <WifiOff className="w-4 h-4 text-amber-400" />}
+                  <span>No enviados</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-md font-extrabold ${
-                    isOnline ? 'bg-emerald-950/80 text-emerald-300' : 'bg-amber-900/80 text-amber-200'
-                  }`}>
-                    {isOnline ? 'ONLINE' : 'OFFLINE'}
-                  </span>
-                  {pendingSyncCount > 0 && (
-                    <span className="text-[10px] bg-amber-500 text-slate-900 px-1.5 py-0.2 rounded-full font-black">
-                      {pendingSyncCount}
-                    </span>
-                  )}
-                </div>
+                {borradoresCount > 0 && (
+                  <span className="text-[10px] bg-amber-500 text-slate-900 px-1.5 py-0.2 rounded-full font-black">{borradoresCount}</span>
+                )}
               </button>
             )}
 
@@ -570,40 +518,23 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>+ Registrar Nueva Escuela</span>
             </button>
 
-            {/* Mobile User Switcher */}
+            {/* Cuenta con sesión (móvil) */}
             <div className="pt-2 border-t border-slate-800 mt-2 px-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-2 mb-1.5">
-                Técnico Activo (Usuario Actual)
-              </span>
-              <div className="space-y-1">
-                {PAE_TEAM_MEMBERS.map(member => {
-                  const isCurrent = member.id === activeUser.id;
-                  return (
-                    <button
-                      key={member.id}
-                      type="button"
-                      onClick={() => {
-                        handleSelectUser(member.id);
-                        setMobileMenuOpen(false);
-                      }}
-                      className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between text-xs transition ${
-                        isCurrent ? 'bg-emerald-900/40 text-emerald-300 font-bold border border-emerald-700/50' : 'text-slate-300 hover:bg-slate-800'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black ${member.avatarColor}`}>
-                          {member.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
-                        </div>
-                        <div>
-                          <span className="block leading-tight">{member.name}</span>
-                          <span className="text-[10px] text-slate-400 block font-normal">{member.role}</span>
-                        </div>
-                      </div>
-                      {isCurrent && <UserCheck className="w-4 h-4 text-emerald-400" />}
-                    </button>
-                  );
-                })}
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-2 mb-1.5">Sesión iniciada</span>
+              <div className="px-2.5 py-2 flex items-center gap-2 text-xs text-slate-200">
+                <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black ${activeUser.avatarColor}`}>
+                  {iniciales(activeUser.name)}
+                </div>
+                <span className="font-bold">{activeUser.name}</span>
               </div>
+              <button
+                type="button"
+                onClick={cerrarSesion}
+                className="w-full text-left px-2.5 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold text-rose-300 hover:bg-slate-800 transition"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Cerrar sesión</span>
+              </button>
             </div>
           </div>
         )}

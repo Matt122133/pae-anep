@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
@@ -111,6 +112,11 @@ export default defineConfig(() => {
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
+    },
+    // Solo pruebas de logica pura (api, sesion, borradores): sin DOM.
+    test: {
+      environment: 'node',
+      include: ['src/**/*.test.ts'],
     },
     server: {
       hmr: process.env.DISABLE_HMR !== 'true',

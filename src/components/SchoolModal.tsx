@@ -1,3 +1,5 @@
+import { nuevoId } from '../services/api';
+import { PresenciaAviso } from './PresenciaAviso';
 import React, { useState, useEffect } from 'react';
 import { School, ModalityType, SchoolAreaType, MilkProgramType } from '../types';
 import { X, Building2, Save, Droplets, Milk, UserCheck, MapPin } from 'lucide-react';
@@ -5,17 +7,22 @@ import { X, Building2, Save, Droplets, Milk, UserCheck, MapPin } from 'lucide-re
 interface SchoolModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (school: School) => void;
+  /** Devuelve null si se guardó (o quedó como borrador), o el error a mostrar. */
+  onSave: (school: School) => Promise<string | null>;
   schoolToEdit?: School | null;
   nextSchoolNumber: number;
+  /** Baja lógica: la escuela deja de listarse pero su historia queda (FR-015). */
+  onDarDeBaja?: (schoolId: string) => void;
 }
 
+// Sugerencias de zona de inspección. Sin nombres de personas: el repo es
+// público; el nombre de cada inspector/a se carga en la escuela.
 const tacuaremboInspectors = [
-  'Insp. Mtra. María del Carmen López (Zona Urbana Tacuarembó)',
-  'Insp. Mtra. Sandra Pereira (Zona Paso de los Toros)',
-  'Insp. Mtro. Wilson Netto (Zona Rural Este - Caraguatá / Ansina)',
-  'Insp. Mtra. Virginia Da Silva (Zona Rural Centro y Sur)',
-  'Insp. Mtra. Ana Laura Techera (Zona Rural Oeste y Tambores)'
+  'Inspección Zona Urbana Tacuarembó',
+  'Inspección Zona Paso de los Toros',
+  'Inspección Zona Rural Este (Caraguatá / Ansina)',
+  'Inspección Zona Rural Centro y Sur',
+  'Inspección Zona Rural Oeste y Tambores'
 ];
 
 export const SchoolModal: React.FC<SchoolModalProps> = ({
@@ -23,8 +30,13 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
   onClose,
   onSave,
   schoolToEdit,
-  nextSchoolNumber
+  nextSchoolNumber,
+  onDarDeBaja
 }) => {
+  // Id estable por formulario: reintentar el guardado no duplica (FR-029).
+  const [idNuevo] = React.useState(() => nuevoId());
+  const [guardando, setGuardando] = React.useState(false);
+  const [errorGuardado, setErrorGuardado] = React.useState<string | null>(null);
   const [number, setNumber] = useState(nextSchoolNumber);
   const [name, setName] = useState('');
   const [department, setDepartment] = useState('Tacuarembó');
@@ -110,15 +122,19 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
       setMilkNotes('Cuota mensual de leche en polvo asignada.');
       setNotes('');
     }
-  }, [schoolToEdit, nextSchoolNumber, isOpen]);
+  // Se reinicia al abrir OTRA ficha (cambia el id), no cuando llega una versión
+  // nueva de la misma: ante un conflicto (409) la app carga la versión vigente y
+  // lo que la usuaria escribió tiene que quedar en el formulario (FR-014).
+  }, [schoolToEdit?.id, nextSchoolNumber, isOpen]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const school: School = {
-      id: schoolToEdit ? schoolToEdit.id : `esc-${number}`,
+      id: schoolToEdit ? schoolToEdit.id : idNuevo,
+      version: schoolToEdit?.version,
       number: Number(number),
       name: name.trim() || `Escuela N° ${number}`,
       department,
@@ -150,7 +166,14 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
       activeIssuesCount: schoolToEdit?.activeIssuesCount || 0
     };
 
-    onSave(school);
+    setGuardando(true);
+    setErrorGuardado(null);
+    const error = await onSave(school);
+    setGuardando(false);
+    if (error) {
+      setErrorGuardado(error);
+      return;
+    }
     onClose();
   };
 
@@ -174,6 +197,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto flex-1 text-slate-800 text-sm">
+          {schoolToEdit && <PresenciaAviso tipo="escuela" id={schoolToEdit.id} />}
           {/* Clasificación Principal Tacuarembó: Rural o Urbana */}
           <div className="bg-emerald-50/80 border border-emerald-200 p-4 rounded-xl">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -528,6 +552,20 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
           </div>
 
           <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-200 shrink-0">
+            {schoolToEdit && onDarDeBaja && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm(`¿Dar de baja la Escuela N° ${schoolToEdit.number}? Deja de aparecer en los listados, pero sus visitas, incidencias y bitácora se conservan y se puede reactivar.`)) {
+                    onDarDeBaja(schoolToEdit.id);
+                    onClose();
+                  }
+                }}
+                className="mr-auto px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-50 rounded-lg"
+              >
+                Dar de baja
+              </button>
+            )}
             <button
               type="button"
               onClick={onClose}
@@ -535,8 +573,10 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
             >
               Cancelar
             </button>
+            {errorGuardado && <span role="alert" className="text-xs font-semibold text-rose-700 max-w-xs">{errorGuardado}</span>}
             <button
               type="submit"
+              disabled={guardando}
               className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm flex items-center gap-1.5 transition"
             >
               <Save className="w-4 h-4" />

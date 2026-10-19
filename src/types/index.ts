@@ -42,6 +42,7 @@ export interface StaffMember {
   phone?: string;
   notes?: string;
   active: boolean;
+  version?: number;
 }
 
 export type HygieneRating = 'Bien' | 'Regular' | 'Deficiente';
@@ -75,16 +76,12 @@ export interface Visit {
   scheduledObjective?: string; // Motivo u objetivo planificado para la visita
   itineraryNotes?: string; // Notas de ruta / circuito (ej. Circuito Ruta 5, Circuito Caraguatá)
   visitors?: string[]; // IDs de miembros del equipo que realizaron la visita (e.g. ['valentina', 'karina'])
-  inspectorName: string; // e.g. Ecónomas del PAE Valentina Suárez y Karina Rivero
+  inspectorName: string; // p. ej. "Ecónomas del PAE <nombre> y <nombre>"
   inspectorRole: string; // e.g. Ecónomas del Programa de Alimentación Escolar (PAE Tacuarembó)
-  nutritionistName?: string; // Lic. en Nutrición Laura Cuadrado
+  nutritionistName?: string; // p. ej. "Lic. en Nutrición <nombre>"
   assignedSchoolInspector?: string; // Inspector/a de Escuela o Zona
   attendedBy: string; // Maestro/a Director/a, etc.
   
-  // Conectividad y Sincronización Offline (para visitas en territorio rural sin cobertura)
-  isOfflinePendingSync?: boolean; // Verdadero si se realizó/guardó sin conexión y está pendiente de sincronización
-  offlineSavedAt?: string; // Marca temporal ISO de cuando se guardó offline en el dispositivo
-  syncedAt?: string; // Marca temporal ISO de cuando se sincronizó con el servidor central DGEIP/PAE
   
   // Apartado previo de observaciones de campo (para integrar en la devolución)
   initialFieldObservations?: string;
@@ -159,6 +156,8 @@ export interface Visit {
   suggestions: string;
   generalObservations: string;
   issuesFollowUpSummary?: string;
+  /** Versión del servidor, para el control de edición concurrente (FR-014). */
+  version?: number;
 }
 
 export type IssueStatus = 'Pendiente' | 'En Proceso' | 'Resuelto';
@@ -185,6 +184,7 @@ export interface SchoolIssue {
   resolvedDate?: string;
   resolutionNotes?: string;
   resolvedInVisitNumber?: number;
+  version?: number;
 }
 
 export type SchoolAreaType = 'Rural' | 'Urbana';
@@ -226,6 +226,9 @@ export interface School {
   lastVisitDate?: string;
   totalVisits: number;
   activeIssuesCount: number;
+  /** Baja lógica (FR-015). */
+  active?: boolean;
+  version?: number;
 }
 
 export interface PaeTeamMember {
@@ -238,90 +241,70 @@ export interface PaeTeamMember {
   avatarColor: string;
 }
 
-export const PAE_TEAM_MEMBERS: PaeTeamMember[] = [
-  {
-    id: 'valentina',
-    name: 'Valentina Suárez',
-    role: 'Ecónoma del PAE',
-    title: 'Ecónoma del Programa de Alimentación Escolar (PAE Tacuarembó)',
-    badge: 'Ecónoma PAE',
-    shortName: 'Valentina Suárez',
-    avatarColor: 'bg-emerald-600 text-white'
-  },
-  {
-    id: 'shaja',
-    name: 'Shaja Rodríguez',
-    role: 'Ecónoma del PAE',
-    title: 'Ecónoma del Programa de Alimentación Escolar (PAE Tacuarembó)',
-    badge: 'Ecónoma PAE',
-    shortName: 'Shaja Rodríguez',
-    avatarColor: 'bg-teal-600 text-white'
-  },
-  {
-    id: 'karina',
-    name: 'Karina Rivero',
-    role: 'Ecónoma del PAE',
-    title: 'Ecónoma del Programa de Alimentación Escolar (PAE Tacuarembó)',
-    badge: 'Ecónoma PAE',
-    shortName: 'Karina Rivero',
-    avatarColor: 'bg-amber-600 text-white'
-  },
-  {
-    id: 'laura',
-    name: 'Laura Cuadrado',
-    role: 'Licenciada en Nutrición',
-    title: 'Licenciada en Nutrición - PAE Tacuarembó',
-    badge: 'Lic. Nutrición',
-    shortName: 'Lic. Laura Cuadrado',
-    avatarColor: 'bg-indigo-600 text-white'
-  }
+// Colores de avatar por posición: el equipo ya no es una lista fija en el
+// código, viene del servidor (cuentas activas, FR-016).
+const COLORES_EQUIPO = [
+  'bg-emerald-600 text-white',
+  'bg-teal-600 text-white',
+  'bg-amber-600 text-white',
+  'bg-indigo-600 text-white',
+  'bg-rose-600 text-white',
+  'bg-sky-600 text-white',
 ];
 
-export function formatTeamVisitors(selectedMemberIds: string[]): { inspectorName: string; inspectorRole: string; nutritionistName: string } {
-  const ids = selectedMemberIds && selectedMemberIds.length > 0 ? selectedMemberIds : ['valentina'];
-  const members = PAE_TEAM_MEMBERS.filter(m => ids.includes(m.id));
-  
-  if (members.length === 0) {
+export interface CuentaEquipo {
+  id: string;
+  usuario: string;
+  nombre: string;
+  rol: string;
+}
+
+/** Convierte las cuentas del servidor en la forma que usan los componentes. */
+export function equipoDesdeCuentas(cuentas: CuentaEquipo[]): PaeTeamMember[] {
+  return cuentas.map((c, i) => {
+    const esNutri = c.rol === 'Licenciada en Nutrición';
     return {
-      inspectorName: 'Ecónoma del PAE Valentina Suárez',
-      inspectorRole: 'Ecónomas del Programa de Alimentación Escolar (PAE Tacuarembó)',
-      nutritionistName: 'Lic. en Nutrición Laura Cuadrado'
+      id: c.id,
+      name: c.nombre,
+      role: esNutri ? 'Licenciada en Nutrición' : 'Ecónoma del PAE',
+      title: esNutri
+        ? 'Licenciada en Nutrición - PAE Tacuarembó'
+        : 'Ecónoma del Programa de Alimentación Escolar (PAE Tacuarembó)',
+      badge: esNutri ? 'Lic. Nutrición' : 'Ecónoma PAE',
+      shortName: esNutri ? `Lic. ${c.nombre}` : c.nombre,
+      avatarColor: COLORES_EQUIPO[i % COLORES_EQUIPO.length],
     };
+  });
+}
+
+function unirNombres(nombres: string[]): string {
+  return nombres.join(', ').replace(/, ([^,]*)$/, ' y $1');
+}
+
+/**
+ * Arma los textos de "quiénes visitaron" a partir de los ids elegidos y del
+ * equipo actual. Ya no tiene nombres escritos en el código (repo público).
+ */
+export function formatTeamVisitors(
+  selectedMemberIds: string[],
+  equipo: PaeTeamMember[],
+): { inspectorName: string; inspectorRole: string; nutritionistName: string } {
+  const elegidos = equipo.filter((m) => selectedMemberIds.includes(m.id));
+  const nutri = equipo.find((m) => m.role === 'Licenciada en Nutrición');
+  const nutritionistName = nutri ? `Lic. en Nutrición ${nutri.name}` : '';
+  if (elegidos.length === 0) {
+    return { inspectorName: '', inspectorRole: 'Equipo Técnico del Programa de Alimentación Escolar (PAE Tacuarembó)', nutritionistName };
   }
-
-  const economas = members.filter(m => m.role === 'Ecónoma del PAE');
-  const hasNutritionist = members.some(m => m.id === 'laura');
-
-  let namesStr = '';
-
-  if (members.length === 4) {
-    namesStr = 'Equipo Técnico PAE: Ecónomas Valentina Suárez, Shaja Rodríguez, Karina Rivero y Lic. en Nutrición Laura Cuadrado';
-  } else if (economas.length > 0 && hasNutritionist) {
-    const economasNames = economas.map(e => e.name).join(', ').replace(/, ([^,]*)$/, ' y $1');
-    const economasPrefix = economas.length > 1 ? 'Ecónomas del PAE' : 'Ecónoma del PAE';
-    namesStr = `${economasPrefix} ${economasNames} y Lic. en Nutrición Laura Cuadrado`;
-  } else if (economas.length > 0) {
-    const economasNames = economas.map(e => e.name).join(', ').replace(/, ([^,]*)$/, ' y $1');
-    const economasPrefix = economas.length > 1 ? 'Ecónomas del PAE' : 'Ecónoma del PAE';
-    namesStr = `${economasPrefix} ${economasNames}`;
-  } else {
-    namesStr = 'Lic. en Nutrición Laura Cuadrado';
-  }
-
-  let roleStr = '';
-  if (members.length > 1) {
-    roleStr = 'Equipo Técnico del Programa de Alimentación Escolar (PAE Tacuarembó)';
-  } else if (hasNutritionist) {
-    roleStr = 'Licenciada en Nutrición - PAE Tacuarembó';
-  } else {
-    roleStr = 'Ecónoma del Programa de Alimentación Escolar (PAE Tacuarembó)';
-  }
-
-  return {
-    inspectorName: namesStr,
-    inspectorRole: roleStr,
-    nutritionistName: 'Lic. en Nutrición Laura Cuadrado'
-  };
+  const economas = elegidos.filter((m) => m.role === 'Ecónoma del PAE').map((m) => m.name);
+  const nutris = elegidos.filter((m) => m.role === 'Licenciada en Nutrición').map((m) => m.name);
+  const partes: string[] = [];
+  if (economas.length) partes.push(`${economas.length > 1 ? 'Ecónomas del PAE' : 'Ecónoma del PAE'} ${unirNombres(economas)}`);
+  if (nutris.length) partes.push(`Lic. en Nutrición ${unirNombres(nutris)}`);
+  const inspectorRole =
+    elegidos.length > 1
+      ? 'Equipo Técnico del Programa de Alimentación Escolar (PAE Tacuarembó)'
+      : elegidos[0].title;
+  return { inspectorName: partes.join(' y '), inspectorRole, nutritionistName };
 }
 
 export type ActivityActionType = 
@@ -457,7 +440,7 @@ export interface ActivityLog {
   schoolNumber?: number; // N° de escuela
   schoolName?: string; // Nombre de la escuela
   userId: string; // 'valentina' | 'shaja' | 'karina' | 'laura'
-  userName: string; // e.g. 'Valentina Suárez'
+  userName: string; // nombre de la cuenta autora (lo pone el servidor)
   userRole: string; // e.g. 'Ecónoma del PAE'
   actionType: ActivityActionType;
   category: ActivityCategory;
