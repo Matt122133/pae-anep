@@ -22,11 +22,11 @@ distintos y sin dependencias pendientes.
 - [x] T007 `backend/internal/db/db.go` (pool pgx) y `backend/internal/db/migrate.go` (migraciones embebidas, solo hacia adelante, una transacción por archivo, cerrojo de aviso — copiar el patrón de `flash-urbano/backend/internal/db/migrate.go`) + `backend/migrations/embed.go`
 - [x] T008 `backend/internal/testdb/testdb.go`: abre `TEST_DATABASE_URL` o `postgres://postgres:test@localhost:55442/pae_test?sslmode=disable`, migra, trunca entre pruebas; si no conecta **falla** salvo `PAE_SIN_DB=1` (D16) + `testdb_test.go` que lo comprueba
 - [x] T009 `backend/migrations/0001_esquema_inicial.sql`: todas las tablas de `data-model.md` con sus `CHECK`, índices únicos (`escuelas.numero`, `(visitas.escuela_id, numero)`, asignación vigente parcial) y el trigger `bitacora_inmutable`
-- [ ] T010 [P] `backend/internal/httpx/cors.go` + test: solo orígenes de `CORS_ORIGENES`, preflight, encabezados de `contracts/api.md`
-- [ ] T011 [P] `backend/internal/httpx/errores.go`: respuestas JSON de la tabla de errores del contrato; nunca filtra el error interno
-- [ ] T012 `backend/internal/httpx/sesion.go` + test: lee `Authorization: Bearer`, resuelve la cuenta con una función inyectada, 401 `sesion_invalida`, cuenta en el contexto (genérico, como en `flash-urbano`)
-- [ ] T013 `backend/cmd/api/main.go`: config → pool → migrar → rutas → servidor con timeouts y apagado ordenado; `GET /salud`; tarea periódica de purgas en `backend/internal/db/janitor.go`
-- [ ] T014 [P] `backend/Dockerfile` (dos etapas, distroless nonroot) y `backend/dev.sh` (levanta `pae-pg-dev` en :55443 (no 55433: lo usa flash-urbano), carga `.env`, `go run ./cmd/api`)
+- [x] T010 [P] `backend/internal/httpx/cors.go` + test: solo orígenes de `CORS_ORIGENES`, preflight, encabezados de `contracts/api.md`
+- [x] T011 [P] `backend/internal/httpx/errores.go`: respuestas JSON de la tabla de errores del contrato; nunca filtra el error interno
+- [x] T012 `backend/internal/httpx/sesion.go` + test: lee `Authorization: Bearer`, resuelve la cuenta con una función inyectada, 401 `sesion_invalida`, cuenta en el contexto (genérico, como en `flash-urbano`)
+- [x] T013 `backend/cmd/api/main.go`: config → pool → migrar → rutas → servidor con timeouts y apagado ordenado; `GET /salud`; tarea periódica de purgas en `backend/internal/db/janitor.go`
+- [x] T014 [P] `backend/Dockerfile` (dos etapas, distroless nonroot) y `backend/dev.sh` (levanta `pae-pg-dev` en :55443 (no 55433: lo usa flash-urbano), carga `.env`, `go run ./cmd/api`)
 
 **Checkpoint**: `cd backend && go test ./...` pasa con la base de pruebas arriba y falla con ella apagada.
 

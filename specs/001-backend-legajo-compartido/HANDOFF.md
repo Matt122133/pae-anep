@@ -10,7 +10,10 @@ Archivo de traspaso entre sesiones. Se borra en T059, antes del PR.
 - Fase: **Brief**. `spec.md` listo; `/speckit-clarify` hecho el 2026-10-18
   (ver sección *Clarifications* del spec), incluidos los dos seguimientos: rechazo +
   aviso de presencia (co-edición en vivo → 003) y borradores sin señal en 001.
-- **Plan activo**, 59 tareas en `tasks.md`. Sin código todavía.
+- **Plan activo; implementando.** Hechas Fase 1 (T001–T005) y Fase 2
+  (T006–T014): `tasks.md` tiene los checkboxes al día. Siguiente: **Fase 3 /
+  US1 desde T015**. Base de pruebas: contenedor `pae-pg-test` en **:55442**
+  (no 55432, lo usa flash-urbano); `go test ./...` falla si está apagada.
 
 ## Decisiones ya tomadas por el dueño del repo (no volver a preguntar)
 
