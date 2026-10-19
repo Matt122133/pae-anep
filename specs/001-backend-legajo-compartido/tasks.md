@@ -44,7 +44,7 @@ distintos y sin dependencias pendientes.
 - [x] T022 [US1] Montar rutas de US1 en `backend/cmd/api/main.go` y prueba de que **cada** ruta de datos responde 401 sin credencial (SC-003) en `backend/cmd/api/main_test.go`
 - [x] T023 [P] [US1] `src/services/sesion.ts` + `src/services/sesion.test.ts`: guardar/leer/borrar token y cuenta en `localStorage` (try/catch)
 - [x] T024 [P] [US1] `src/services/api.ts` + `src/services/api.test.ts`: `fetch` con base `import.meta.env.VITE_API_URL`, token, errores tipados (`red`, `sesion`, `invalido` con campos, `conflicto` con actual, `servidor`); generador de id con respaldo para contexto no seguro
-- [ ] T025 [US1] `src/components/Login.tsx`: formulario usuario/contraseña mobile-first, mensaje único de error, estado de carga
+- [x] T025 [US1] `src/components/Login.tsx`: formulario usuario/contraseña mobile-first, mensaje único de error, estado de carga
 - [ ] T026 [US1] `src/App.tsx`: sin sesión muestra `Login`; con sesión carga `GET /legajo` en el `DatabaseState`; 401 vuelve a `Login`; botón cerrar sesión. Quitar `initializeDatabase()` del arranque. Agregar `active?` y `version?` a `School`, `StaffMember`, `Visit`, `SchoolIssue` en `src/types/index.ts`
 - [ ] T027 [US1] Reemplazar el selector de usuaria activa por el nombre de la cuenta en `src/components/Navbar.tsx` y `src/components/MobileBottomNav.tsx`; quitar `getActiveUserId`/`setActiveUserId` de `src/services/storage.ts`
 
