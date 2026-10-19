@@ -10,7 +10,8 @@ Archivo de traspaso entre sesiones. Borrarlo cuando el plan pase a `active`.
 - Fase: **Brief**. `spec.md` listo; `/speckit-clarify` hecho el 2026-10-18
   (ver sección *Clarifications* del spec), incluidos los dos seguimientos: rechazo +
   aviso de presencia (co-edición en vivo → 003) y borradores sin señal en 001.
-- No hay plan, ni tareas, ni código de backend.
+- **Plan escrito** (`plan.md` en `status: draft`, con research, data-model,
+  contracts y quickstart). Faltan `tasks.md` y `/speckit-analyze`. Sin código.
 
 ## Decisiones ya tomadas por el dueño del repo (no volver a preguntar)
 
@@ -34,11 +35,8 @@ lectura sin conexión (Historia 6, P3) que se borra al cerrar sesión.
 
 ## Siguiente paso
 
-1. Preguntar al dueño los dos *Pendientes de confirmación* del spec y
-   registrar la respuesta en *Clarifications*. Ya confirmados: sesión 30 días,
-   borrado lógico con historial del personal entre escuelas (FR-033), copia
-   sin conexión fuera de 001.
-2. `/speckit-plan` → `/speckit-tasks` → `/speckit-analyze`. El `covers:` va a
+1. ~~Clarify~~ hecho. ~~`/speckit-plan`~~ hecho.
+2. `/speckit-tasks` → `/speckit-analyze` (hook `after_tasks`). El `covers:` va a
    necesitar al menos `backend/`, `src/`, `.gitignore` (patrón del JSON real),
    `package.json`, `.env.example`. Modelo de backend: `flash-urbano/backend`
    (`cmd/api`, `internal/<dominio>`, `migrations/` embebidas, tests con
