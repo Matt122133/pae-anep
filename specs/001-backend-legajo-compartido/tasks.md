@@ -97,7 +97,7 @@ distintos y sin dependencias pendientes.
 ## Phase 8: Polish
 
 - [x] T054 [P] `backend/README.md`: estructura, variables, bases local y de pruebas, comandos `cuentas` e `importar`
-- [ ] T055 [P] Actualizar `ARCHITECTURE.md`, `SECURITY.md` (frontera de confianza real), `docs/processes/dev-setup.md` (sección backend), `docs/README.md`, `docs/tech-debt-tracker.md` (resolver las tres filas `High` y la de `npm install`), `docs/HARNESS-TODO.md`
+- [x] T055 [P] Actualizar `ARCHITECTURE.md`, `SECURITY.md` (frontera de confianza real), `docs/processes/dev-setup.md` (sección backend), `docs/README.md`, `docs/tech-debt-tracker.md` (resolver las tres filas `High` y la de `npm install`), `docs/HARNESS-TODO.md`
 - [x] T056 Agregar carril `npm run lint` en `.githooks/pre-commit` arriba del sensor
 - [x] T057 `src/data/initialData.ts` solo para desarrollo: no se carga en ningún camino de producción (verificar con `grep`)
 - [ ] T058 Correr `verify:` completo y los 15 escenarios de `quickstart.md`; anotar resultado por escenario en `quickstart.md`

@@ -15,10 +15,14 @@ necesite conocer el repo. Al agregar un doc, sumar una línea en su sección.
 - [`/AGENTS.md`](../AGENTS.md) — entrada para agentes: principio operativo,
   restricciones duras, compuertas, arranque de sesión. `CLAUDE.md` es una copia
   idéntica.
-- [`/ARCHITECTURE.md`](../ARCHITECTURE.md) — mapa del código: layout, flujo de
-  estado del frontend, modelo de dominio, puntos calientes.
-- [`/SECURITY.md`](../SECURITY.md) — datos personales, secretos, fronteras de
-  confianza (hoy ninguna).
+- [`/ARCHITECTURE.md`](../ARCHITECTURE.md) — mapa del código: dos superficies
+  (PWA y backend), flujo de escritura contra la API, borradores, tipos espejo
+  TS/Go, puntos calientes.
+- [`/SECURITY.md`](../SECURITY.md) — datos personales, secretos, y la frontera
+  de confianza del backend (contraseñas, sesiones, límites, CORS, bitácora).
+- [`/backend/README.md`](../backend/README.md) — estructura del servicio,
+  variables de entorno (nombres, nunca valores), bases locales de pruebas y de
+  desarrollo, comandos `cuentas` e `importar`, y las trampas conocidas.
 - [`/.specify/memory/constitution.md`](../.specify/memory/constitution.md) — la
   constitución, documento supremo.
 

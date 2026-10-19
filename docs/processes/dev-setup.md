@@ -14,8 +14,9 @@ El modelo del harness está en [harness.md](harness.md).
 
 - **Frontend PWA** (raíz del repo): Node.js 22, React 19, Vite 8, TypeScript,
   Tailwind CSS 4, `vite-plugin-pwa`.
-- **Backend** (`backend/`): a definir en `001`. Ver
-  [ADR backend-persistence-stack](../decisions/backend-persistence-stack.md).
+- **Backend** (`backend/`): Go 1.26, Postgres 17 en Docker. Ver
+  [`backend/README.md`](../../backend/README.md) para comandos, variables y
+  bases locales (pruebas en `:55442`, desarrollo en `:55443`).
 - **Scripts del harness** (`scripts/harness/`): Python ≥ 3.9 solo stdlib. En
   Windows sin un `python3.exe` real en el `PATH` hace falta un shim; en esta
   máquina existe en `C:\Users\USUARIO\bin\python3`.
@@ -27,17 +28,18 @@ Todos desde la raíz del repo.
 
 | Para qué | Comando |
 |---|---|
-| Instalar dependencias | `npm install --legacy-peer-deps` — **sin el flag falla** con `ERESOLVE` (ver tech-debt-tracker) |
-| Correr en local | `npm run dev` (http://localhost:3000) |
+| Instalar dependencias | `npm ci` (hay `package-lock.json` versionado desde `001`) |
+| Correr en local | `VITE_API_URL=http://localhost:8080 npm run dev` (http://localhost:3000), con el backend corriendo (`backend/dev.sh`) |
 | Chequeo de tipos | `npm run lint` (es `tsc --noEmit`; no hay ESLint) |
 | Build | `npm run build` (sale en `dist/`) |
 | Previsualizar el build | `npm run preview` |
-| Tests | ninguno todavía |
+| Tests | `npm test` (Vitest, lógica pura de `src/services/`) |
 
 El service worker está activo también en `dev` (`devOptions.enabled: true`). Si
 algo "no se actualiza", sospechar del cache de la PWA antes que del código:
-DevTools → Application → Service Workers → *Unregister*, y borrar
-`localStorage` si se quiere volver a los datos de ejemplo.
+DevTools → Application → Service Workers → *Unregister*. En `localStorage`
+quedan la sesión (`pae.sesion.v1`) y los borradores no enviados
+(`pae.borradores.v1`); el legajo ya no.
 
 ## El sensor de cobertura (pre-commit)
 
@@ -63,9 +65,9 @@ HARNESS_BYPASS="<motivo>" git commit ...
 
 ### Agregar carriles del stack
 
-El hook no corre nada del stack todavía. Cuando haya tests, se agregan arriba
-del paso del sensor (p. ej. `npm run lint`, y los tests del backend). Tienen que
-ser rápidos: un hook lento es un hook que se saltea.
+Desde `001` el hook corre `npm run lint` si el commit toca el frontend y `gofmt -l`
+sobre los `.go` del commit, antes del sensor. Son rápidos a propósito: las
+pruebas completas son el `verify:` del plan, no el hook.
 
 ## Servidor MCP de GitHub
 

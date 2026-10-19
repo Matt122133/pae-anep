@@ -1,7 +1,7 @@
 ---
 owner: pae-anep
 status: living
-last_reviewed: 2026-10-18
+last_reviewed: 2026-10-19
 update_trigger: on-debt-added-or-resolved
 ---
 
@@ -23,17 +23,23 @@ Cada fila es un ítem. Los nuevos van arriba de su sección.
 
 | Fecha | Severidad | Descripción |
 |---|---|---|
-| 2026-10-18 | High | **No hay backend: cada dispositivo tiene su propio legajo.** Cuatro personas cargando en cuatro navegadores producen cuatro verdades distintas, y borrar los datos del navegador pierde todo. Lo paga `001`. |
-| 2026-10-18 | High | **La sincronización offline es una simulación.** `SyncModal.tsx` espera con `setTimeout` y marca visitas como sincronizadas sin enviarlas a ningún lado; además `storage.ts` marca a propósito visitas de las escuelas 17 y 35 como pendientes "para probar". Un indicador de "sincronizado" falso viola el Principio I. Lo paga `001` (o el feature de sincronización si se separa). |
-| 2026-10-18 | High | **No hay identidad.** La usuaria activa se elige de una lista; la bitácora atribuye cambios a lo que diga el navegador (Principio II). Lo paga `001`. |
-| 2026-10-18 | Medium | **`npm install` falla con `ERESOLVE`**: `devDependencies.esbuild@^0.25` no satisface el peer `esbuild@^0.27 \|\| ^0.28` de `vite@8.3`. Funciona con `--legacy-peer-deps`, y con eso `tsc --noEmit` y `vite build` pasan (medido el 2026-10-18). Arreglo probable: subir o quitar `esbuild` de `devDependencies`. Tampoco hay `package-lock.json` versionado, así que cada instalación resuelve versiones distintas. Necesita plan porque toca `package.json`. |
-| 2026-10-18 | Medium | **Rutas absolutas incompatibles con GitHub Pages.** `index.html` (`/favicon.png`, `/icon.svg`, `/src/main.tsx`) y el manifest (`start_url`, `scope`, `shortcuts[].url`) asumen la raíz del dominio; en Pages el sitio vive en `/pae-anep/`. Hay que configurar `base` en Vite y revisar el manifest/service worker. Lo paga el feature de despliegue. |
-| 2026-10-18 | Medium | **Nombres reales del equipo en el código de un repo público.** `PAE_TEAM_MEMBERS` (`src/types/index.ts`) y los logs semilla de `storage.ts` nombran a las integrantes del equipo técnico y a inspectores de zona. Si son personas reales, decidir con ellas si pueden figurar; con backend, el equipo pasa a vivir en la base y el código no necesita nombres. **No** se reescribe el historial sin decisión del dueño del repo. |
-| 2026-10-18 | Low | **Dependencias de la plantilla sin uso**: `@google/genai`, `express`, `dotenv`, `GEMINI_API_KEY` en `.env.example`, `metadata.json` con `MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API`, y `name: react-example` en `package.json`. Restos de AI Studio. El README todavía describe la app como "AI Studio app". |
-| 2026-10-18 | Low | **Sin tests en el frontend.** No hay runner configurado (`npm run lint` es solo `tsc --noEmit`). Cualquier `verify:` del frontend hoy prueba que compila, no que funciona. |
-| 2026-10-18 | Low | **Bundle grande**: `vite build` avisa chunks > 500 kB (precache de ~960 KiB). Relevante para la primera carga en campo con mala señal. |
+| 2026-10-19 | High | **La interfaz de `001` no se probó en un navegador.** Lo verificado: `tsc`, `vite build`, 14 pruebas de `src/services/` y una prueba de humo del API levantado (CORS, ingreso, lectura, escritura con bitácora, salida). Lo que NO: que las pantallas rendericen y que los 15 escenarios de `specs/001-backend-legajo-compartido/quickstart.md` pasen, en especial los de borradores sin señal y conflicto, **y en un teléfono**. `App.tsx` se reescribió entero. **Disparador**: antes de cerrar el PR de `001`. |
+| 2026-10-19 | High | **Sin lectura del legajo sin conexión.** Decidido en el clarify de `001`: todo lo offline salvo los borradores va a `002`. Mientras tanto, en una escuela sin señal la app no muestra el legajo (sí guarda lo que se escriba como "no enviado"). **No usar `001` en campo como única herramienta hasta `002`.** |
+| 2026-10-19 | Medium | **Un borrador con 400 no se puede "abrir en el formulario".** research D14 pedía cargarlo en el formulario para corregirlo; `001` lo deja con el error a la vista y la opción de descartarlo (hay que recargarlo a mano). Un 409 sí se resuelve: "aplicar sobre la versión actual" reenvía con la versión vigente. Lo natural es resolverlo en `002`, que rehace la cola. |
+| 2026-10-19 | Medium | **Nombres reales en el historial de git de un repo público.** `001` sacó del código los nombres del equipo técnico y de inspectores (`PAE_TEAM_MEMBERS`, logs semilla de `storage.ts`, `initialData.ts`, `SchoolReportModal`, `SchoolModal`), pero **siguen en commits anteriores** (`355815f` y siguientes). Si son personas reales y no quieren figurar, hace falta reescribir el historial (`git filter-repo`) y forzar el push, o hacer el repo privado. Es decisión del dueño del repo; nada de eso se hizo. |
+| 2026-10-19 | Medium | **Rutas absolutas incompatibles con GitHub Pages.** `index.html` (`/favicon.png`, `/icon.svg`, `/src/main.tsx`) y el manifest (`start_url`, `scope`, `shortcuts[].url`) asumen la raíz del dominio; en Pages el sitio vive en `/pae-anep/`. Hay que configurar `base` en Vite y revisar manifest y service worker. Los atajos del manifest (`?view=`, `?tab=`) además no los lee nadie. Lo paga el feature de despliegue. |
+| 2026-10-19 | Low | **CRLF en la copia de trabajo.** Git avisa en cada commit que va a convertir LF a CRLF (`core.autocrlf`). El blob queda en LF y hoy no rompe nada, pero `backend/dev.sh` con CRLF no corre en bash. Un `.gitattributes` con `*.sh eol=lf` lo fija; no está en el `covers:` de `001`. |
+| 2026-10-19 | Low | **Tipos espejo TS/Go sin generación.** `src/types/index.ts` y `backend/internal/legajo/tipos.go` se sincronizan a mano, y las listas cerradas existen tres veces (TS, `validar.go`, `CHECK`). El servidor rechaza campos desconocidos, así que la deriva se nota rápido (400), pero no hay prueba que compare las listas. |
+| 2026-10-19 | Low | **El aviso de presencia es en memoria de una réplica.** Si Railway corriera dos instancias, cada una vería solo sus latidos (research D8). |
+| 2026-10-18 | Low | **Dependencias de la plantilla**: `metadata.json` con `MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API`, y el README todavía describe la app como "AI Studio app". (`@google/genai`, `express`, `dotenv` y `GEMINI_API_KEY` ya salieron en `001`.) |
+| 2026-10-18 | Low | **Bundle grande**: `vite build` avisa chunks > 500 kB (precache ~910 KiB). Relevante para la primera carga en campo con mala señal. |
 
 ## Resolved
 
 | Fecha | Severidad | Descripción | Resolución |
 |---|---|---|---|
+| 2026-10-18 | High | No había backend: cada dispositivo tenía su propio legajo. | `001`: backend Go + Postgres, `GET /legajo` y escrituras por la API. |
+| 2026-10-18 | High | La sincronización offline era una simulación (`SyncModal` con `setTimeout`, visitas marcadas "para probar"). | `001`: se borraron `SyncModal`, el toggle de offline simulado y los campos `isOfflinePendingSync`/`offlineSavedAt`/`syncedAt`; lo no enviado son borradores reales que se borran solo con confirmación del servidor. |
+| 2026-10-18 | High | No había identidad: la usuaria activa se elegía de una lista. | `001`: usuario y contraseña (argon2id), sesiones revocables, autor de la bitácora desde la sesión. |
+| 2026-10-18 | Medium | `npm install` fallaba con `ERESOLVE` (esbuild 0.25 vs vite 8) y no había lockfile. | `001` T001: `esbuild` fuera de `devDependencies` (nada lo importaba), dependencias muertas fuera, `package-lock.json` versionado. `npm ci` anda sin flags. |
+| 2026-10-18 | Low | Sin tests en el frontend. | `001`: Vitest para `api.ts`, `sesion.ts`, `borradores.ts` (la interfaz sigue sin pruebas automáticas: ver la fila High de arriba). |

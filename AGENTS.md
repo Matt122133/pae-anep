@@ -34,31 +34,33 @@ tiene. No escribe, pisa ni borra la constitución.
 
 ## Dos superficies, un repo
 
-- **Frontend PWA** — hoy en la **raíz** del repo (`src/`, `index.html`,
+- **Frontend PWA** — en la **raíz** del repo (`src/`, `index.html`,
   `vite.config.ts`, `public/`). React 19 + Vite + Tailwind 4 +
   `vite-plugin-pwa`. Se publica estático en **GitHub Pages**.
-- **`backend/`** — a construir desde el feature `001`. Servicio HTTP con
-  Postgres, desplegado en **Railway**. Ver
+- **`backend/`** — servicio Go con Postgres, desplegado en **Railway**. Ver
+  [`backend/README.md`](backend/README.md) y
   [ADR backend-persistence-stack](docs/decisions/backend-persistence-stack.md).
 
 Lo que un agente tiene que tener presente:
 
-- **Hoy no hay backend.** Todo el estado vive en `localStorage`
-  (`src/services/storage.ts`), los datos iniciales son ficticios y se generan en
-  `src/data/initialData.ts`, y **la sincronización offline es simulada**
-  (`src/components/SyncModal.tsx` solo hace `setTimeout`). No describir nada de
-  eso como funcionalidad real.
-- **El frontend no instala con `npm install` a secas**: `esbuild@^0.25` choca
-  con el peer de `vite@8`. Hasta que un plan lo arregle, usar
-  `npm install --legacy-peer-deps`. Ver `docs/tech-debt-tracker.md`.
+- **El servidor es la fuente de verdad** desde `001`. El frontend pide
+  `GET /legajo` y escribe por la API; `localStorage` solo guarda la sesión y los
+  borradores "no enviados". **No hay lectura sin conexión ni sincronización
+  automática** hasta `002`: no describir eso como funcionalidad existente.
+- **Las pruebas del backend necesitan Postgres en `:55442` y FALLAN sin él**
+  (no se saltean). Levantarlo con el comando de `backend/README.md`. Un
+  `PAE_SIN_DB=1` en un `verify:` es trampa: no lo uses para ponerlo en verde.
+- **Tipos espejo**: `src/types/index.ts` ↔ `backend/internal/legajo/tipos.go`, y
+  las listas cerradas también en `validar.go` y en la migración. Un campo nuevo
+  va en los dos lados o el servidor responde 400 por campo desconocido.
 - **El frontend usa rutas absolutas (`/favicon.png`, `start_url: '/'`)**; en
   GitHub Pages el sitio vive bajo `/pae-anep/`, así que publicar exige `base` en
   Vite y revisar el manifest. Es trabajo del feature de despliegue.
 - **El repo es público y el legajo tiene datos personales** (cédulas, teléfonos,
   carnés de salud de auxiliares). Ver la regla de datos reales abajo y el
   Principio IV de la constitución.
-- **`@google/genai` y `GEMINI_API_KEY` no se usan.** Son restos de la plantilla
-  de AI Studio. No construir sobre ellos sin spec.
+- **`curl` en Windows recodifica la `ñ` de los argumentos**: para probar el API
+  a mano, cuerpos desde archivo (`--data-binary @x.json`).
 
 ## Principio operativo
 

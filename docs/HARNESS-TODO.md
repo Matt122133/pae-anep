@@ -18,13 +18,10 @@ antes de tildar todo. Borrar este archivo cuando no quede nada sin tildar.
   `/speckit-constitution` si cambia el alcance.
 - [x] **`ARCHITECTURE.md`** — mapa del frontend actual. Actualizar cuando `001`
   cree `backend/`.
-- [ ] **`SECURITY.md`** — escrito para el estado sin backend. *Listo cuando:*
-  `001` lo reescriba con la frontera de confianza real.
-- [x] **`docs/processes/dev-setup.md`** — comandos del frontend. Falta la
-  sección del backend, que agrega `001`.
-- [ ] **Carriles del stack en `.githooks/pre-commit`** — hoy solo corre el
-  sensor de cobertura. *Listo cuando:* haya al menos `npm run lint` y los tests
-  del backend.
+- [x] **`SECURITY.md`** — reescrito en `001` con la frontera de confianza real.
+- [x] **`docs/processes/dev-setup.md`** — frontend y backend (`001`).
+- [x] **Carriles del stack en `.githooks/pre-commit`** — `npm run lint` y `gofmt`
+  desde `001` (los tests completos quedan en el `verify:`, por velocidad).
 - [ ] **`docs/processes/despliegue.md`** — runbook de GitHub Pages + Railway.
   *Listo cuando:* el feature de despliegue lo escriba.
 
