@@ -1,6 +1,6 @@
 ---
 ticket: none
-status: active
+status: completed
 covers:
   - src/components/Navbar.tsx
   - src/components/IndicatorsSummary.tsx
