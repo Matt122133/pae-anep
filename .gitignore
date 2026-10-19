@@ -17,3 +17,6 @@ specs/**/.loop-state.json
 # Datos REALES del legajo (JSON de importacion). Nunca se versionan:
 # el repo es publico y tienen datos personales (constitucion, Principio IV).
 datos/
+
+# Service worker que genera vite-plugin-pwa en modo dev (devOptions.enabled).
+dev-dist/

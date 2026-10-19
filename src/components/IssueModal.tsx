@@ -55,7 +55,10 @@ export const IssueModal: React.FC<IssueModalProps> = ({
       setResolutionNotes('');
       setResolvedDate('');
     }
-  }, [issueToEdit, isOpen]);
+  // Se reinicia al abrir OTRA ficha (cambia el id), no cuando llega una versión
+  // nueva de la misma: ante un conflicto (409) la app carga la versión vigente y
+  // lo que la usuaria escribió tiene que quedar en el formulario (FR-014).
+  }, [issueToEdit?.id, isOpen]);
 
   if (!isOpen) return null;
 

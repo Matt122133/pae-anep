@@ -63,22 +63,28 @@ y token inválido después de salir.
 
 | # | Cubierto por | Estado |
 |---|---|---|
-| 1 | `cmd/api/main_test.go` (401 en toda ruta) + humo | ✅ API · ⏳ pantalla |
-| 2 | `internal/auth/handlers_test.go` (mismo error) | ✅ API · ⏳ pantalla |
+| 1 | `cmd/api/main_test.go` (401 en toda ruta) + humo + E2E | ✅ |
+| 2 | `internal/auth/handlers_test.go` + E2E | ✅ |
 | 3 | `internal/auth/sesion_test.go`, `handlers_test.go` (bloqueo) | ✅ API |
-| 4 | `cmd/api/flujo_test.go` + humo | ✅ API · ⏳ dos navegadores |
-| 5 | `internal/presencia`, `flujo_test.go` | ✅ API · ⏳ pantalla |
-| 6 | `escuelas_test.go`, `flujo_test.go` (409 con actual) | ✅ API · ⏳ pantalla |
+| 4 | `cmd/api/flujo_test.go` + humo + E2E (dos sesiones) | ✅ |
+| 5 | `internal/presencia`, `flujo_test.go` + E2E | ✅ |
+| 6 | `escuelas_test.go`, `flujo_test.go` + E2E (lo escrito se conserva) | ✅ |
 | 7 | `bitacora_test.go`, `flujo_test.go` (405 y trigger) | ✅ |
-| 8 | `src/services/borradores.test.ts` | ✅ lógica · ⏳ **DevTools offline + cerrar pestaña** |
-| 9 | `flujo_test.go` (doble POST), `idempotencia` en `visitas_test.go` | ✅ API · ⏳ pantalla |
-| 10 | `grep` sin `SyncModal`/`isOfflinePendingSync` en `src/` | ✅ código · ⏳ recorrer pantallas |
+| 8 | `borradores.test.ts` + E2E (offline, cerrar pestaña, reabrir) | ✅ |
+| 9 | `flujo_test.go`, `visitas_test.go` + E2E (reenvío: existe 1 vez) | ✅ |
+| 10 | `grep` + E2E (sin "Simular" ni "sincroniz" en pantalla) | ✅ |
 | 11 | `cmd/cuentas/main_test.go` (reseteo cierra sesiones, por pipe real) | ✅ |
 | 12 | `cmd/importar/main_test.go` (con_errores.json) | ✅ |
 | 13 | `personal_test.go` (traslado) | ✅ API · ⏳ pantalla |
 | 14 | `escuelas_test.go` (baja lógica) | ✅ API · ⏳ pantalla |
-| 15 | — | ⏳ **en un teléfono** |
+| 15 | E2E con viewport de teléfono (412×915), ingreso a panel < 3 s en local | ⏳ **teléfono real con datos móviles** |
 
-⏳ = **no ejecutado**: necesita un navegador (y el 15, un teléfono). Es lo que
-falta para cerrar T058; ver la fila `High` del 2026-10-19 en
-`docs/tech-debt-tracker.md`.
+**E2E** = Chrome headless manejado por `playwright-core`, en viewport de
+teléfono, contra el API y el frontend levantados en local (2026-10-19): 17
+controles en verde. Encontró un bug real: ante un 409 el formulario se
+reiniciaba y se perdía lo escrito (los modales se reiniciaban con cada versión
+nueva de la ficha); arreglado haciendo que se reinicien solo al cambiar de id.
+El script no se versionó (vive fuera del repo); ver tech-debt.
+
+⏳ = no ejecutado: 13 y 14 en pantalla (cubiertos en el API) y el 15 en un
+teléfono real.
