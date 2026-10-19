@@ -129,7 +129,7 @@ type AltaVisita struct {
 // misma transaccion. El numero lo asigna el servidor. Idempotente por id.
 func (r *Repositorio) CrearVisita(ctx context.Context, autor *cuentas.Cuenta, alta AltaVisita) (Visit, []SchoolIssue, error) {
 	v := alta.Visit
-	if err := validarVisita(&v); err != nil {
+	if err := ValidarVisita(&v); err != nil {
 		return Visit{}, nil, err
 	}
 	var out Visit
@@ -175,7 +175,7 @@ func (r *Repositorio) CrearVisita(ctx context.Context, autor *cuentas.Cuenta, al
 
 // EditarVisita edita, incluido pasar de Programada a Realizada o Cancelada.
 func (r *Repositorio) EditarVisita(ctx context.Context, autor *cuentas.Cuenta, v Visit) (Visit, error) {
-	if err := validarVisita(&v); err != nil {
+	if err := ValidarVisita(&v); err != nil {
 		return Visit{}, err
 	}
 	var out Visit

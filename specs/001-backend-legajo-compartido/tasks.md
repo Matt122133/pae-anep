@@ -88,10 +88,10 @@ distintos y sin dependencias pendientes.
 
 **Prueba independiente**: ejemplo ficticio carga en base vacía; JSON con un error no carga nada y nombra el error.
 
-- [ ] T049 [P] [US5] `backend/cmd/importar/testdata/ejemplo.json` (datos ficticios: 3 escuelas, personal, visitas, incidencias, bitácora) y `testdata/con_errores.json`
-- [ ] T050 [US5] `backend/internal/importacion/validar.go` + test: valida todo según `contracts/importacion.md`, errores con ruta (`visits[12].schoolId`), campos desconocidos como avisos
-- [ ] T051 [US5] `backend/internal/importacion/cargar.go` + test: una transacción, asignaciones iniciales, números de visita, bitácora importada marcada, evento `IMPORT`; se niega con datos salvo `-agregar`
-- [ ] T052 [US5] `backend/cmd/importar/main.go` con `-archivo`, `-validar`, `-agregar` e informe de conteos
+- [x] T049 [P] [US5] `backend/cmd/importar/testdata/ejemplo.json` (datos ficticios: 3 escuelas, personal, visitas, incidencias, bitácora) y `testdata/con_errores.json`
+- [x] T050 [US5] `backend/internal/importacion/validar.go` + test: valida todo según `contracts/importacion.md`, errores con ruta (`visits[12].schoolId`), campos desconocidos como avisos
+- [x] T051 [US5] `backend/internal/importacion/cargar.go` + test: una transacción, asignaciones iniciales, números de visita, bitácora importada marcada, evento `IMPORT`; se niega con datos salvo `-agregar`
+- [x] T052 [US5] `backend/cmd/importar/main.go` con `-archivo`, `-validar`, `-agregar` e informe de conteos
 - [ ] T053 [US5] Deshabilitar la importación desde la app en `src/components/ExportImportModal.tsx` (la exportación CSV/JSON sigue, FR-031/FR-032)
 
 ## Phase 8: Polish

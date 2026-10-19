@@ -79,7 +79,7 @@ func (e errores) err() error {
 	return &ErrInvalido{Campos: e}
 }
 
-func validarEscuela(s *School) error {
+func ValidarEscuela(s *School) error {
 	e := errores{}
 	e.vacio("id", s.ID)
 	if s.Number <= 0 {
@@ -101,7 +101,7 @@ func validarEscuela(s *School) error {
 	return e.err()
 }
 
-func validarPersonal(p *StaffMember) error {
+func ValidarPersonal(p *StaffMember) error {
 	e := errores{}
 	e.vacio("id", p.ID)
 	e.vacio("schoolId", p.SchoolID)
@@ -114,7 +114,7 @@ func validarPersonal(p *StaffMember) error {
 	return e.err()
 }
 
-func validarVisita(v *Visit) error {
+func ValidarVisita(v *Visit) error {
 	e := errores{}
 	e.vacio("id", v.ID)
 	e.vacio("schoolId", v.SchoolID)
@@ -153,7 +153,7 @@ func validarVisita(v *Visit) error {
 	return e.err()
 }
 
-func validarIncidencia(i *SchoolIssue) error {
+func ValidarIncidencia(i *SchoolIssue) error {
 	e := errores{}
 	e.vacio("id", i.ID)
 	e.vacio("schoolId", i.SchoolID)

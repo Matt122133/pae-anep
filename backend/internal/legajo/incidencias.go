@@ -72,7 +72,7 @@ func opIncidencia(escuela *bitacora.Escuela) operaciones[SchoolIssue] {
 // crearIncidenciaEnTx es el alta, para usar sola o dentro del alta de una
 // visita (las incidencias nuevas de una visita van en su misma transaccion).
 func crearIncidenciaEnTx(ctx context.Context, tx pgx.Tx, autor *cuentas.Cuenta, i SchoolIssue) (SchoolIssue, error) {
-	if err := validarIncidencia(&i); err != nil {
+	if err := ValidarIncidencia(&i); err != nil {
 		return SchoolIssue{}, err
 	}
 	esc, err := escuelaDe(ctx, tx, i.SchoolID, true)
@@ -105,7 +105,7 @@ func (r *Repositorio) CrearIncidencia(ctx context.Context, autor *cuentas.Cuenta
 
 // EditarIncidencia edita, incluido el cambio de estado.
 func (r *Repositorio) EditarIncidencia(ctx context.Context, autor *cuentas.Cuenta, i SchoolIssue) (SchoolIssue, error) {
-	if err := validarIncidencia(&i); err != nil {
+	if err := ValidarIncidencia(&i); err != nil {
 		return SchoolIssue{}, err
 	}
 	var out SchoolIssue

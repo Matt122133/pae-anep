@@ -111,7 +111,7 @@ var opEscuela = operaciones[School]{
 
 // CrearEscuela da de alta una escuela (idempotente por id).
 func (r *Repositorio) CrearEscuela(ctx context.Context, autor *cuentas.Cuenta, s School) (School, error) {
-	if err := validarEscuela(&s); err != nil {
+	if err := ValidarEscuela(&s); err != nil {
 		return School{}, err
 	}
 	var out School
@@ -124,7 +124,7 @@ func (r *Repositorio) CrearEscuela(ctx context.Context, autor *cuentas.Cuenta, s
 
 // EditarEscuela aplica una edicion con control de version.
 func (r *Repositorio) EditarEscuela(ctx context.Context, autor *cuentas.Cuenta, s School) (School, error) {
-	if err := validarEscuela(&s); err != nil {
+	if err := ValidarEscuela(&s); err != nil {
 		return School{}, err
 	}
 	var out School

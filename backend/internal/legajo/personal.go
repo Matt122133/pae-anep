@@ -83,7 +83,7 @@ func opPersonal(escuela *bitacora.Escuela) operaciones[StaffMember] {
 
 // CrearPersonal da de alta una persona en una escuela activa.
 func (r *Repositorio) CrearPersonal(ctx context.Context, autor *cuentas.Cuenta, p StaffMember) (StaffMember, error) {
-	if err := validarPersonal(&p); err != nil {
+	if err := ValidarPersonal(&p); err != nil {
 		return StaffMember{}, err
 	}
 	var out StaffMember
@@ -101,7 +101,7 @@ func (r *Repositorio) CrearPersonal(ctx context.Context, autor *cuentas.Cuenta, 
 // EditarPersonal edita los datos; **no cambia de escuela**: eso es Trasladar,
 // que conserva el historial.
 func (r *Repositorio) EditarPersonal(ctx context.Context, autor *cuentas.Cuenta, p StaffMember) (StaffMember, error) {
-	if err := validarPersonal(&p); err != nil {
+	if err := ValidarPersonal(&p); err != nil {
 		return StaffMember{}, err
 	}
 	var out StaffMember

@@ -1,0 +1,185 @@
+{
+  "schools": [
+    {
+      "id": "esc-901",
+      "number": 901,
+      "name": "Escuela Ficticia Uno",
+      "department": "Tacuarembó",
+      "areaType": "Urbana",
+      "zone": "Ciudad",
+      "assignedInspector": "Insp. Ficticia Urbana",
+      "address": "Calle Inventada 123",
+      "phone": "000 00000",
+      "email": "",
+      "principalName": "Dirección Ficticia",
+      "headCookName": "Cocina Ficticia",
+      "modality": "Tiempo Completo",
+      "studentDinersCount": 120,
+      "staffDinersCount": 8,
+      "mealServices": {
+        "breakfast": true,
+        "lunch": true,
+        "snack": false
+      },
+      "hasWaterSupply": true,
+      "waterPurchaseAllowance": false,
+      "milkProgramType": "Programa de Copa de Leche",
+      "milkPowderKg": 30,
+      "notes": "",
+      "totalVisits": 99,
+      "activeIssuesCount": 99
+    },
+    {
+      "id": "esc-902",
+      "number": 902,
+      "name": "Escuela Ficticia Dos",
+      "areaType": "Rural",
+      "modality": "Rural",
+      "studentDinersCount": 14,
+      "staffDinersCount": 2,
+      "mealServices": {
+        "breakfast": true,
+        "lunch": true,
+        "snack": true
+      },
+      "hasWaterSupply": false,
+      "waterPurchaseAllowance": true,
+      "waterNotes": "Bidones",
+      "milkProgramType": "Programa de Leche Escolar",
+      "milkPowderKg": 12
+    },
+    {
+      "id": "esc-903",
+      "number": 901,
+      "name": "Escuela Ficticia Tres",
+      "areaType": "Urbana",
+      "modality": "Especial"
+    }
+  ],
+  "staff": [
+    {
+      "id": "staff-901-1",
+      "schoolId": "esc-901",
+      "fullName": "Cocinera Ficticia",
+      "ci": "0.000.001-1",
+      "role": "Cocinera Titular",
+      "institutionType": "DGEIP",
+      "healthCardValidUntil": "2027-05-01",
+      "foodHandlerCardValidUntil": "2027-05-01",
+      "socialSecurityStatus": "Al día / Registrado",
+      "active": true
+    },
+    {
+      "id": "staff-902-1",
+      "schoolId": "esc-999",
+      "fullName": "Auxiliar Ficticia",
+      "ci": "0.000.002-2",
+      "role": "Auxiliar de Cocina",
+      "institutionType": "Comisión Fomento",
+      "healthCardValidUntil": "",
+      "foodHandlerCardValidUntil": "",
+      "socialSecurityStatus": "En trámite"
+    }
+  ],
+  "visits": [
+    {
+      "id": "visit-901-1",
+      "schoolId": "esc-901",
+      "visitNumber": 1,
+      "date": "2026-03-10",
+      "time": "11:30",
+      "status": "Realizada",
+      "visitors": [
+        "valentina"
+      ],
+      "inspectorName": "Ecónoma ficticia",
+      "inspectorRole": "Ecónoma del PAE",
+      "attendedBy": "Dirección",
+      "menuPlanned": "Guiso",
+      "menuServed": "Guiso",
+      "menuEvaluation": "Adecuado y Variado",
+      "dinersActualCount": 110,
+      "hygieneChecklist": {
+        "coldChain": "Bien",
+        "rawCookedSeparation": "Bien",
+        "cleanliness": "Regular",
+        "uniformAndCaps": "Bien",
+        "potableWaterChlorine": "Bien",
+        "wasteDisposal": "Bien"
+      },
+      "deliveryNotesChecked": true,
+      "deliveryNotesDetails": "Remitos conformes",
+      "unauthorizedItemsFound": false,
+      "unauthorizedItemsList": [],
+      "meetingMinutes": "Acta ficticia",
+      "suggestions": "",
+      "generalObservations": "",
+      "isOfflinePendingSync": false
+    },
+    {
+      "id": "visit-902-1",
+      "schoolId": "esc-902",
+      "date": "02/04/2026",
+      "status": "Realizada",
+      "visitors": [
+        "persona-historica"
+      ],
+      "inspectorName": "",
+      "inspectorRole": "",
+      "attendedBy": "",
+      "menuPlanned": "",
+      "menuServed": "",
+      "menuEvaluation": "Aceptable con Ajustes",
+      "dinersActualCount": 12,
+      "hygieneChecklist": {
+        "coldChain": "Regular",
+        "rawCookedSeparation": "Bien",
+        "cleanliness": "Bien",
+        "uniformAndCaps": "Bien",
+        "potableWaterChlorine": "Deficiente",
+        "wasteDisposal": "Bien"
+      },
+      "deliveryNotesChecked": false,
+      "deliveryNotesDetails": "",
+      "unauthorizedItemsFound": false,
+      "unauthorizedItemsList": [],
+      "meetingMinutes": "",
+      "suggestions": "",
+      "generalObservations": ""
+    }
+  ],
+  "issues": [
+    {
+      "id": "issue-902-1",
+      "schoolId": "esc-902",
+      "visitId": "visit-902-1",
+      "title": "Cloro bajo en el agua",
+      "description": "Medición por debajo del mínimo",
+      "category": "Higiene e Inocuidad",
+      "severity": "Gravísima",
+      "reportedDate": "2026-04-02",
+      "status": "Pendiente"
+    }
+  ],
+  "activityLogs": [
+    {
+      "id": "log-ficticio-1",
+      "timestamp": "2026-04-02T15:00:00.000Z",
+      "schoolId": "esc-902",
+      "schoolNumber": 902,
+      "schoolName": "Escuela Ficticia Dos",
+      "userId": "persona-historica",
+      "userName": "Persona Histórica",
+      "userRole": "Ecónoma del PAE",
+      "actionType": "VISIT_LOG",
+      "category": "Visitas de Campo",
+      "eventTag": "Visita crítica",
+      "tags": [
+        "Visita crítica"
+      ],
+      "summary": "Visita registrada en planilla (histórico)",
+      "details": [],
+      "notes": ""
+    }
+  ]
+}
