@@ -7,8 +7,10 @@ Archivo de traspaso entre sesiones. Borrarlo cuando el plan pase a `active`.
 - Rama `001-backend-legajo-compartido`. Harness portado y spec escrito,
   commiteados (commit `14275d9`, con `HARNESS_BYPASS` por ser el bootstrap).
   **No pusheado.**
-- Fase: **Brief**. `spec.md` y `checklists/requirements.md` listos. Falta
-  `/speckit-clarify` (hook obligatorio `before_plan`).
+- Fase: **Brief**. `spec.md` listo; `/speckit-clarify` hecho el 2026-10-18
+  (ver sección *Clarifications* del spec), **salvo dos pendientes que bloquean
+  el plan**: edición en tiempo real y si los borradores sin señal quedan en 001.
+  Están en *Pendientes de confirmación* del spec, con recomendación.
 - No hay plan, ni tareas, ni código de backend.
 
 ## Decisiones ya tomadas por el dueño del repo (no volver a preguntar)
@@ -33,7 +35,10 @@ lectura sin conexión (Historia 6, P3) que se borra al cerrar sesión.
 
 ## Siguiente paso
 
-1. `/speckit-clarify` → confirmar o cambiar los defaults de arriba.
+1. Preguntar al dueño los dos *Pendientes de confirmación* del spec y
+   registrar la respuesta en *Clarifications*. Ya confirmados: sesión 30 días,
+   borrado lógico con historial del personal entre escuelas (FR-033), copia
+   sin conexión fuera de 001.
 2. `/speckit-plan` → `/speckit-tasks` → `/speckit-analyze`. El `covers:` va a
    necesitar al menos `backend/`, `src/`, `.gitignore` (patrón del JSON real),
    `package.json`, `.env.example`. Modelo de backend: `flash-urbano/backend`

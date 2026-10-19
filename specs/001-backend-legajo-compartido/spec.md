@@ -26,6 +26,31 @@ deja explícitamente para 002 la mitad que sí se puede postergar —que llegue 
 Lo que **no** queda permitido en ningún momento es mostrar como sincronizado algo
 que el servidor no confirmó.
 
+## Clarifications
+
+### Session 2026-10-18
+
+- Q: Si dos compañeras editan la misma ficha a la vez, ¿qué pasa con el segundo guardado? → A: **"Se tiene que hacer en tiempo real: ambas deberían poder editar al mismo tiempo y ver lo que está escribiendo la otra."** **Abierto, pendiente de confirmar el alcance** (ver *Pendientes de confirmación*).
+- Q: ¿Cuánto dura la sesión? → A: 30 días sin uso (confirma FR-006).
+- Q: ¿Qué pasa con las bajas? → A: Borrado lógico (marca activo/inactivo); el registro se oculta pero se sigue pudiendo consultar. Si una auxiliar cambia de escuela, todo su historial se mantiene (nuevo FR-033).
+- Q: ¿Copia de solo lectura sin señal en 001? → A: **No: "dejemos todo lo offline para la 002".** Se quita la Historia 6 y FR-030. Si "todo" incluye los borradores "no enviados" (Historia 3) está **pendiente de confirmar**.
+
+### Pendientes de confirmación (bloquean `/speckit-plan`)
+
+1. **Edición en tiempo real.** Ver lo que escribe la otra mientras escribe es
+   co-edición en vivo (conexión permanente con el servidor y fusión de cambios
+   campo por campo). Es un salto de complejidad grande para 001 y choca con el
+   Principio III (simplicidad) y con trabajar sin señal. **Recomendación**:
+   001 mantiene el rechazo del segundo guardado (FR-014) y agrega un aviso de
+   presencia ("Karina está editando esta ficha"); la co-edición en vivo va a un
+   feature propio (003) con su ADR. Si el dueño del repo la quiere en 001, se
+   reescribe la Historia 2 y FR-014.
+2. **Borradores sin señal.** Si se sacan de 001 también los borradores "no
+   enviados", en 001 un guardado sin señal **pierde lo escrito**, lo que viola el
+   Principio I. Opciones: (a) mantener los borradores en 001 (recomendado: es lo
+   mínimo para no perder trabajo); (b) sacarlos, y 001 **no se usa en campo**
+   hasta que 002 esté listo, dicho por escrito en el plan.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Ingresar con mi usuario y ver el legajo compartido (Priority: P1)
@@ -189,32 +214,6 @@ comprobar que no se cargó nada y que el informe nombra cada error.
 
 ---
 
-### User Story 6 - Consultar el legajo sin señal (Priority: P3)
-
-En la escuela sin cobertura, la usuaria necesita ver el legajo antes de
-inspeccionar: quiénes son las auxiliares, cuándo vence su carné, qué
-incidencias quedaron pendientes. La app le muestra la última copia que bajó,
-marcada con la fecha y hora en que la bajó y como de solo lectura.
-
-**Why this priority**: Muy útil en campo y barato porque la app ya guarda datos
-localmente; pero el núcleo del feature funciona sin esto.
-
-**Independent Test**: Con sesión y datos cargados, cortar la red, recargar la
-app y abrir el legajo de una escuela: se ve, con la marca de "copia del
-<fecha hora>, sin conexión".
-
-**Acceptance Scenarios**:
-
-1. **Given** que la usuaria ya cargó datos con conexión, **When** abre la app sin
-   conexión, **Then** ve la última copia con una marca visible de su antigüedad.
-2. **Given** la copia sin conexión, **When** intenta editar, **Then** lo que
-   escriba sigue el camino de borradores de la Historia 3.
-3. **Given** que la usuaria cierra sesión, **When** se cierra, **Then** la copia
-   local de los datos del legajo se borra del dispositivo (los borradores no
-   enviados se avisan antes de cerrar).
-
----
-
 ### Edge Cases
 
 - **Sesión vencida con un formulario a medio llenar**: al guardar, el servidor
@@ -283,12 +282,18 @@ app y abrir el legajo de una escuela: se ve, con la marca de "copia del
   la app los mande bien.
 - **FR-014**: Una edición MUST rechazarse si el registro cambió en el servidor
   desde que la usuaria lo cargó; nunca se pisa en silencio el cambio de otra.
-- **FR-015**: Las bajas de escuelas y de personal MUST conservar la historia: un
-  registro dado de baja deja de aparecer en los listados pero sus visitas,
-  incidencias y entradas de bitácora siguen consultables.
+- **FR-015**: Las bajas de escuelas y de personal MUST ser lógicas (marca de
+  activo/inactivo): un registro dado de baja deja de aparecer en los listados
+  habituales pero sigue consultable, igual que sus visitas, incidencias y
+  entradas de bitácora.
 - **FR-016**: La lista de integrantes del equipo que la app usa (por ejemplo
   para elegir quiénes hicieron una visita) MUST venir del servidor (cuentas
   activas), no de una lista fija en el código.
+
+- **FR-033**: Cuando una persona del personal de cocina cambia de escuela, el
+  sistema MUST conservar todo su historial (en qué escuelas estuvo, desde y
+  hasta cuándo, y las entradas de bitácora asociadas); el cambio de escuela no
+  crea una persona nueva ni borra la anterior.
 
 **Bitácora**
 
@@ -335,9 +340,7 @@ app y abrir el legajo de una escuela: se ve, con la marca de "copia del
 - **FR-029**: Reenviar un borrador MUST ser idempotente: cada borrador lleva un
   identificador generado en el dispositivo y el servidor no crea dos registros
   para el mismo identificador.
-- **FR-030**: La app MUST mostrar sin conexión la última copia bajada del
-  legajo, como solo lectura y con la fecha y hora de esa copia; al cerrar sesión
-  esa copia se borra del dispositivo.
+- **FR-030**: *(Eliminado en clarify 2026-10-18: la copia sin conexión pasa a 002.)*
 - **FR-031**: Exportar a CSV y JSON e imprimir el informe por escuela MUST seguir
   funcionando con los datos del servidor.
 - **FR-032**: Importar un respaldo JSON desde la app MUST quedar deshabilitado;
