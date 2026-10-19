@@ -1,6 +1,6 @@
 ---
 ticket: none
-status: active
+status: completed
 covers:
   - src/components/Dashboard.tsx
   - .specify/feature.json
