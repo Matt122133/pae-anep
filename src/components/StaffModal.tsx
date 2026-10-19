@@ -1,6 +1,7 @@
 import { nuevoId } from '../services/api';
+import { PresenciaAviso } from './PresenciaAviso';
 import React, { useState, useEffect } from 'react';
-import { StaffMember, InstitutionContractType, StaffRole, SocialSecurityStatus } from '../types';
+import { School, StaffMember, InstitutionContractType, StaffRole, SocialSecurityStatus } from '../types';
 import { X, UserCheck, ShieldAlert, AlertCircle } from 'lucide-react';
 
 interface StaffModalProps {
@@ -8,6 +9,10 @@ interface StaffModalProps {
   onClose: () => void;
   /** Devuelve null si se guardó (o quedó como borrador), o el error a mostrar. */
   onSave: (staff: StaffMember) => Promise<string | null>;
+  /** Escuelas activas, para el traslado. */
+  schools?: School[];
+  /** Traslado a otra escuela conservando el historial (FR-033). */
+  onTrasladar?: (staffId: string, schoolId: string) => Promise<string | null>;
   schoolId: string;
   staffToEdit?: StaffMember | null;
 }
@@ -17,8 +22,26 @@ export const StaffModal: React.FC<StaffModalProps> = ({
   onClose,
   onSave,
   schoolId,
-  staffToEdit
+  staffToEdit,
+  schools = [],
+  onTrasladar
 }) => {
+  const [destino, setDestino] = React.useState('');
+  const destinos = schools.filter(s => s.active !== false && s.id !== schoolId);
+  const trasladar = async () => {
+    if (!staffToEdit || !onTrasladar || !destino) return;
+    const escuela = destinos.find(s => s.id === destino);
+    if (!confirm(`¿Trasladar a ${staffToEdit.fullName} a la Escuela N° ${escuela?.number}? Su historial se conserva en las dos escuelas.`)) return;
+    setGuardando(true);
+    setErrorGuardado(null);
+    const error = await onTrasladar(staffToEdit.id, destino);
+    setGuardando(false);
+    if (error) {
+      setErrorGuardado(error);
+      return;
+    }
+    onClose();
+  };
   // Id estable por formulario: reintentar el guardado no duplica (FR-029).
   const [idNuevo] = React.useState(() => nuevoId());
   const [guardando, setGuardando] = React.useState(false);
@@ -126,6 +149,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+          {staffToEdit && <PresenciaAviso tipo="personal" id={staffToEdit.id} />}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
               <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -290,6 +314,33 @@ export const StaffModal: React.FC<StaffModalProps> = ({
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
             />
           </div>
+
+          {staffToEdit && onTrasladar && destinos.length > 0 && (
+            <div className="border border-slate-200 rounded-lg p-3 space-y-2 bg-slate-50">
+              <span className="text-xs font-bold text-slate-700 block">Trasladar a otra escuela</span>
+              <div className="flex gap-2">
+                <select
+                  value={destino}
+                  onChange={e => setDestino(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                >
+                  <option value="">Elegí la escuela…</option>
+                  {destinos.map(s => (
+                    <option key={s.id} value={s.id}>N° {s.number} - {s.name}</option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  disabled={!destino || guardando}
+                  onClick={trasladar}
+                  className="px-3 py-2 text-xs font-bold text-white bg-slate-800 hover:bg-slate-900 disabled:opacity-50 rounded-lg"
+                >
+                  Trasladar
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-500">Es la misma persona: no se crea otra ni se borra su historia.</p>
+            </div>
+          )}
 
           <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-200">
             <button

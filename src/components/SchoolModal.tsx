@@ -1,4 +1,5 @@
 import { nuevoId } from '../services/api';
+import { PresenciaAviso } from './PresenciaAviso';
 import React, { useState, useEffect } from 'react';
 import { School, ModalityType, SchoolAreaType, MilkProgramType } from '../types';
 import { X, Building2, Save, Droplets, Milk, UserCheck, MapPin } from 'lucide-react';
@@ -10,6 +11,8 @@ interface SchoolModalProps {
   onSave: (school: School) => Promise<string | null>;
   schoolToEdit?: School | null;
   nextSchoolNumber: number;
+  /** Baja lógica: la escuela deja de listarse pero su historia queda (FR-015). */
+  onDarDeBaja?: (schoolId: string) => void;
 }
 
 // Sugerencias de zona de inspección. Sin nombres de personas: el repo es
@@ -27,7 +30,8 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
   onClose,
   onSave,
   schoolToEdit,
-  nextSchoolNumber
+  nextSchoolNumber,
+  onDarDeBaja
 }) => {
   // Id estable por formulario: reintentar el guardado no duplica (FR-029).
   const [idNuevo] = React.useState(() => nuevoId());
@@ -190,6 +194,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto flex-1 text-slate-800 text-sm">
+          {schoolToEdit && <PresenciaAviso tipo="escuela" id={schoolToEdit.id} />}
           {/* Clasificación Principal Tacuarembó: Rural o Urbana */}
           <div className="bg-emerald-50/80 border border-emerald-200 p-4 rounded-xl">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -544,6 +549,20 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
           </div>
 
           <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-200 shrink-0">
+            {schoolToEdit && onDarDeBaja && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm(`¿Dar de baja la Escuela N° ${schoolToEdit.number}? Deja de aparecer en los listados, pero sus visitas, incidencias y bitácora se conservan y se puede reactivar.`)) {
+                    onDarDeBaja(schoolToEdit.id);
+                    onClose();
+                  }
+                }}
+                className="mr-auto px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-50 rounded-lg"
+              >
+                Dar de baja
+              </button>
+            )}
             <button
               type="button"
               onClick={onClose}

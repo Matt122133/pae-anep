@@ -18,8 +18,8 @@ interface MobileBottomNavProps {
   onOpenExportModal: () => void;
   totalAlerts: number;
   isOnline?: boolean;
-  pendingSyncCount?: number;
-  onOpenSyncModal?: () => void;
+  borradoresCount?: number;
+  onOpenBorradores?: () => void;
 }
 
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
@@ -30,8 +30,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   onOpenExportModal,
   totalAlerts,
   isOnline = true,
-  pendingSyncCount = 0,
-  onOpenSyncModal
+  borradoresCount = 0,
+  onOpenBorradores
 }) => {
   const isDashboardActive = currentView === 'dashboard' && dashboardTab === 'overview';
   const isCalendarActive = currentView === 'dashboard' && dashboardTab === 'calendar';
@@ -41,9 +41,9 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   return (
     <div className="fixed bottom-0 inset-x-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-slate-800/90 text-white md:hidden shadow-lg pb-safe">
       {/* Mini Offline / Sync Status strip above nav bar on mobile */}
-      {(!isOnline || pendingSyncCount > 0) && (
+      {(!isOnline || borradoresCount > 0) && (
         <div 
-          onClick={onOpenSyncModal}
+          onClick={onOpenBorradores}
           className="bg-amber-500 text-slate-950 px-3 py-1 text-[11px] font-extrabold flex items-center justify-between cursor-pointer border-b border-amber-600 shadow-xs"
         >
           <div className="flex items-center gap-1.5 truncate">
@@ -53,11 +53,11 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               <CloudUpload className="w-3.5 h-3.5 shrink-0" />
             )}
             <span className="truncate">
-              {!isOnline ? 'Sin Conexión (Modo Offline)' : `${pendingSyncCount} visitas por sincronizar`}
+              {!isOnline ? 'Sin conexión: lo que guardes queda como no enviado' : `${borradoresCount} no enviado${borradoresCount > 1 ? 's' : ''}`}
             </span>
           </div>
           <span className="text-[10px] bg-slate-900 text-amber-300 px-1.5 py-0.2 rounded font-black shrink-0">
-            {pendingSyncCount > 0 ? `${pendingSyncCount} PENDIENTES` : 'OFFLINE'}
+            {borradoresCount > 0 ? `${borradoresCount} NO ENVIADOS` : 'SIN CONEXIÓN'}
           </span>
         </div>
       )}

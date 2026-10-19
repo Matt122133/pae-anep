@@ -1,4 +1,5 @@
 import { nuevoId } from '../services/api';
+import { PresenciaAviso } from './PresenciaAviso';
 import React, { useState, useEffect } from 'react';
 import { SchoolIssue, IssueCategory, IssueSeverity, IssueStatus } from '../types';
 import { X, AlertCircle, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
@@ -113,6 +114,7 @@ export const IssueModal: React.FC<IssueModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {issueToEdit && <PresenciaAviso tipo="incidencia" id={issueToEdit.id} />}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
               Título del Caso / Observación *

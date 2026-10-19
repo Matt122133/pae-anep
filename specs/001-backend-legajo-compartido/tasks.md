@@ -45,8 +45,8 @@ distintos y sin dependencias pendientes.
 - [x] T023 [P] [US1] `src/services/sesion.ts` + `src/services/sesion.test.ts`: guardar/leer/borrar token y cuenta en `localStorage` (try/catch)
 - [x] T024 [P] [US1] `src/services/api.ts` + `src/services/api.test.ts`: `fetch` con base `import.meta.env.VITE_API_URL`, token, errores tipados (`red`, `sesion`, `invalido` con campos, `conflicto` con actual, `servidor`); generador de id con respaldo para contexto no seguro
 - [x] T025 [US1] `src/components/Login.tsx`: formulario usuario/contraseña mobile-first, mensaje único de error, estado de carga
-- [ ] T026 [US1] `src/App.tsx`: sin sesión muestra `Login`; con sesión carga `GET /legajo` en el `DatabaseState`; 401 vuelve a `Login`; botón cerrar sesión. Quitar `initializeDatabase()` del arranque. Agregar `active?` y `version?` a `School`, `StaffMember`, `Visit`, `SchoolIssue` en `src/types/index.ts`
-- [ ] T027 [US1] Reemplazar el selector de usuaria activa por el nombre de la cuenta en `src/components/Navbar.tsx` y `src/components/MobileBottomNav.tsx`; quitar `getActiveUserId`/`setActiveUserId` de `src/services/storage.ts`
+- [x] T026 [US1] `src/App.tsx`: sin sesión muestra `Login`; con sesión carga `GET /legajo` en el `DatabaseState`; 401 vuelve a `Login`; botón cerrar sesión. Quitar `initializeDatabase()` del arranque. Agregar `active?` y `version?` a `School`, `StaffMember`, `Visit`, `SchoolIssue` en `src/types/index.ts`
+- [x] T027 [US1] Reemplazar el selector de usuaria activa por el nombre de la cuenta en `src/components/Navbar.tsx` y `src/components/MobileBottomNav.tsx`; quitar `getActiveUserId`/`setActiveUserId` de `src/services/storage.ts`
 
 ## Phase 4: User Story 2 — Cargar y editar a mi nombre (P1)
 
@@ -61,20 +61,20 @@ distintos y sin dependencias pendientes.
 - [x] T034 [US2] Prueba en `backend/internal/legajo/autor_test.go`: un cuerpo con `userId`/`inspectorName`/`timestamp` falsos queda atribuido a la dueña de la sesión (SC-002)
 - [x] T035 [P] [US2] `backend/internal/presencia/presencia.go` + test: mapa en memoria con latidos, vence a 60 s, `PUT`/`DELETE /presencia/{tipo}/{id}` (D8)
 - [x] T036 [US2] Montar rutas de US2 en `backend/cmd/api/main.go`
-- [ ] T037 [US2] `src/App.tsx`: cada `handleSave*`/`handleDelete*`/`handleToggleIssueStatus` llama a la API y reemplaza el registro con la respuesta; deja de armar bitácora y contadores en el cliente; los logs vienen del servidor
-- [ ] T038 [US2] Cuentas del servidor en lugar de `PAE_TEAM_MEMBERS`: `src/components/TeamVisitorSelector.tsx`, `src/components/NewVisitModal.tsx`, `src/components/ScheduleVisitModal.tsx`, `src/components/SchoolDetail.tsx`, `src/components/ActivityLogView.tsx`, `src/components/Dashboard.tsx`, `src/components/SchoolReportModal.tsx`; `formatTeamVisitors` en `src/types/index.ts` recibe la lista de cuentas. **Borrar** `PAE_TEAM_MEMBERS`, los nombres fijos de `formatTeamVisitors` y `generateSeedActivityLogs` de `src/services/storage.ts` (nombres reales en repo público, tech-debt)
-- [ ] T039 [P] [US2] `src/components/PresenciaAviso.tsx` + uso en los modales de edición (latido cada 20 s, `DELETE` al cerrar)
-- [ ] T040 [US2] Manejo de `409` en los modales de edición: aviso con la versión actual y opción de reintentar sin perder lo escrito
-- [ ] T041 [US2] Acción de traslado de auxiliar en `src/components/StaffModal.tsx` / `src/components/SchoolDetail.tsx`; bajas lógicas y "ver inactivos" en `src/components/SchoolList.tsx`
+- [x] T037 [US2] `src/App.tsx`: cada `handleSave*`/`handleDelete*`/`handleToggleIssueStatus` llama a la API y reemplaza el registro con la respuesta; deja de armar bitácora y contadores en el cliente; los logs vienen del servidor
+- [x] T038 [US2] Cuentas del servidor en lugar de `PAE_TEAM_MEMBERS`: `src/components/TeamVisitorSelector.tsx`, `src/components/NewVisitModal.tsx`, `src/components/ScheduleVisitModal.tsx`, `src/components/SchoolDetail.tsx`, `src/components/ActivityLogView.tsx`, `src/components/Dashboard.tsx`, `src/components/SchoolReportModal.tsx`; `formatTeamVisitors` en `src/types/index.ts` recibe la lista de cuentas. **Borrar** `PAE_TEAM_MEMBERS`, los nombres fijos de `formatTeamVisitors` y `generateSeedActivityLogs` de `src/services/storage.ts` (nombres reales en repo público, tech-debt)
+- [x] T039 [P] [US2] `src/components/PresenciaAviso.tsx` + uso en los modales de edición (latido cada 20 s, `DELETE` al cerrar)
+- [x] T040 [US2] Manejo de `409` en los modales de edición: aviso con la versión actual y opción de reintentar sin perder lo escrito
+- [x] T041 [US2] Acción de traslado de auxiliar en `src/components/StaffModal.tsx` / `src/components/SchoolDetail.tsx`; bajas lógicas y "ver inactivos" en `src/components/SchoolList.tsx`
 
 ## Phase 5: User Story 3 — Sin señal, lo escrito no se pierde (P2)
 
 **Prueba independiente**: offline, guardar visita, cerrar y reabrir, volver online, reenviar dos veces: una sola visita en el servidor.
 
 - [ ] T042 [P] [US3] `src/services/borradores.ts` + `src/services/borradores.test.ts`: agregar, listar, reenviar (borra solo si el servidor confirmó), descartar; sobrevive a recargar; qué errores generan borrador (red, 401, 5xx) y cuáles no (400, 409); un reenvío que da 400/409 deja el borrador con el error y la opción "Abrir en el formulario" (D14)
-- [ ] T043 [US3] Integrar borradores en `src/App.tsx`: un guardado fallido por red/401/5xx crea borrador y avisa "no enviado" sin cerrar el formulario; 401 además pide reingresar
-- [ ] T044 [US3] `src/components/BorradoresModal.tsx` y contador en `src/components/Navbar.tsx` / `src/components/MobileBottomNav.tsx`; descartar con confirmación; aviso al cerrar sesión con borradores pendientes
-- [ ] T045 [US3] Eliminar `src/components/SyncModal.tsx`, el toggle de offline simulado y todo indicador de "sincronizado" (`src/App.tsx`, `src/components/Dashboard.tsx`, `src/components/SchoolDetail.tsx`, `src/components/SchoolList.tsx`); quitar `isOfflinePendingSync`/`offlineSavedAt`/`syncedAt` de `src/types/index.ts` y la migración que los inventa en `src/services/storage.ts` (FR-027, SC-007)
+- [x] T043 [US3] Integrar borradores en `src/App.tsx`: un guardado fallido por red/401/5xx crea borrador y avisa "no enviado" sin cerrar el formulario; 401 además pide reingresar
+- [x] T044 [US3] `src/components/BorradoresModal.tsx` y contador en `src/components/Navbar.tsx` / `src/components/MobileBottomNav.tsx`; descartar con confirmación; aviso al cerrar sesión con borradores pendientes
+- [x] T045 [US3] Eliminar `src/components/SyncModal.tsx`, el toggle de offline simulado y todo indicador de "sincronizado" (`src/App.tsx`, `src/components/Dashboard.tsx`, `src/components/SchoolDetail.tsx`, `src/components/SchoolList.tsx`); quitar `isOfflinePendingSync`/`offlineSavedAt`/`syncedAt` de `src/types/index.ts` y la migración que los inventa en `src/services/storage.ts` (FR-027, SC-007)
 - [x] T046 [US3] Prueba de idempotencia en `backend/internal/legajo/idempotencia_test.go`: mismo `POST` dos veces → un registro y una entrada de bitácora; mismo id con otro contenido → 409
 
 ## Phase 6: User Story 4 — La administradora gestiona cuentas (P2)
@@ -92,7 +92,7 @@ distintos y sin dependencias pendientes.
 - [x] T050 [US5] `backend/internal/importacion/validar.go` + test: valida todo según `contracts/importacion.md`, errores con ruta (`visits[12].schoolId`), campos desconocidos como avisos
 - [x] T051 [US5] `backend/internal/importacion/cargar.go` + test: una transacción, asignaciones iniciales, números de visita, bitácora importada marcada, evento `IMPORT`; se niega con datos salvo `-agregar`
 - [x] T052 [US5] `backend/cmd/importar/main.go` con `-archivo`, `-validar`, `-agregar` e informe de conteos
-- [ ] T053 [US5] Deshabilitar la importación desde la app en `src/components/ExportImportModal.tsx` (la exportación CSV/JSON sigue, FR-031/FR-032)
+- [x] T053 [US5] Deshabilitar la importación desde la app en `src/components/ExportImportModal.tsx` (la exportación CSV/JSON sigue, FR-031/FR-032)
 
 ## Phase 8: Polish
 

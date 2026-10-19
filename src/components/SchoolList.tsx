@@ -46,7 +46,7 @@ export type RiskLevelFilter = 'Todos' | 'alto' | 'medio' | 'bajo' | 'con_observa
 export type VisitDateFilter = 'Todas' | 'sin_visita' | 'menos_30' | '30_60' | 'mas_60' | 'este_mes' | 'rango';
 
 export const SchoolList: React.FC<SchoolListProps> = ({
-  schools,
+  schools: todasLasEscuelas,
   staff,
   issues = [],
   visits = [],
@@ -55,6 +55,14 @@ export const SchoolList: React.FC<SchoolListProps> = ({
   onOpenReport,
   initialFilter
 }) => {
+  // Las dadas de baja no aparecen salvo que se pidan: siguen consultables
+  // (baja lógica, FR-015).
+  const [verInactivas, setVerInactivas] = useState(false);
+  const schools = useMemo(
+    () => (verInactivas ? todasLasEscuelas : todasLasEscuelas.filter(s => s.active !== false)),
+    [todasLasEscuelas, verInactivas],
+  );
+  const cantidadInactivas = todasLasEscuelas.filter(s => s.active === false).length;
   const parseInitialFilters = (filter?: string) => {
     let modality = 'Todas';
     let risk: RiskLevelFilter = 'Todos';
@@ -909,6 +917,12 @@ export const SchoolList: React.FC<SchoolListProps> = ({
                   <p className="text-xl font-black mt-1">
                     {filteredSchools.length} <span className="text-xs font-normal text-emerald-300">de {schools.length} escuelas</span>
                   </p>
+                  {cantidadInactivas > 0 && (
+                    <label className="mt-1 flex items-center gap-1.5 text-[11px] text-emerald-200 cursor-pointer">
+                      <input type="checkbox" checked={verInactivas} onChange={e => setVerInactivas(e.target.checked)} />
+                      Ver dadas de baja ({cantidadInactivas})
+                    </label>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 pt-1">
                   <button
