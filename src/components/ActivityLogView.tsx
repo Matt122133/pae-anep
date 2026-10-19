@@ -423,7 +423,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({
               {scopedSchool ? (
                 <>Registro cronológico auditable de todas las modificaciones, inspecciones, altas de personal y resoluciones en {scopedSchool.name}.</>
               ) : (
-                <>Registro inmutable de cambios importantes en legajos: quién modificó, fecha, hora y detalle de valores alterados en la red de 140 comedores.</>
+                <>Registro inmutable de cambios importantes en legajos: quién modificó, fecha, hora y detalle de valores alterados en la red de {schools.length} comedores.</>
               )}
             </p>
           </div>
@@ -652,7 +652,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({
                 onChange={e => setSelectedSchoolFilter(e.target.value)}
                 className="w-full py-1.5 px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500"
               >
-                <option value="all">Todas las Escuelas (140)</option>
+                <option value="all">Todas las Escuelas ({schools.length})</option>
                 {schools.map(s => (
                   <option key={s.id} value={s.id}>
                     Escuela N° {s.number} - {s.name.slice(0, 26)}

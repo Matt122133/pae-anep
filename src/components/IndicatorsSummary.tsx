@@ -257,7 +257,7 @@ export const IndicatorsSummary: React.FC<IndicatorsSummaryProps> = ({
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Ratio de Resolución (140 Escuelas)</span>
+                <span>Ratio de Resolución ({schools.length} Escuelas)</span>
               </h3>
               <span className="text-[10px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200">
                 {totalIssues} {totalIssues === 1 ? 'observación' : 'observaciones'}

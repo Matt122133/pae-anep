@@ -153,7 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <Building2 className="w-4 h-4" />
-              140 Escuelas
+              {schools.length} Escuelas
             </button>
 
             {onNavigateToCalendar && (
@@ -428,7 +428,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <Building2 className="w-4 h-4 text-emerald-400" />
-              <span>Directorio de 140 Escuelas</span>
+              <span>Directorio de {schools.length} Escuelas</span>
             </button>
 
             {onNavigateToCalendar && (

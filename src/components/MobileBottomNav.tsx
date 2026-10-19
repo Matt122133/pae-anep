@@ -82,7 +82,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           <span className="text-[10px] mt-1 leading-none tracking-tight">Panel</span>
         </button>
 
-        {/* 2. 140 Escuelas */}
+        {/* 2. Escuelas */}
         <button
           type="button"
           onClick={() => onNavigate('schools')}
