@@ -25,7 +25,6 @@ import {
   Smartphone,
   LogOut
 } from 'lucide-react';
-import { PWAInstallButton } from './PWAInstallButton';
 
 interface NavbarProps {
   currentView: 'dashboard' | 'schools' | 'school-detail';
@@ -334,9 +333,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </div>
 
-            {/* PWA Install Button */}
-            <PWAInstallButton variant="navbar" />
-
             <button
               onClick={onOpenNewSchoolModal}
               className="px-2.5 sm:px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-xs"
@@ -498,14 +494,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
               <span>Descargar Respaldo / Excel</span>
             </button>
-
-            {/* PWA Mobile Install Option */}
-            <div className="py-1">
-              <PWAInstallButton 
-                variant="navbar" 
-                className="w-full justify-center py-2.5 text-xs font-black shadow-md" 
-              />
-            </div>
 
             <button
               onClick={() => {
