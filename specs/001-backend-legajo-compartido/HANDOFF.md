@@ -14,6 +14,10 @@ Archivo de traspaso entre sesiones. Se borra en T059, antes del PR.
   (fuente de verdad del avance). Base de pruebas: contenedor `pae-pg-test` en
   **:55442** (no 55432, lo usa flash-urbano); `go test ./...` falla si está
   apagada (`docker start pae-pg-test`).
+- **Orden elegido**: backend de US2 (T028–T036) antes que el frontend; después
+  UNA reescritura de `src/App.tsx` que cubre T026, T027, T037, T038, T043 y T045
+  juntas (todas tocan el mismo archivo). `Login.tsx`, `api.ts` y `sesion.ts` ya
+  existen; `App.tsx` todavía usa `localStorage`.
 
 ## Decisiones ya tomadas por el dueño del repo (no volver a preguntar)
 
