@@ -34,8 +34,8 @@ distintos y sin dependencias pendientes.
 
 **Prueba independiente**: dos cuentas en dos navegadores ven los mismos datos; sin sesión, ningún dato.
 
-- [ ] T015 [P] [US1] `backend/internal/auth/contrasena.go` + test: argon2id en formato PHC, verificación en tiempo constante, mínimo 10 caracteres (D2)
-- [ ] T016 [P] [US1] `backend/internal/cuentas/cuentas.go` + test: crear, buscar por usuario (normalizado), listar activas, desactivar, cambiar hash
+- [x] T015 [P] [US1] `backend/internal/auth/contrasena.go` + test: argon2id en formato PHC, verificación en tiempo constante, mínimo 10 caracteres (D2)
+- [x] T016 [P] [US1] `backend/internal/cuentas/cuentas.go` + test: crear, buscar por usuario (normalizado), listar activas, desactivar, cambiar hash
 - [ ] T017 [US1] `backend/internal/auth/sesion.go` + test: emitir token (32 bytes, se guarda sha256), resolver con vencimiento por inactividad de 30 días y `ultimo_uso` como máximo cada 5 min, revocar una, revocar todas de una cuenta (D3)
 - [ ] T018 [US1] `backend/internal/auth/limites.go` + test: 5 fallos seguidos por usuario / 20 por IP en 15 min bloquean; bloqueado responde igual que credencial mala sin verificar hash; IP del cliente = última entrada de `X-Forwarded-For` con `CONFIAR_PROXY`, con prueba de que dos clientes detrás del mismo proxy no se bloquean entre sí (D4)
 - [ ] T019 [US1] `backend/internal/auth/handlers.go` + test: `POST /auth/ingresar`, `POST /auth/salir`, `GET /yo`; mismo error para usuario inexistente y contraseña mala (FR-005)
