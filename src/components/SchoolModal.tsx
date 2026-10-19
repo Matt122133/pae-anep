@@ -1,3 +1,4 @@
+import { nuevoId } from '../services/api';
 import React, { useState, useEffect } from 'react';
 import { School, ModalityType, SchoolAreaType, MilkProgramType } from '../types';
 import { X, Building2, Save, Droplets, Milk, UserCheck, MapPin } from 'lucide-react';
@@ -5,17 +6,20 @@ import { X, Building2, Save, Droplets, Milk, UserCheck, MapPin } from 'lucide-re
 interface SchoolModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (school: School) => void;
+  /** Devuelve null si se guardó (o quedó como borrador), o el error a mostrar. */
+  onSave: (school: School) => Promise<string | null>;
   schoolToEdit?: School | null;
   nextSchoolNumber: number;
 }
 
+// Sugerencias de zona de inspección. Sin nombres de personas: el repo es
+// público; el nombre de cada inspector/a se carga en la escuela.
 const tacuaremboInspectors = [
-  'Insp. Mtra. María del Carmen López (Zona Urbana Tacuarembó)',
-  'Insp. Mtra. Sandra Pereira (Zona Paso de los Toros)',
-  'Insp. Mtro. Wilson Netto (Zona Rural Este - Caraguatá / Ansina)',
-  'Insp. Mtra. Virginia Da Silva (Zona Rural Centro y Sur)',
-  'Insp. Mtra. Ana Laura Techera (Zona Rural Oeste y Tambores)'
+  'Inspección Zona Urbana Tacuarembó',
+  'Inspección Zona Paso de los Toros',
+  'Inspección Zona Rural Este (Caraguatá / Ansina)',
+  'Inspección Zona Rural Centro y Sur',
+  'Inspección Zona Rural Oeste y Tambores'
 ];
 
 export const SchoolModal: React.FC<SchoolModalProps> = ({
@@ -25,6 +29,10 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
   schoolToEdit,
   nextSchoolNumber
 }) => {
+  // Id estable por formulario: reintentar el guardado no duplica (FR-029).
+  const [idNuevo] = React.useState(() => nuevoId());
+  const [guardando, setGuardando] = React.useState(false);
+  const [errorGuardado, setErrorGuardado] = React.useState<string | null>(null);
   const [number, setNumber] = useState(nextSchoolNumber);
   const [name, setName] = useState('');
   const [department, setDepartment] = useState('Tacuarembó');
@@ -114,11 +122,12 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const school: School = {
-      id: schoolToEdit ? schoolToEdit.id : `esc-${number}`,
+      id: schoolToEdit ? schoolToEdit.id : idNuevo,
+      version: schoolToEdit?.version,
       number: Number(number),
       name: name.trim() || `Escuela N° ${number}`,
       department,
@@ -150,7 +159,14 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
       activeIssuesCount: schoolToEdit?.activeIssuesCount || 0
     };
 
-    onSave(school);
+    setGuardando(true);
+    setErrorGuardado(null);
+    const error = await onSave(school);
+    setGuardando(false);
+    if (error) {
+      setErrorGuardado(error);
+      return;
+    }
     onClose();
   };
 
@@ -535,8 +551,10 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
             >
               Cancelar
             </button>
+            {errorGuardado && <span role="alert" className="text-xs font-semibold text-rose-700 max-w-xs">{errorGuardado}</span>}
             <button
               type="submit"
+              disabled={guardando}
               className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm flex items-center gap-1.5 transition"
             >
               <Save className="w-4 h-4" />

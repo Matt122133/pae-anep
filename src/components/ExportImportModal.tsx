@@ -1,22 +1,18 @@
-import React, { useRef, useState } from 'react';
-import { DatabaseState, downloadJsonBackup, downloadSchoolsCsv, downloadStaffCsv, downloadActivityLogsCsv, resetDatabase } from '../services/storage';
-import { X, Download, Upload, RefreshCw, FileSpreadsheet, ShieldCheck, AlertTriangle, History } from 'lucide-react';
+import React from 'react';
+import { DatabaseState, downloadJsonBackup, downloadSchoolsCsv, downloadStaffCsv, downloadActivityLogsCsv } from '../services/storage';
+import { X, Download, Upload, FileSpreadsheet, ShieldCheck, AlertTriangle, History } from 'lucide-react';
 
 interface ExportImportModalProps {
   isOpen: boolean;
   onClose: () => void;
   databaseState: DatabaseState;
-  onRestoreState: (newState: DatabaseState) => void;
 }
 
 export const ExportImportModal: React.FC<ExportImportModalProps> = ({
   isOpen,
   onClose,
-  databaseState,
-  onRestoreState
+  databaseState
 }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [importStatus, setImportStatus] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -36,34 +32,6 @@ export const ExportImportModal: React.FC<ExportImportModalProps> = ({
     downloadActivityLogsCsv(databaseState.activityLogs || []);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const parsed = JSON.parse(event.target?.result as string);
-        if (!parsed.schools || !Array.isArray(parsed.schools)) {
-          throw new Error('El archivo no contiene el formato válido de respaldo de legajos.');
-        }
-        onRestoreState(parsed);
-        setImportStatus(`¡Respaldo restaurado con éxito! Se cargaron ${parsed.schools.length} escuelas y ${parsed.staff?.length || 0} auxiliares.`);
-      } catch (err: any) {
-        setImportStatus(`Error al importar: ${err.message || 'Archivo inválido'}`);
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  const handleReset = () => {
-    if (confirm('¿Está seguro de reiniciar los datos a la configuración inicial de 140 escuelas?')) {
-      const initial = resetDatabase();
-      onRestoreState(initial);
-      setImportStatus('La base de datos fue reiniciada a los valores predeterminados (140 escuelas).');
-    }
-  };
-
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
@@ -81,13 +49,6 @@ export const ExportImportModal: React.FC<ExportImportModalProps> = ({
         </div>
 
         <div className="p-6 space-y-5">
-          {/* Status banner */}
-          {importStatus && (
-            <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-medium">
-              {importStatus}
-            </div>
-          )}
-
           {/* Backup section */}
           <div className="border border-slate-200 rounded-xl p-4 space-y-3">
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
@@ -141,42 +102,18 @@ export const ExportImportModal: React.FC<ExportImportModalProps> = ({
             </div>
           </div>
 
-          {/* Restore Backup */}
-          <div className="border border-slate-200 rounded-xl p-4 space-y-3 bg-slate-50">
+          {/* Carga masiva: solo por el servidor (FR-032) */}
+          <div className="border border-slate-200 rounded-xl p-4 space-y-2 bg-slate-50">
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
               <Upload className="w-4 h-4 text-indigo-600" />
-              Restaurar Respaldo
+              Cargar datos
             </h3>
             <p className="text-xs text-slate-600">
-              Carga un archivo de respaldo previo para sincronizar datos tomados en otra computadora o celular.
+              El legajo vive en el servidor y lo comparte todo el equipo. La carga masiva de datos (por ejemplo desde planillas) la hace la administradora con el comando de importación del servidor; desde la app no se reemplaza el legajo.
             </p>
-            <input
-              type="file"
-              accept=".json"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full py-2 px-4 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-2"
-            >
-              <Upload className="w-4 h-4 text-indigo-600" />
-              Seleccionar Archivo de Respaldo (.JSON)
-            </button>
           </div>
 
-          {/* Factory Reset */}
-          <div className="pt-2 border-t border-slate-200 flex items-center justify-between">
-            <button
-              type="button"
-              onClick={handleReset}
-              className="text-[11px] text-rose-600 hover:text-rose-800 font-medium flex items-center gap-1"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              Restablecer datos de fábrica (140 escuelas)
-            </button>
+          <div className="pt-2 border-t border-slate-200 flex items-center justify-end">
             <button
               type="button"
               onClick={onClose}

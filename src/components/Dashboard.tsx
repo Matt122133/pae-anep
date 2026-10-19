@@ -46,15 +46,12 @@ interface DashboardProps {
   onOpenExportModal: () => void;
   onOpenReport?: (school: School) => void;
   onOpenNewVisit?: (school: School, defaultDate?: string, defaultTime?: string) => void;
-  onSaveScheduledVisit: (visit: Visit) => void;
+  onSaveScheduledVisit: (visit: Visit) => Promise<string | null>;
   onDeleteVisit?: (visitId: string) => void;
   dashboardTab?: 'overview' | 'calendar' | 'bitacora';
   onTabChange?: (tab: 'overview' | 'calendar' | 'bitacora') => void;
   activeUserId?: string;
   isOnline?: boolean;
-  onOpenSyncModal?: () => void;
-  onToggleSimulatedOffline?: () => void;
-  isSimulatedOffline?: boolean;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -74,11 +71,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onDeleteVisit,
   dashboardTab,
   onTabChange,
-  activeUserId = 'valentina',
-  isOnline = true,
-  onOpenSyncModal,
-  onToggleSimulatedOffline,
-  isSimulatedOffline = false
+  activeUserId = '',
+  isOnline = true
 }) => {
   const [internalTab, setInternalTab] = useState<'overview' | 'calendar' | 'bitacora'>('overview');
   const activeTab = dashboardTab ?? internalTab;
@@ -103,8 +97,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const visitedSchoolsCount = schools.filter(s => s.totalVisits > 0).length;
   const pendingVisitsCount = totalSchools - visitedSchoolsCount;
   
-  // Pending sync visits (performed offline)
-  const pendingSyncVisits = visits.filter(v => v.isOfflinePendingSync === true);
   
   // Health cards calculation
   const expiredCards = staff.filter(s => getHealthCardStatus(s.healthCardValidUntil) === 'expired');
@@ -218,107 +210,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         visits={visits}
         onNavigateToSchools={onNavigateToSchools}
       />
-
-      {/* Estado de Conectividad & Sincronización de Campo (Modo Offline) */}
-      <div className={`p-4 sm:p-5 rounded-2xl border transition shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-        !isOnline || pendingSyncVisits.length > 0
-          ? 'bg-gradient-to-r from-amber-50/90 via-orange-50/70 to-amber-100/50 border-amber-300'
-          : 'bg-white border-slate-200/90'
-      }`}>
-        <div className="flex items-start sm:items-center gap-3.5">
-          <div className={`p-3 rounded-xl shrink-0 ${
-            !isOnline 
-              ? 'bg-amber-500 text-slate-950 animate-bounce' 
-              : pendingSyncVisits.length > 0 
-              ? 'bg-amber-100 text-amber-800' 
-              : 'bg-emerald-100 text-emerald-800'
-          }`}>
-            {!isOnline ? (
-              <WifiOff className="w-5 h-5" />
-            ) : pendingSyncVisits.length > 0 ? (
-              <CloudUpload className="w-5 h-5 text-amber-600 animate-pulse" />
-            ) : (
-              <Wifi className="w-5 h-5 text-emerald-600" />
-            )}
-          </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-sm font-black text-slate-900">
-                Estado de Conectividad & Sincronización de Campo
-              </h3>
-              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
-                isOnline 
-                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300' 
-                  : 'bg-amber-200 text-amber-950 border-amber-400'
-              }`}>
-                {isOnline ? '● EN LÍNEA' : '○ MODO OFFLINE (RURAL)'}
-              </span>
-            </div>
-            <p className="text-xs text-slate-600 mt-1">
-              {pendingSyncVisits.length > 0 ? (
-                <span>
-                  Hay <strong>{pendingSyncVisits.length} visita{pendingSyncVisits.length > 1 ? 's' : ''}</strong> de campo realizada{pendingSyncVisits.length > 1 ? 's' : ''} sin conexión pendiente{pendingSyncVisits.length > 1 ? 's' : ''} de sincronizar con el servidor central PAE Tacuarembó.
-                </span>
-              ) : (
-                <span>
-                  Todas las actas, remitos e inspecciones del departamento están consolidadas y sincronizadas al día.
-                </span>
-              )}
-            </p>
-            {pendingSyncVisits.length > 0 && (
-              <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                <span className="text-[10px] text-slate-500 font-semibold">Escuelas con visitas offline:</span>
-                {pendingSyncVisits.map(pv => {
-                  const sc = schools.find(s => s.id === pv.schoolId);
-                  return (
-                    <button
-                      key={pv.id}
-                      onClick={() => sc && onSelectSchool(sc)}
-                      className="text-[10px] bg-white hover:bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md border border-amber-300 font-bold transition flex items-center gap-1"
-                    >
-                      <span>Escuela N° {sc?.number || '?'}</span>
-                      <ChevronRight className="w-2.5 h-2.5 text-slate-400" />
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 self-start md:self-auto shrink-0 flex-wrap">
-          {onToggleSimulatedOffline && (
-            <button
-              type="button"
-              onClick={onToggleSimulatedOffline}
-              className="px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold border border-slate-300 shadow-2xs transition flex items-center gap-1.5"
-              title="Permite simular la pérdida de cobertura en territorio rural"
-            >
-              <Radio className="w-3.5 h-3.5 text-slate-500" />
-              <span>{isSimulatedOffline ? 'Reconectar Online' : 'Simular Modo Offline'}</span>
-            </button>
-          )}
-
-          {onOpenSyncModal && (
-            <button
-              type="button"
-              onClick={onOpenSyncModal}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm ${
-                pendingSyncVisits.length > 0
-                  ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                  : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-              }`}
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>
-                {pendingSyncVisits.length > 0 
-                  ? `Sincronizar ${pendingSyncVisits.length} Pendiente${pendingSyncVisits.length > 1 ? 's' : ''}` 
-                  : 'Centro de Sincronización'}
-              </span>
-            </button>
-          )}
-        </div>
-      </div>
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

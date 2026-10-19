@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { School, Visit, formatTeamVisitors } from '../types';
+import { useEquipo } from '../services/equipo';
+import { nuevoId } from '../services/api';
 import { TeamVisitorSelector } from './TeamVisitorSelector';
 import { 
   X, 
@@ -21,7 +23,8 @@ interface ScheduleVisitModalProps {
   isOpen: boolean;
   onClose: () => void;
   schools: School[];
-  onSaveScheduledVisit: (visit: Visit) => void;
+  /** Devuelve null si se guardó (o quedó como borrador), o el error a mostrar. */
+  onSaveScheduledVisit: (visit: Visit) => Promise<string | null>;
   initialDate?: string;
   initialSchoolId?: string;
   visitToEdit?: Visit | null;
@@ -36,7 +39,7 @@ export const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({
   initialDate,
   initialSchoolId,
   visitToEdit,
-  activeUserId = 'valentina'
+  activeUserId = ''
 }) => {
   const [selectedSchoolId, setSelectedSchoolId] = useState<string>(
     visitToEdit ? visitToEdit.schoolId : initialSchoolId || (schools[0]?.id || '')
@@ -49,8 +52,13 @@ export const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({
   
   const initialVisitors = visitToEdit?.visitors && visitToEdit.visitors.length > 0 
     ? visitToEdit.visitors 
-    : [activeUserId];
-  const initialTeam = formatTeamVisitors(initialVisitors);
+    : [activeUserId].filter(Boolean);
+  const equipo = useEquipo();
+  const initialTeam = formatTeamVisitors(initialVisitors, equipo);
+  // Id estable por formulario: reintentar no duplica (FR-029).
+  const [nuevoVisitId] = useState(() => nuevoId());
+  const [guardando, setGuardando] = useState(false);
+  const [errorGuardado, setErrorGuardado] = useState<string | null>(null);
 
   const [selectedVisitors, setSelectedVisitors] = useState<string[]>(initialVisitors);
   const [inspectorName, setInspectorName] = useState(
@@ -81,7 +89,7 @@ export const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({
       }
       setInspectorName(visitToEdit.inspectorName);
       setInspectorRole(visitToEdit.inspectorRole || 'Ecónomas del Programa de Alimentación Escolar (PAE Tacuarembó)');
-      setNutritionistName(visitToEdit.nutritionistName || 'Lic. en Nutrición Laura Cuadrado');
+      setNutritionistName(visitToEdit.nutritionistName || initialTeam.nutritionistName);
       setScheduledObjective(visitToEdit.scheduledObjective || '');
       setItineraryNotes(visitToEdit.itineraryNotes || '');
     } else if (initialSchoolId) {
@@ -125,12 +133,13 @@ export const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({
     'Circuito Ruta 31 (Sauce de Batoví - Cuchilla del Ombú)'
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedSchool) return;
 
     const newVisit: Visit = {
-      id: visitToEdit ? visitToEdit.id : `vis-sched-${Date.now()}`,
+      id: visitToEdit ? visitToEdit.id : nuevoVisitId,
+      version: visitToEdit?.version,
       schoolId: selectedSchool.id,
       visitNumber: visitToEdit ? visitToEdit.visitNumber : selectedSchool.totalVisits + 1,
       date,
@@ -168,7 +177,14 @@ export const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({
       generalObservations: `Visita programada en itinerario de campo. Objetivo: ${scheduledObjective}`
     };
 
-    onSaveScheduledVisit(newVisit);
+    setGuardando(true);
+    setErrorGuardado(null);
+    const error = await onSaveScheduledVisit(newVisit);
+    setGuardando(false);
+    if (error) {
+      setErrorGuardado(error);
+      return;
+    }
     onClose();
   };
 
@@ -399,11 +415,13 @@ export const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-1.5"
+              disabled={guardando}
+              className="px-5 py-2.5 disabled:opacity-60 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-1.5"
             >
               <Save className="w-4 h-4" />
-              <span>{visitToEdit ? 'Guardar Cambios' : 'Agendar en Itinerario'}</span>
+              <span>{guardando ? 'Guardando…' : visitToEdit ? 'Guardar Cambios' : 'Agendar en Itinerario'}</span>
             </button>
+            {errorGuardado && <span role="alert" className="text-xs font-semibold text-rose-700">{errorGuardado}</span>}
           </div>
 
         </form>

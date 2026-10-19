@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { PAE_TEAM_MEMBERS, formatTeamVisitors } from '../types';
+import { formatTeamVisitors } from '../types';
+import { useEquipo } from '../services/equipo';
 import { Users, UserCheck, Sparkles, Edit3 } from 'lucide-react';
 
 interface TeamVisitorSelectorProps {
@@ -18,10 +19,11 @@ interface TeamVisitorSelectorProps {
 export const TeamVisitorSelector: React.FC<TeamVisitorSelectorProps> = ({
   selectedMemberIds,
   onChange,
-  activeUserId = 'valentina',
+  activeUserId = '',
   label = 'Técnico(s) / Visitador(es) del PAE Tacuarembó',
   allowManualOverride = true
 }) => {
+  const equipo = useEquipo();
   const [selectedIds, setSelectedIds] = useState<string[]>(
     selectedMemberIds && selectedMemberIds.length > 0 ? selectedMemberIds : [activeUserId]
   );
@@ -46,7 +48,7 @@ export const TeamVisitorSelector: React.FC<TeamVisitorSelectorProps> = ({
     }
     setSelectedIds(newSelected);
 
-    const formatted = formatTeamVisitors(newSelected);
+    const formatted = formatTeamVisitors(newSelected, equipo);
     onChange({
       selectedMemberIds: newSelected,
       inspectorName: isManualMode && manualInspectorName ? manualInspectorName : formatted.inspectorName,
@@ -56,24 +58,24 @@ export const TeamVisitorSelector: React.FC<TeamVisitorSelectorProps> = ({
   };
 
   const handleApplyPreset = (preset: 'solo' | 'dupla' | 'equipo' | 'nutricion') => {
+    // Los atajos se arman con el equipo que devuelve el servidor, no con ids
+    // escritos en el código.
+    const otraEconoma = equipo.find(m => m.id !== activeUserId && m.role === 'Ecónoma del PAE');
+    const nutri = equipo.find(m => m.role === 'Licenciada en Nutrición');
     let newSelected: string[];
     if (preset === 'solo') {
       newSelected = [activeUserId];
     } else if (preset === 'dupla') {
-      // Pair the active user with another member (prefer another ecónoma if active is ecónoma)
-      if (activeUserId === 'valentina') newSelected = ['valentina', 'shaja'];
-      else if (activeUserId === 'shaja') newSelected = ['shaja', 'karina'];
-      else if (activeUserId === 'karina') newSelected = ['karina', 'valentina'];
-      else newSelected = ['laura', 'valentina'];
+      newSelected = otraEconoma ? [activeUserId, otraEconoma.id] : [activeUserId];
     } else if (preset === 'nutricion') {
-      newSelected = activeUserId === 'laura' ? ['laura'] : [activeUserId, 'laura'];
+      newSelected = !nutri || nutri.id === activeUserId ? [activeUserId] : [activeUserId, nutri.id];
     } else {
-      // All 4 team members
-      newSelected = ['valentina', 'shaja', 'karina', 'laura'];
+      newSelected = equipo.map(m => m.id);
     }
+    newSelected = newSelected.filter(Boolean);
 
     setSelectedIds(newSelected);
-    const formatted = formatTeamVisitors(newSelected);
+    const formatted = formatTeamVisitors(newSelected, equipo);
     onChange({
       selectedMemberIds: newSelected,
       inspectorName: formatted.inspectorName,
@@ -82,7 +84,7 @@ export const TeamVisitorSelector: React.FC<TeamVisitorSelectorProps> = ({
     });
   };
 
-  const formattedPreview = formatTeamVisitors(selectedIds);
+  const formattedPreview = formatTeamVisitors(selectedIds, equipo);
 
   const handleManualNameChange = (val: string) => {
     setManualInspectorName(val);
@@ -125,7 +127,7 @@ export const TeamVisitorSelector: React.FC<TeamVisitorSelectorProps> = ({
             type="button"
             onClick={() => handleApplyPreset('dupla')}
             className={`px-2 py-1 text-[11px] rounded-lg font-bold transition ${
-              selectedIds.length === 2 && !selectedIds.includes('laura')
+              selectedIds.length === 2 && !selectedIds.some(id => equipo.find(m => m.id === id)?.role === 'Licenciada en Nutrición')
                 ? 'bg-emerald-700 text-white'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
@@ -136,7 +138,7 @@ export const TeamVisitorSelector: React.FC<TeamVisitorSelectorProps> = ({
             type="button"
             onClick={() => handleApplyPreset('nutricion')}
             className={`px-2 py-1 text-[11px] rounded-lg font-bold transition ${
-              selectedIds.includes('laura') && selectedIds.length <= 2
+              selectedIds.some(id => equipo.find(m => m.id === id)?.role === 'Licenciada en Nutrición') && selectedIds.length <= 2
                 ? 'bg-indigo-700 text-white'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
@@ -147,20 +149,20 @@ export const TeamVisitorSelector: React.FC<TeamVisitorSelectorProps> = ({
             type="button"
             onClick={() => handleApplyPreset('equipo')}
             className={`px-2 py-1 text-[11px] rounded-lg font-bold transition flex items-center gap-0.5 ${
-              selectedIds.length === 4
+              equipo.length > 0 && selectedIds.length === equipo.length
                 ? 'bg-emerald-700 text-white'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
             <Sparkles className="w-3 h-3" />
-            Todo el equipo (4)
+            Todo el equipo ({equipo.length})
           </button>
         </div>
       </div>
 
       {/* 4 Member Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-        {PAE_TEAM_MEMBERS.map(member => {
+        {equipo.map(member => {
           const isSelected = selectedIds.includes(member.id);
           const isCurrentActive = member.id === activeUserId;
 

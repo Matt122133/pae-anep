@@ -56,8 +56,6 @@ interface SchoolDetailProps {
   onDeleteIssue: (issueId: string) => void;
   onToggleIssueStatus: (issueId: string) => void;
   isOnline?: boolean;
-  onOpenSyncModal?: () => void;
-  onSyncSingleVisit?: (visitId: string) => void;
 }
 
 export type SchoolSubcategory = 
@@ -88,8 +86,6 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
   onDeleteIssue,
   onToggleIssueStatus,
   isOnline = true,
-  onOpenSyncModal,
-  onSyncSingleVisit
 }) => {
   const [activeTab, setActiveTab] = useState<SchoolSubcategory>('ficha');
   const [selectedVisitForActa, setSelectedVisitForActa] = useState<string>(
@@ -103,7 +99,6 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
   const resolvedIssues = issues.filter(i => i.status === 'Resuelto');
 
   // Count visits pending offline synchronization for this school
-  const schoolPendingSyncVisits = visits.filter(v => v.isOfflinePendingSync === true);
 
   // Logs for this specific school
   const schoolLogs = (activityLogs || []).filter(l => l.schoolId === school.id);
@@ -252,8 +247,7 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
               id: 'visitas', 
               label: 'Visitas de Campo', 
               icon: ClipboardCheck, 
-              count: visits.length,
-              pendingSync: schoolPendingSyncVisits.length
+              count: visits.length
             },
             { id: 'seguimiento', label: 'Seguimiento de Casos', icon: AlertTriangle, count: pendingIssues.length > 0 ? pendingIssues.length : null, alert: pendingIssues.length > 0 },
             { id: 'remitos_alimentos', label: 'Remitos y Alimentos', icon: UtensilsCrossed, count: allUnauthorized.length > 0 ? allUnauthorized.length : null, alert: allUnauthorized.length > 0 },
@@ -281,15 +275,6 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
                       : 'bg-slate-200 text-slate-700'
                   }`}>
                     {tab.count}
-                  </span>
-                )}
-                {tab.pendingSync !== undefined && tab.pendingSync > 0 && (
-                  <span 
-                    className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1 shadow-2xs" 
-                    title={`${tab.pendingSync} visitas realizadas sin conexión pendientes de sincronizar`}
-                  >
-                    <CloudUpload className="w-3 h-3 text-amber-600 animate-pulse" />
-                    <span>{tab.pendingSync}</span>
                   </span>
                 )}
               </button>
@@ -741,35 +726,6 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
               </button>
             </div>
 
-            {/* School Offline Pending Sync Banner if any */}
-            {schoolPendingSyncVisits.length > 0 && (
-              <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-2xs">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 bg-amber-100 rounded-lg text-amber-700">
-                    <CloudUpload className="w-5 h-5 animate-bounce" />
-                  </div>
-                  <div>
-                    <p className="font-extrabold text-amber-950">
-                      Esta escuela cuenta con {schoolPendingSyncVisits.length} visita{schoolPendingSyncVisits.length > 1 ? 's' : ''} registrada{schoolPendingSyncVisits.length > 1 ? 's' : ''} sin conexión
-                    </p>
-                    <p className="text-[11px] text-amber-800 mt-0.5">
-                      Los datos se encuentran protegidos localmente en el dispositivo y listos para sincronizar con el servidor PAE Tacuarembó.
-                    </p>
-                  </div>
-                </div>
-                {onOpenSyncModal && (
-                  <button
-                    type="button"
-                    onClick={onOpenSyncModal}
-                    className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs shadow-2xs flex items-center gap-1.5 shrink-0 self-start sm:self-auto transition"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    <span>Sincronizar Datos</span>
-                  </button>
-                )}
-              </div>
-            )}
-
             {visits.length === 0 ? (
               <div className="text-center py-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
                 <ClipboardCheck className="w-12 h-12 text-slate-400 mx-auto mb-3" />
@@ -789,11 +745,7 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
                 {[...visits].reverse().map(visit => (
                   <div
                     key={visit.id}
-                    className={`border rounded-xl p-5 shadow-2xs transition ${
-                      visit.isOfflinePendingSync 
-                        ? 'border-amber-300 bg-amber-50/20 hover:border-amber-400' 
-                        : 'border-slate-200 bg-white hover:border-emerald-300'
-                    }`}
+                    className="border rounded-xl p-5 shadow-2xs transition border-slate-200 bg-white hover:border-emerald-300"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-2 border-b border-slate-100 pb-3">
                       <div>
@@ -802,13 +754,6 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
                             Visita Oficial N° {visit.visitNumber}
                           </span>
                           <span className="text-xs font-bold text-slate-800">{visit.date} a las {visit.time} hs</span>
-
-                          {visit.isOfflinePendingSync && (
-                            <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1.5 shadow-2xs">
-                              <CloudUpload className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-                              <span>Pendiente de sincronizar (capturado offline)</span>
-                            </span>
-                          )}
 
                           {visit.unauthorizedItemsFound && (
                             <span className="bg-rose-100 text-rose-800 border border-rose-200 text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -823,26 +768,9 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
                         <p className="text-xs text-slate-500">
                           <strong>Recibido por:</strong> {visit.attendedBy}
                         </p>
-                        {visit.offlineSavedAt && (
-                          <p className="text-[10px] text-amber-800 italic mt-0.5">
-                            Guardado sin conexión: {new Date(visit.offlineSavedAt).toLocaleDateString('es-UY')} a las {new Date(visit.offlineSavedAt).toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' })} hs
-                          </p>
-                        )}
                       </div>
 
                       <div className="flex items-center gap-2 flex-wrap">
-                        {visit.isOfflinePendingSync && onSyncSingleVisit && (
-                          <button
-                            type="button"
-                            onClick={() => onSyncSingleVisit(visit.id)}
-                            className="text-xs font-bold text-amber-900 hover:text-amber-950 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-lg border border-amber-300 flex items-center gap-1.5 transition shadow-2xs"
-                            title="Sincronizar esta visita con el servidor central PAE"
-                          >
-                            <RefreshCw className="w-3.5 h-3.5 text-amber-700" />
-                            <span>Sincronizar Esta</span>
-                          </button>
-                        )}
-
                         <button
                           onClick={() => {
                             setSelectedVisitForActa(visit.id);

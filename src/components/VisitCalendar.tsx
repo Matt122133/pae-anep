@@ -37,7 +37,7 @@ interface VisitCalendarProps {
   onSelectSchool: (school: School) => void;
   onOpenReport?: (school: School) => void;
   onOpenNewVisit?: (school: School, defaultDate?: string, defaultTime?: string) => void;
-  onSaveScheduledVisit: (visit: Visit) => void;
+  onSaveScheduledVisit: (visit: Visit) => Promise<string | null>;
   onDeleteVisit?: (visitId: string) => void;
   activeUserId?: string;
 }
@@ -50,7 +50,7 @@ export const VisitCalendar: React.FC<VisitCalendarProps> = ({
   onOpenNewVisit,
   onSaveScheduledVisit,
   onDeleteVisit,
-  activeUserId = 'valentina'
+  activeUserId = ''
 }) => {
   // Current date anchor (defaults to current system date)
   const now = new Date();

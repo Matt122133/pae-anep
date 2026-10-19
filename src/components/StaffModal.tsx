@@ -1,3 +1,4 @@
+import { nuevoId } from '../services/api';
 import React, { useState, useEffect } from 'react';
 import { StaffMember, InstitutionContractType, StaffRole, SocialSecurityStatus } from '../types';
 import { X, UserCheck, ShieldAlert, AlertCircle } from 'lucide-react';
@@ -5,7 +6,8 @@ import { X, UserCheck, ShieldAlert, AlertCircle } from 'lucide-react';
 interface StaffModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (staff: StaffMember) => void;
+  /** Devuelve null si se guardó (o quedó como borrador), o el error a mostrar. */
+  onSave: (staff: StaffMember) => Promise<string | null>;
   schoolId: string;
   staffToEdit?: StaffMember | null;
 }
@@ -17,6 +19,10 @@ export const StaffModal: React.FC<StaffModalProps> = ({
   schoolId,
   staffToEdit
 }) => {
+  // Id estable por formulario: reintentar el guardado no duplica (FR-029).
+  const [idNuevo] = React.useState(() => nuevoId());
+  const [guardando, setGuardando] = React.useState(false);
+  const [errorGuardado, setErrorGuardado] = React.useState<string | null>(null);
   const [fullName, setFullName] = useState('');
   const [ci, setCi] = useState('');
   const [role, setRole] = useState<StaffRole>('Auxiliar de Cocina');
@@ -61,7 +67,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim() || !ci.trim()) {
       alert('Por favor complete el nombre y documento del auxiliar.');
@@ -69,7 +75,8 @@ export const StaffModal: React.FC<StaffModalProps> = ({
     }
 
     const member: StaffMember = {
-      id: staffToEdit ? staffToEdit.id : `staff-${Date.now()}`,
+      id: staffToEdit ? staffToEdit.id : idNuevo,
+      version: staffToEdit?.version,
       schoolId,
       fullName: fullName.trim(),
       ci: ci.trim(),
@@ -84,7 +91,14 @@ export const StaffModal: React.FC<StaffModalProps> = ({
       active: true
     };
 
-    onSave(member);
+    setGuardando(true);
+    setErrorGuardado(null);
+    const error = await onSave(member);
+    setGuardando(false);
+    if (error) {
+      setErrorGuardado(error);
+      return;
+    }
     onClose();
   };
 
@@ -285,8 +299,10 @@ export const StaffModal: React.FC<StaffModalProps> = ({
             >
               Cancelar
             </button>
+            {errorGuardado && <span role="alert" className="text-xs font-semibold text-rose-700 max-w-xs">{errorGuardado}</span>}
             <button
               type="submit"
+              disabled={guardando}
               className="px-5 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition flex items-center gap-1.5"
             >
               <UserCheck className="w-4 h-4" />

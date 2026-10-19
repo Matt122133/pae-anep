@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Visit, School, UnauthorizedItem, HygieneRating, SchoolIssue, formatTeamVisitors } from '../types';
+import { useEquipo } from '../services/equipo';
+import { nuevoId } from '../services/api';
 import { TeamVisitorSelector } from './TeamVisitorSelector';
 import { 
   X, 
@@ -29,7 +31,8 @@ interface NewVisitModalProps {
   onClose: () => void;
   school: School;
   existingVisitsCount: number;
-  onSaveVisit: (visit: Visit, newIssues: Omit<SchoolIssue, 'id'>[]) => void;
+  /** Devuelve null si se guardó (o quedó como borrador), o el error a mostrar. */
+  onSaveVisit: (visit: Visit, newIssues: SchoolIssue[]) => Promise<string | null>;
   activeUserId?: string;
   initialDate?: string;
   initialTime?: string;
@@ -42,7 +45,7 @@ export const NewVisitModal: React.FC<NewVisitModalProps> = ({
   school,
   existingVisitsCount,
   onSaveVisit,
-  activeUserId = 'valentina',
+  activeUserId = '',
   initialDate,
   initialTime,
   isOnline = true
@@ -54,8 +57,14 @@ export const NewVisitModal: React.FC<NewVisitModalProps> = ({
   const [activeTab, setActiveTab] = useState<'borrador' | 'menu' | 'higiene' | 'registros' | 'preview'>('borrador');
 
   // Encabezado oficial Tacuarembó y equipo visitador
-  const initialVisitors = [activeUserId];
-  const initialTeam = formatTeamVisitors(initialVisitors);
+  const equipo = useEquipo();
+  // Id generado UNA vez por formulario: reintentar el guardado manda el mismo
+  // id y el servidor no duplica la visita (FR-029).
+  const [visitId] = useState(() => nuevoId());
+  const [guardando, setGuardando] = useState(false);
+  const [errorGuardado, setErrorGuardado] = useState<string | null>(null);
+  const initialVisitors = [activeUserId].filter(Boolean);
+  const initialTeam = formatTeamVisitors(initialVisitors, equipo);
   const [selectedVisitors, setSelectedVisitors] = useState<string[]>(initialVisitors);
   const [date, setDate] = useState(initialDate || today);
   const [time, setTime] = useState(initialTime || currentTime);
@@ -196,11 +205,11 @@ export const NewVisitModal: React.FC<NewVisitModalProps> = ({
     setUnauthorizedList(prev => prev.filter(i => i.id !== id));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const visit: Visit = {
-      id: `vis-${school.id}-${Date.now()}`,
+      id: visitId,
       schoolId: school.id,
       visitNumber: nextVisitNumber,
       date,
@@ -289,18 +298,16 @@ export const NewVisitModal: React.FC<NewVisitModalProps> = ({
       meetingMinutes: meetingMinutes.trim(),
       suggestions: suggestions.trim(),
       generalObservations: generalObservations.trim(),
-
-      // Offline / Sincronización
-      isOfflinePendingSync: !isOnline,
-      offlineSavedAt: !isOnline ? new Date().toISOString() : undefined,
-      syncedAt: isOnline ? new Date().toISOString() : undefined
+      status: 'Realizada'
     };
 
-    const newIssues: Omit<SchoolIssue, 'id'>[] = [];
+    // Ids derivados del de la visita: estables entre reintentos.
+    const newIssues: SchoolIssue[] = [];
 
     if (unauthorizedItemsFound && unauthorizedList.length > 0) {
       unauthorizedList.forEach(u => {
         newIssues.push({
+          id: `${visitId}-na-${newIssues.length}`,
           schoolId: school.id,
           title: `Alimento no autorizado: ${u.item}`,
           description: `Detectado en Visita #${nextVisitNumber}. Motivo: ${u.reason}. Acción: ${u.actionTaken}`,
@@ -314,6 +321,7 @@ export const NewVisitModal: React.FC<NewVisitModalProps> = ({
 
     if (createAutoIssue && autoIssueTitle.trim()) {
       newIssues.push({
+        id: `${visitId}-obs`,
         schoolId: school.id,
         title: autoIssueTitle.trim(),
         description: `Observación registrada en Visita #${nextVisitNumber}: ${generalObservations}`,
@@ -324,7 +332,14 @@ export const NewVisitModal: React.FC<NewVisitModalProps> = ({
       });
     }
 
-    onSaveVisit(visit, newIssues);
+    setGuardando(true);
+    setErrorGuardado(null);
+    const error = await onSaveVisit(visit, newIssues);
+    setGuardando(false);
+    if (error) {
+      setErrorGuardado(error);
+      return;
+    }
     onClose();
   };
 
@@ -373,12 +388,9 @@ export const NewVisitModal: React.FC<NewVisitModalProps> = ({
             <div className="flex items-center gap-2">
               <WifiOff className="w-4 h-4 text-slate-950 shrink-0 animate-pulse" />
               <span>
-                Modo Sin Conexión Activo (Zona Rural / Sin Cobertura): Esta visita técnica se guardará localmente en el dispositivo y quedará marcada como "Pendiente de sincronizar".
+                Sin conexión: al guardar, la visita queda en este dispositivo como borrador «no enviado». Cuando vuelva la señal, reenviala desde «No enviados».
               </span>
             </div>
-            <span className="text-[10px] bg-slate-900 text-amber-300 px-2 py-0.5 rounded-md uppercase tracking-wider font-extrabold shrink-0 hidden sm:inline">
-              Guardado Local Seguro
-            </span>
           </div>
         )}
 
@@ -1364,6 +1376,9 @@ export const NewVisitModal: React.FC<NewVisitModalProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
+              {errorGuardado && (
+                <span role="alert" className="text-xs font-semibold text-rose-700 max-w-xs">{errorGuardado}</span>
+              )}
               <button
                 type="button"
                 onClick={onClose}
@@ -1373,14 +1388,15 @@ export const NewVisitModal: React.FC<NewVisitModalProps> = ({
               </button>
               <button
                 type="submit"
-                className={`px-5 py-2 text-xs font-bold text-white rounded-lg shadow-sm flex items-center gap-1.5 transition ${
+                disabled={guardando}
+                className={`px-5 py-2 disabled:opacity-60 text-xs font-bold text-white rounded-lg shadow-sm flex items-center gap-1.5 transition ${
                   isOnline 
                     ? 'bg-emerald-700 hover:bg-emerald-800' 
                     : 'bg-amber-700 hover:bg-amber-800'
                 }`}
               >
                 {isOnline ? <Save className="w-4 h-4" /> : <CloudUpload className="w-4 h-4" />}
-                <span>{isOnline ? 'Guardar Visita & Devolución' : 'Guardar Visita Localmente (Sin Conexión)'}</span>
+                <span>{guardando ? 'Guardando…' : isOnline ? 'Guardar Visita & Devolución' : 'Guardar como no enviado'}</span>
               </button>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { nuevoId } from '../services/api';
 import React, { useState, useEffect } from 'react';
 import { SchoolIssue, IssueCategory, IssueSeverity, IssueStatus } from '../types';
 import { X, AlertCircle, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
@@ -5,7 +6,8 @@ import { X, AlertCircle, CheckCircle2, Clock, AlertTriangle } from 'lucide-react
 interface IssueModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (issue: SchoolIssue) => void;
+  /** Devuelve null si se guardó (o quedó como borrador), o el error a mostrar. */
+  onSave: (issue: SchoolIssue) => Promise<string | null>;
   schoolId: string;
   issueToEdit?: SchoolIssue | null;
   visitsCount?: number;
@@ -19,6 +21,10 @@ export const IssueModal: React.FC<IssueModalProps> = ({
   issueToEdit,
   visitsCount = 1
 }) => {
+  // Id estable por formulario: reintentar el guardado no duplica (FR-029).
+  const [idNuevo] = React.useState(() => nuevoId());
+  const [guardando, setGuardando] = React.useState(false);
+  const [errorGuardado, setErrorGuardado] = React.useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<IssueCategory>('Higiene e Inocuidad');
@@ -52,12 +58,13 @@ export const IssueModal: React.FC<IssueModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
     const issue: SchoolIssue = {
-      id: issueToEdit ? issueToEdit.id : `iss-${Date.now()}`,
+      id: issueToEdit ? issueToEdit.id : idNuevo,
+      version: issueToEdit?.version,
       schoolId,
       visitId: issueToEdit?.visitId,
       title: title.trim(),
@@ -71,7 +78,14 @@ export const IssueModal: React.FC<IssueModalProps> = ({
       resolvedInVisitNumber: status === 'Resuelto' ? (issueToEdit?.resolvedInVisitNumber || visitsCount) : undefined
     };
 
-    onSave(issue);
+    setGuardando(true);
+    setErrorGuardado(null);
+    const error = await onSave(issue);
+    setGuardando(false);
+    if (error) {
+      setErrorGuardado(error);
+      return;
+    }
     onClose();
   };
 
@@ -237,8 +251,10 @@ export const IssueModal: React.FC<IssueModalProps> = ({
             >
               Cancelar
             </button>
+            {errorGuardado && <span role="alert" className="text-xs font-semibold text-rose-700 max-w-xs">{errorGuardado}</span>}
             <button
               type="submit"
+              disabled={guardando}
               className="px-5 py-2 text-xs font-bold text-white bg-slate-800 hover:bg-slate-900 rounded-lg shadow-sm"
             >
               Guardar Caso

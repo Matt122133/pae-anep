@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { 
   ActivityLog, 
   School, 
-  PAE_TEAM_MEMBERS, 
   ActivityActionType, 
   ActivityCategory,
   ActivityEventTag,
@@ -10,6 +9,7 @@ import {
   ActivityTagStyle
 } from '../types';
 import { downloadActivityLogsCsv } from '../services/storage';
+import { useEquipo } from '../services/equipo';
 import { 
   History, 
   Search, 
@@ -54,8 +54,9 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({
   onSelectSchool,
   onAddManualLog,
   scopedSchoolId,
-  activeUserId = 'valentina'
+  activeUserId = ''
 }) => {
+  const equipo = useEquipo();
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSchoolFilter, setSelectedSchoolFilter] = useState<string>(scopedSchoolId || 'all');
@@ -355,7 +356,9 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({
     if (!noteSummary.trim()) return;
 
     const school = schools.find(s => s.id === noteSchoolId);
-    const activeUser = PAE_TEAM_MEMBERS.find(m => m.id === activeUserId) || PAE_TEAM_MEMBERS[0];
+    // El autor real lo pone el servidor desde la sesión; esto es solo para la
+    // vista optimista y se descarta al recargar.
+    const activeUser = equipo.find(m => m.id === activeUserId) || { id: activeUserId, name: '', role: '' };
 
     const finalTags = Array.from(new Set([
       noteEventTag,
@@ -670,7 +673,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({
               className="w-full py-1.5 px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             >
               <option value="all">Todos los miembros del equipo</option>
-              {PAE_TEAM_MEMBERS.map(m => (
+              {equipo.map(m => (
                 <option key={m.id} value={m.id}>
                   {m.name} ({m.badge})
                 </option>
@@ -804,7 +807,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({
         <div className="space-y-3">
           {filteredLogs.map(log => {
             const isExpanded = expandedLogIds.has(log.id);
-            const userObj = PAE_TEAM_MEMBERS.find(m => m.id === log.userId);
+            const userObj = equipo.find(m => m.id === log.userId);
             const userAvatarColor = userObj?.avatarColor || 'bg-slate-700 text-white';
             const hasDetails = (log.details && log.details.length > 0) || log.notes;
 
