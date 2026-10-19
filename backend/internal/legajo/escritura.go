@@ -36,6 +36,12 @@ func esDuplicado(err error, restriccion string) bool {
 	return errors.As(err, &pg) && pg.Code == "23505" && (restriccion == "" || pg.ConstraintName == restriccion)
 }
 
+// esViolacionFK dice si err es una violacion de clave foranea.
+func esViolacionFK(err error) bool {
+	var pg *pgconn.PgError
+	return errors.As(err, &pg) && pg.Code == "23503"
+}
+
 // ignorarAlComparar son campos que no cuentan para decidir si dos versiones de
 // un registro son "la misma": los pone el servidor.
 var ignorarAlComparar = []string{"version", "totalVisits", "lastVisitDate", "activeIssuesCount", "visitNumber", "active"}
