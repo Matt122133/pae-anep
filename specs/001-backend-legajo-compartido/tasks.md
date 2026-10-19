@@ -10,11 +10,11 @@ distintos y sin dependencias pendientes.
 
 ## Phase 1: Setup
 
-- [ ] T001 Arreglar la instalación en `package.json`: subir `esbuild` a una versión que satisfaga el peer de `vite@8` (o quitarlo si nada lo importa), quitar `@google/genai`, `express`, `dotenv`, `@types/express`; agregar `vitest` y el script `"test": "vitest run"`. Generar y versionar `package-lock.json`. Hecho cuando `npm ci && npm run lint && npm run build` pasa sin `--legacy-peer-deps` (D18)
-- [ ] T002 [P] Configurar Vitest en `vite.config.ts` (entorno `node`, `src/**/*.test.ts`) y tipos en `tsconfig.json`
-- [ ] T003 [P] Crear el módulo Go `github.com/Matt122133/pae-anep/backend` en `backend/go.mod` (Go 1.26, pgx/v5, x/crypto) y `backend/.gitignore` (`.env`)
-- [ ] T004 [P] Agregar `datos/` y `backend/.env` a `.gitignore` raíz; reemplazar `.env.example` raíz por `VITE_API_URL` (sin `GEMINI_API_KEY`, sin `APP_URL`)
-- [ ] T005 [P] Crear `backend/.env.example` con `DATABASE_URL`, `CORS_ORIGENES`, `PORT`, `SESION_INACTIVIDAD` (nombres y ejemplos locales, nunca valores reales)
+- [x] T001 Arreglar la instalación en `package.json`: subir `esbuild` a una versión que satisfaga el peer de `vite@8` (o quitarlo si nada lo importa), quitar `@google/genai`, `express`, `dotenv`, `@types/express`; agregar `vitest` y el script `"test": "vitest run"`. Generar y versionar `package-lock.json`. Hecho cuando `npm ci && npm run lint && npm run build` pasa sin `--legacy-peer-deps` (D18)
+- [x] T002 [P] Configurar Vitest en `vite.config.ts` (entorno `node`, `src/**/*.test.ts`) y tipos en `tsconfig.json`
+- [x] T003 [P] Crear el módulo Go `github.com/Matt122133/pae-anep/backend` en `backend/go.mod` (Go 1.26, pgx/v5, x/crypto) y `backend/.gitignore` (`.env`)
+- [x] T004 [P] Agregar `datos/` y `backend/.env` a `.gitignore` raíz; reemplazar `.env.example` raíz por `VITE_API_URL` (sin `GEMINI_API_KEY`, sin `APP_URL`)
+- [x] T005 [P] Crear `backend/.env.example` con `DATABASE_URL`, `CORS_ORIGENES`, `PORT`, `SESION_INACTIVIDAD` (nombres y ejemplos locales, nunca valores reales)
 
 ## Phase 2: Foundational (bloquea todas las historias)
 
