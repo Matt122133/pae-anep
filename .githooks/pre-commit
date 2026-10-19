@@ -13,7 +13,28 @@
 
 set -e
 
-# --- add stack lanes here (gofmt / go vet / go test, npm test, etc.) ---
+# --- carriles del stack ---------------------------------------------------
+# Rapidos a proposito: un hook lento es un hook que se saltea. Las pruebas
+# completas son el verify: del plan, no esto. Cada carril corre solo si el
+# commit toca esa superficie.
+raiz="$(git rev-parse --show-toplevel)"
+staged="$(git diff --cached --name-only --diff-filter=ACMR)"
+
+# Frontend: chequeo de tipos.
+if printf '%s\n' "$staged" | grep -qE '^(src/|vite\.config\.ts|tsconfig\.json|package\.json)'; then
+  (cd "$raiz" && npm run --silent lint) || { echo "pre-commit: npm run lint fallo" >&2; exit 1; }
+fi
+
+# Backend: gofmt sobre los .go del commit.
+go_staged="$(printf '%s\n' "$staged" | grep -E '^backend/.*\.go$' || true)"
+if [ -n "$go_staged" ]; then
+  sin_formato="$(cd "$raiz" && gofmt -l $go_staged)"
+  if [ -n "$sin_formato" ]; then
+    echo "pre-commit: archivos sin gofmt:" >&2
+    echo "$sin_formato" >&2
+    exit 1
+  fi
+fi
 
 # plan-coverage — every staged file must be covered by the active plan's covers:
 python3 "$(git rev-parse --show-toplevel)/scripts/harness/check_plan_coverage.py"

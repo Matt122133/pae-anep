@@ -96,10 +96,10 @@ distintos y sin dependencias pendientes.
 
 ## Phase 8: Polish
 
-- [ ] T054 [P] `backend/README.md`: estructura, variables, bases local y de pruebas, comandos `cuentas` e `importar`
+- [x] T054 [P] `backend/README.md`: estructura, variables, bases local y de pruebas, comandos `cuentas` e `importar`
 - [ ] T055 [P] Actualizar `ARCHITECTURE.md`, `SECURITY.md` (frontera de confianza real), `docs/processes/dev-setup.md` (sección backend), `docs/README.md`, `docs/tech-debt-tracker.md` (resolver las tres filas `High` y la de `npm install`), `docs/HARNESS-TODO.md`
-- [ ] T056 Agregar carril `npm run lint` en `.githooks/pre-commit` arriba del sensor
-- [ ] T057 `src/data/initialData.ts` solo para desarrollo: no se carga en ningún camino de producción (verificar con `grep`)
+- [x] T056 Agregar carril `npm run lint` en `.githooks/pre-commit` arriba del sensor
+- [x] T057 `src/data/initialData.ts` solo para desarrollo: no se carga en ningún camino de producción (verificar con `grep`)
 - [ ] T058 Correr `verify:` completo y los 15 escenarios de `quickstart.md`; anotar resultado por escenario en `quickstart.md`
 - [ ] T059 Chequeo de datos personales antes del PR: `git diff master..HEAD | grep "^+"` sin cédulas ni mails reales; borrar `HANDOFF.md`
 
