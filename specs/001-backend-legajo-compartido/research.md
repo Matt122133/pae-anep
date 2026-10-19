@@ -54,6 +54,13 @@ momento). Bloqueo si hay **5 fallos seguidos** del mismo usuario en los últimos
 bloqueado se responde lo mismo que a una contraseña incorrecta, sin verificar
 el hash (FR-004, FR-005). Purga a los 30 días.
 
+**La IP es la del cliente, no la del proxy.** En Railway toda petición llega
+desde su proxy, así que `RemoteAddr` es el mismo para las cuatro usuarias: 20
+fallos de cualquiera bloquearían a todas. Se toma la **última** entrada de
+`X-Forwarded-For` (la agrega el proxy de Railway al final, así que el cliente no
+la puede falsificar); sin ese encabezado, `RemoteAddr`. Configurable con
+`CONFIAR_PROXY` (por defecto `true`).
+
 **Por qué**: en tabla y no en memoria para que sobreviva a un redeploy en
 Railway. Mismo mensaje para todo para no confirmar qué usuarios existen.
 
@@ -171,9 +178,9 @@ se pueden borrar (como hoy), con bitácora.
 **Por qué**: el frontend ya funciona con un `DatabaseState` en memoria; cambiar
 de dónde sale ese estado es un cambio chico en `App.tsx`, mientras que
 paginar y cargar por pantalla sería reescribir los componentes. El volumen lo
-permite: 140 escuelas y algunos cientos de visitas son pocos cientos de KB. La
-bitácora se limita a los últimos 12 meses en esta respuesta y el resto se pide
-aparte. Si el JSON pasa de ~2 MB, se revisa (anotar en tech-debt).
+permite: 140 escuelas y algunos cientos de visitas son pocos cientos de KB.
+**La bitácora va completa**, sin ventana: cortarla haría que la vista y el CSV
+mostraran menos sin avisar (FR-019). Si el JSON pasa de ~2 MB, se revisa (anotar en tech-debt).
 
 ## D14. Borradores "no enviados" en el frontend (FR-028, FR-029)
 
@@ -189,6 +196,12 @@ pendientes, se avisa y se pide confirmar.
 pide reingresar) y `5xx`. Un `400` (dato inválido) o `409` (conflicto) **no** se
 convierte en borrador: se muestra en el formulario abierto para corregir.
 
+**Si el reenvío de un borrador da `400` o `409`**, el borrador **no se borra**:
+queda con el error visible ("otra persona cambió esta ficha" / "escuela
+inactiva") y la opción "Abrir en el formulario", que lo carga sobre la versión
+actual para resolverlo a mano. Solo una confirmación del servidor o un
+"Descartar" confirmado lo eliminan.
+
 **Alternativa**: IndexedDB — más capacidad, más código; es la herramienta de
 `002`, que va a necesitar una cola real. Para una lista corta de reenvío manual
 `localStorage` alcanza.
@@ -201,6 +214,7 @@ convierte en borrador: se muestra en el formulario abierto para corregir.
 | `CORS_ORIGENES` | backend | sí | Orígenes permitidos, separados por coma |
 | `PORT` | backend | no | Por defecto `8080` |
 | `SESION_INACTIVIDAD` | backend | no | Por defecto `720h` (30 días) |
+| `CONFIAR_PROXY` | backend | no | Por defecto `true`: IP del cliente desde `X-Forwarded-For` (D4) |
 | `VITE_API_URL` | frontend (build) | sí | URL base del API; pública por definición |
 
 El servicio lee solo del entorno y se niega a arrancar si falta una obligatoria.

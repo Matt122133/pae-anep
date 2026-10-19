@@ -30,9 +30,8 @@ Los cuerpos usan **los nombres de campo de `src/types/index.ts`** (`schoolId`,
 - `GET /legajo` → `200 { schools, staff, visits, issues, activityLogs, cuentas }`
   con la forma de `DatabaseState`. `schools` incluye los derivados
   (`totalVisits`, `lastVisitDate`, `activeIssuesCount`) y `active`. Por defecto
-  solo activos; `?incluir_inactivos=1` trae todo. `activityLogs`: últimos 12
-  meses. Cada registro editable trae `version`.
-- `GET /bitacora?desde=&hasta=&escuela=` → entradas fuera de esa ventana.
+  solo activos; `?incluir_inactivos=1` trae todo. `activityLogs`: completa.
+  Cada registro editable trae `version`.
 
 ## Escrituras
 
@@ -51,7 +50,7 @@ venga en el cuerpo.
 | `PUT /personal/{id}` | `StaffMember` + `version` | no cambia de escuela: eso es traslado |
 | `DELETE /personal/{id}` | `{version}` | baja lógica |
 | `POST /personal/{id}/traslado` | `{schoolId, fecha, version}` | FR-033; bitácora en ambas escuelas |
-| `POST /visitas` | `{visit, newIssues:[…]}` | visita + incidencias nuevas en una transacción; número asignado por el servidor |
+| `POST /visitas` | `{visit, newIssues:[…]}` | visita + incidencias nuevas en una transacción; número asignado por el servidor; escuela inactiva → `400` con `schoolId: "escuela inactiva"` |
 | `PUT /visitas/{id}` | `Visit` + `version` | incluye pasar de Programada a Realizada |
 | `DELETE /visitas/{id}` | `{version}` | solo `Programada` o `Cancelada`; una realizada no se borra |
 | `POST /incidencias` | `SchoolIssue` con `id` | |

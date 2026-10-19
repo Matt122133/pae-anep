@@ -37,15 +37,15 @@ distintos y sin dependencias pendientes.
 - [ ] T015 [P] [US1] `backend/internal/auth/contrasena.go` + test: argon2id en formato PHC, verificación en tiempo constante, mínimo 10 caracteres (D2)
 - [ ] T016 [P] [US1] `backend/internal/cuentas/cuentas.go` + test: crear, buscar por usuario (normalizado), listar activas, desactivar, cambiar hash
 - [ ] T017 [US1] `backend/internal/auth/sesion.go` + test: emitir token (32 bytes, se guarda sha256), resolver con vencimiento por inactividad de 30 días y `ultimo_uso` como máximo cada 5 min, revocar una, revocar todas de una cuenta (D3)
-- [ ] T018 [US1] `backend/internal/auth/limites.go` + test: 5 fallos seguidos por usuario / 20 por IP en 15 min bloquean; bloqueado responde igual que credencial mala sin verificar hash (D4)
+- [ ] T018 [US1] `backend/internal/auth/limites.go` + test: 5 fallos seguidos por usuario / 20 por IP en 15 min bloquean; bloqueado responde igual que credencial mala sin verificar hash; IP del cliente = última entrada de `X-Forwarded-For` con `CONFIAR_PROXY`, con prueba de que dos clientes detrás del mismo proxy no se bloquean entre sí (D4)
 - [ ] T019 [US1] `backend/internal/auth/handlers.go` + test: `POST /auth/ingresar`, `POST /auth/salir`, `GET /yo`; mismo error para usuario inexistente y contraseña mala (FR-005)
 - [ ] T020 [US1] `backend/cmd/cuentas/main.go` subcomando `crear` (`-usuario -nombre -rol`, contraseña por stdin sin eco, D17) y `listar`
-- [ ] T021 [US1] `backend/internal/legajo/lectura.go` + test: `GET /legajo` en la forma de `DatabaseState` con derivados de escuela (D10), `cuentas`, bitácora de 12 meses, `?incluir_inactivos=1`; `GET /bitacora` para el resto
+- [ ] T021 [US1] `backend/internal/legajo/lectura.go` + test: `GET /legajo` en la forma de `DatabaseState` con derivados de escuela (D10), `cuentas`, bitácora completa, `?incluir_inactivos=1`
 - [ ] T022 [US1] Montar rutas de US1 en `backend/cmd/api/main.go` y prueba de que **cada** ruta de datos responde 401 sin credencial (SC-003) en `backend/cmd/api/main_test.go`
 - [ ] T023 [P] [US1] `src/services/sesion.ts` + `src/services/sesion.test.ts`: guardar/leer/borrar token y cuenta en `localStorage` (try/catch)
 - [ ] T024 [P] [US1] `src/services/api.ts` + `src/services/api.test.ts`: `fetch` con base `import.meta.env.VITE_API_URL`, token, errores tipados (`red`, `sesion`, `invalido` con campos, `conflicto` con actual, `servidor`); generador de id con respaldo para contexto no seguro
 - [ ] T025 [US1] `src/components/Login.tsx`: formulario usuario/contraseña mobile-first, mensaje único de error, estado de carga
-- [ ] T026 [US1] `src/App.tsx`: sin sesión muestra `Login`; con sesión carga `GET /legajo` en el `DatabaseState`; 401 vuelve a `Login`; botón cerrar sesión. Quitar `initializeDatabase()` del arranque
+- [ ] T026 [US1] `src/App.tsx`: sin sesión muestra `Login`; con sesión carga `GET /legajo` en el `DatabaseState`; 401 vuelve a `Login`; botón cerrar sesión. Quitar `initializeDatabase()` del arranque. Agregar `active?` y `version?` a `School`, `StaffMember`, `Visit`, `SchoolIssue` en `src/types/index.ts`
 - [ ] T027 [US1] Reemplazar el selector de usuaria activa por el nombre de la cuenta en `src/components/Navbar.tsx` y `src/components/MobileBottomNav.tsx`; quitar `getActiveUserId`/`setActiveUserId` de `src/services/storage.ts`
 
 ## Phase 4: User Story 2 — Cargar y editar a mi nombre (P1)
@@ -55,14 +55,14 @@ distintos y sin dependencias pendientes.
 - [ ] T028 [US2] `backend/internal/bitacora/bitacora.go` + test: diff campo a campo entre registro de la base y el nuevo con etiquetas legibles, escritura dentro de una `pgx.Tx`, autor desde la cuenta; prueba de que `UPDATE`/`DELETE` sobre `bitacora` falla por el trigger
 - [ ] T029 [US2] `backend/internal/legajo/escuelas.go` + test: `POST` idempotente por id, `PUT` con versión (409 / 200 si igual, D7), `DELETE` lógico, `reactivar`; validación de listas cerradas con error por campo
 - [ ] T030 [US2] `backend/internal/legajo/personal.go` + test: alta, edición con versión, baja lógica, `POST /personal/{id}/traslado` con `personal_asignaciones` y bitácora en ambas escuelas (FR-033)
-- [ ] T031 [US2] `backend/internal/legajo/visitas.go` + test: `POST /visitas` con `newIssues` en una transacción, número correlativo con reintento ante choque, `contenido` validado con `DisallowUnknownFields`, `PUT` con versión, `DELETE` solo de no realizadas; prueba de dos altas simultáneas en la misma escuela
+- [ ] T031 [US2] `backend/internal/legajo/visitas.go` + test: `POST /visitas` con `newIssues` en una transacción, número correlativo con reintento ante choque, `contenido` validado con `DisallowUnknownFields`, `PUT` con versión, `DELETE` solo de no realizadas; escuela inactiva → 400 `schoolId: "escuela inactiva"`; prueba de dos altas simultáneas en la misma escuela
 - [ ] T032 [US2] `backend/internal/legajo/incidencias.go` + test: alta, edición/cambio de estado con versión y regla `Resuelto ⇔ fecha_resolucion`, baja
 - [ ] T033 [US2] `backend/internal/legajo/notas.go` + test: `POST /bitacora/notas`; `PUT`/`DELETE` sobre `/bitacora` → 405
 - [ ] T034 [US2] Prueba en `backend/internal/legajo/autor_test.go`: un cuerpo con `userId`/`inspectorName`/`timestamp` falsos queda atribuido a la dueña de la sesión (SC-002)
 - [ ] T035 [P] [US2] `backend/internal/presencia/presencia.go` + test: mapa en memoria con latidos, vence a 60 s, `PUT`/`DELETE /presencia/{tipo}/{id}` (D8)
 - [ ] T036 [US2] Montar rutas de US2 en `backend/cmd/api/main.go`
 - [ ] T037 [US2] `src/App.tsx`: cada `handleSave*`/`handleDelete*`/`handleToggleIssueStatus` llama a la API y reemplaza el registro con la respuesta; deja de armar bitácora y contadores en el cliente; los logs vienen del servidor
-- [ ] T038 [US2] Cuentas del servidor en lugar de `PAE_TEAM_MEMBERS`: `src/components/TeamVisitorSelector.tsx`, `src/components/NewVisitModal.tsx`, `src/components/ScheduleVisitModal.tsx`, `src/components/SchoolDetail.tsx`, `src/components/ActivityLogView.tsx`, `src/components/Dashboard.tsx`, `src/components/SchoolReportModal.tsx`; `formatTeamVisitors` en `src/types/index.ts` recibe la lista de cuentas
+- [ ] T038 [US2] Cuentas del servidor en lugar de `PAE_TEAM_MEMBERS`: `src/components/TeamVisitorSelector.tsx`, `src/components/NewVisitModal.tsx`, `src/components/ScheduleVisitModal.tsx`, `src/components/SchoolDetail.tsx`, `src/components/ActivityLogView.tsx`, `src/components/Dashboard.tsx`, `src/components/SchoolReportModal.tsx`; `formatTeamVisitors` en `src/types/index.ts` recibe la lista de cuentas. **Borrar** `PAE_TEAM_MEMBERS`, los nombres fijos de `formatTeamVisitors` y `generateSeedActivityLogs` de `src/services/storage.ts` (nombres reales en repo público, tech-debt)
 - [ ] T039 [P] [US2] `src/components/PresenciaAviso.tsx` + uso en los modales de edición (latido cada 20 s, `DELETE` al cerrar)
 - [ ] T040 [US2] Manejo de `409` en los modales de edición: aviso con la versión actual y opción de reintentar sin perder lo escrito
 - [ ] T041 [US2] Acción de traslado de auxiliar en `src/components/StaffModal.tsx` / `src/components/SchoolDetail.tsx`; bajas lógicas y "ver inactivos" en `src/components/SchoolList.tsx`
@@ -71,7 +71,7 @@ distintos y sin dependencias pendientes.
 
 **Prueba independiente**: offline, guardar visita, cerrar y reabrir, volver online, reenviar dos veces: una sola visita en el servidor.
 
-- [ ] T042 [P] [US3] `src/services/borradores.ts` + `src/services/borradores.test.ts`: agregar, listar, reenviar (borra solo si el servidor confirmó), descartar; sobrevive a recargar; qué errores generan borrador (red, 401, 5xx) y cuáles no (400, 409) (D14)
+- [ ] T042 [P] [US3] `src/services/borradores.ts` + `src/services/borradores.test.ts`: agregar, listar, reenviar (borra solo si el servidor confirmó), descartar; sobrevive a recargar; qué errores generan borrador (red, 401, 5xx) y cuáles no (400, 409); un reenvío que da 400/409 deja el borrador con el error y la opción "Abrir en el formulario" (D14)
 - [ ] T043 [US3] Integrar borradores en `src/App.tsx`: un guardado fallido por red/401/5xx crea borrador y avisa "no enviado" sin cerrar el formulario; 401 además pide reingresar
 - [ ] T044 [US3] `src/components/BorradoresModal.tsx` y contador en `src/components/Navbar.tsx` / `src/components/MobileBottomNav.tsx`; descartar con confirmación; aviso al cerrar sesión con borradores pendientes
 - [ ] T045 [US3] Eliminar `src/components/SyncModal.tsx`, el toggle de offline simulado y todo indicador de "sincronizado" (`src/App.tsx`, `src/components/Dashboard.tsx`, `src/components/SchoolDetail.tsx`, `src/components/SchoolList.tsx`); quitar `isOfflinePendingSync`/`offlineSavedAt`/`syncedAt` de `src/types/index.ts` y la migración que los inventa en `src/services/storage.ts` (FR-027, SC-007)
@@ -100,7 +100,7 @@ distintos y sin dependencias pendientes.
 - [ ] T055 [P] Actualizar `ARCHITECTURE.md`, `SECURITY.md` (frontera de confianza real), `docs/processes/dev-setup.md` (sección backend), `docs/README.md`, `docs/tech-debt-tracker.md` (resolver las tres filas `High` y la de `npm install`), `docs/HARNESS-TODO.md`
 - [ ] T056 Agregar carril `npm run lint` en `.githooks/pre-commit` arriba del sensor
 - [ ] T057 `src/data/initialData.ts` solo para desarrollo: no se carga en ningún camino de producción (verificar con `grep`)
-- [ ] T058 Correr `verify:` completo y los 14 escenarios de `quickstart.md`; anotar resultado por escenario en `quickstart.md`
+- [ ] T058 Correr `verify:` completo y los 15 escenarios de `quickstart.md`; anotar resultado por escenario en `quickstart.md`
 - [ ] T059 Chequeo de datos personales antes del PR: `git diff master..HEAD | grep "^+"` sin cédulas ni mails reales; borrar `HANDOFF.md`
 
 ## Dependencies

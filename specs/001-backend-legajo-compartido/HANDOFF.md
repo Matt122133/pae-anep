@@ -1,6 +1,6 @@
 # Handoff — dónde quedó 001 (2026-10-18)
 
-Archivo de traspaso entre sesiones. Borrarlo cuando el plan pase a `active`.
+Archivo de traspaso entre sesiones. Se borra en T059, antes del PR.
 
 ## Estado
 
@@ -10,8 +10,7 @@ Archivo de traspaso entre sesiones. Borrarlo cuando el plan pase a `active`.
 - Fase: **Brief**. `spec.md` listo; `/speckit-clarify` hecho el 2026-10-18
   (ver sección *Clarifications* del spec), incluidos los dos seguimientos: rechazo +
   aviso de presencia (co-edición en vivo → 003) y borradores sin señal en 001.
-- **Plan escrito** (`plan.md` en `status: draft`, con research, data-model,
-  contracts y quickstart). Faltan `tasks.md` y `/speckit-analyze`. Sin código.
+- **Plan activo**, 59 tareas en `tasks.md`. Sin código todavía.
 
 ## Decisiones ya tomadas por el dueño del repo (no volver a preguntar)
 
@@ -36,7 +35,9 @@ lectura sin conexión (Historia 6, P3) que se borra al cerrar sesión.
 ## Siguiente paso
 
 1. ~~Clarify~~ hecho. ~~`/speckit-plan`~~ hecho.
-2. `/speckit-tasks` → `/speckit-analyze` (hook `after_tasks`). El `covers:` va a
+2. ~~tasks~~ y ~~analyze~~ hechos; correcciones U1, U2, U3, I1, I2 aplicadas.
+   **Plan `active` y `analyzed: 2026-10-18`** con aprobación explícita del dueño
+   ("demosle de una"). Siguiente: implementar desde T001 (`/speckit-implement`). El `covers:` va a
    necesitar al menos `backend/`, `src/`, `.gitignore` (patrón del JSON real),
    `package.json`, `.env.example`. Modelo de backend: `flash-urbano/backend`
    (`cmd/api`, `internal/<dominio>`, `migrations/` embebidas, tests con

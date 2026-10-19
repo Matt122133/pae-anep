@@ -1,6 +1,6 @@
 ---
 ticket: none
-status: draft
+status: active
 covers:
   - backend/
   - src/
@@ -12,7 +12,7 @@ covers:
   - .env.example
   - .githooks/pre-commit
 verify: npm ci && npm run lint && npm test && npm run build && cd backend && go vet ./... && go test -count=1 ./... && go build ./...
-analyzed:
+analyzed: 2026-10-18
 ---
 
 <!--

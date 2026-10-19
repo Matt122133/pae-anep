@@ -48,6 +48,7 @@ go run ./cmd/importar -archivo cmd/importar/testdata/ejemplo.json
 | 12 | H5 | `importar` con un JSON con un `schoolId` roto | Nada cargado; error con ubicación |
 | 13 | H2 | Trasladar una auxiliar de escuela | Aparece en la nueva; la historia en ambas |
 | 14 | H2 | Dar de baja una escuela | Desaparece del listado; sus visitas se siguen viendo |
+| 15 | SC-005 | Teléfono con datos móviles: abrir la app, ingresar, cronometrar hasta el catálogo | < 30 s |
 
 Cuentas y datos de estas pruebas son **ficticios**. Nunca usar el JSON real
 para probar en local si la máquina no es la del dueño del repo.
