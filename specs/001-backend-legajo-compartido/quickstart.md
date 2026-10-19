@@ -7,10 +7,10 @@ Go 1.26+, Node 22, Docker Desktop corriendo.
 ## 1. Bases locales
 
 ```bash
-# Pruebas (se vacía en cada corrida de tests). Puerto 55432.
-docker run -d --name pae-pg-test -e POSTGRES_PASSWORD=test -e POSTGRES_DB=pae_test -p 55432:5432 postgres:17
-# Desarrollo (persistente). Puerto 55433.
-docker run -d --name pae-pg-dev  -e POSTGRES_PASSWORD=dev  -e POSTGRES_DB=pae_dev  -p 55433:5432 postgres:17
+# Pruebas (se vacía en cada corrida de tests). Puerto 55442.
+docker run -d --name pae-pg-test -e POSTGRES_PASSWORD=test -e POSTGRES_DB=pae_test -p 55442:5432 postgres:17
+# Desarrollo (persistente). Puerto 55443.
+docker run -d --name pae-pg-dev  -e POSTGRES_PASSWORD=dev  -e POSTGRES_DB=pae_dev  -p 55443:5432 postgres:17
 ```
 
 ## 2. Verify automático
@@ -21,7 +21,7 @@ si la base de pruebas está apagada, las pruebas del backend **fallan** (D16).
 ## 3. Servicio y cuentas
 
 ```bash
-cd backend && cp .env.example .env   # DATABASE_URL a 55433, CORS_ORIGENES=http://localhost:3000
+cd backend && cp .env.example .env   # DATABASE_URL a 55443, CORS_ORIGENES=http://localhost:3000
 ./dev.sh                              # levanta la base dev si hace falta, migra, arranca en :8080
 go run ./cmd/cuentas crear -usuario valentina -nombre "Valentina (prueba)" -rol "Ecónoma del PAE"
 go run ./cmd/cuentas crear -usuario karina -nombre "Karina (prueba)" -rol "Ecónoma del PAE"

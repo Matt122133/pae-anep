@@ -56,7 +56,7 @@ sin red queda como borrador que se reenvía una sola vez (ver
 
 **Storage**: PostgreSQL 17 (Railway en producción; Docker en local). En el navegador, `localStorage` solo para la sesión y los borradores
 
-**Testing**: `go test` contra Postgres real en `:55432` (falla si no hay base, D16); Vitest para `api.ts` y `borradores.ts`; escenarios manuales del quickstart
+**Testing**: `go test` contra Postgres real en `:55442` (falla si no hay base, D16); Vitest para `api.ts` y `borradores.ts`; escenarios manuales del quickstart
 
 **Target Platform**: servicio Linux en contenedor (Railway); PWA estática en navegadores móviles
 

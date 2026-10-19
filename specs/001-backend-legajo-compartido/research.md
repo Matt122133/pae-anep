@@ -224,7 +224,7 @@ El servicio lee solo del entorno y se niega a arrancar si falta una obligatoria.
 
 **Decisión**: las pruebas que necesitan Postgres usan un helper
 `internal/testdb` que conecta a `TEST_DATABASE_URL` y, **si no está definida,
-usa la URL de la base de pruebas documentada** (`localhost:55432`). Si no puede
+usa la URL de la base de pruebas documentada** (`localhost:55442`). Si no puede
 conectar, **falla**, no se saltea. Saltear exige decirlo: `PAE_SIN_DB=1`.
 
 **Por qué**: en `flash-urbano` las pruebas se salteaban solas y un `verify:`
