@@ -1,8 +1,8 @@
 // Comando cuentas administra las cuentas del equipo (FR-009, US4).
 //
-//	cuentas crear      -usuario karina -nombre "Karina Rivero" -rol "Ecónoma del PAE"
-//	cuentas resetear   -usuario karina
-//	cuentas desactivar -usuario karina
+//	cuentas crear      -usuario ana -nombre "Ana (ficticia)" -rol "Ecónoma del PAE"
+//	cuentas resetear   -usuario ana
+//	cuentas desactivar -usuario ana
 //	cuentas listar     [-todas]
 //
 // La contrasena se pide por la entrada estandar, **sin eco y nunca como
