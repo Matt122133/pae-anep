@@ -27,12 +27,15 @@ const URLPorDefecto = "postgres://postgres:test@localhost:55442/pae_test?sslmode
 const tablas = `bitacora, incidencias, visitas, personal_asignaciones, personal,
 	escuelas, intentos_ingreso, sesiones, cuentas`
 
+// claveCerrojo serializa las pruebas que usan la base. Es un cerrojo de
+// Postgres y no un sync.Mutex porque `go test ./...` corre cada paquete en su
+// PROPIO proceso y en paralelo: con un mutex, dos paquetes vaciaban la base a
+// la vez y se rompian las pruebas el uno al otro (paso al montar cmd/api).
+const claveCerrojo int64 = 1_001_2027
+
 var (
 	migrarUnaVez sync.Once
 	errMigrar    error
-	// cerrojo serializa las pruebas que usan la base dentro de un paquete: todas
-	// vacian las mismas tablas.
-	cerrojo sync.Mutex
 )
 
 // URL devuelve la base a usar: TEST_DATABASE_URL o la documentada.
@@ -65,15 +68,26 @@ func Abrir(t testing.TB) *db.Pool {
 		t.Fatalf("no se pudo migrar la base de pruebas: %v", errMigrar)
 	}
 
-	cerrojo.Lock()
-	if _, err := pool.Exec(ctx, "TRUNCATE "+tablas+" CASCADE"); err != nil {
-		cerrojo.Unlock()
+	// El cerrojo es de la sesion: se toma en una conexion propia que se
+	// mantiene hasta el final de la prueba, fuera del pool que usa la prueba.
+	conn, err := pool.Acquire(ctx)
+	if err != nil {
 		pool.Close()
-		t.Fatalf("no se pudo vaciar la base de pruebas: %v", err)
+		t.Fatalf("no se pudo tomar una conexion para el cerrojo: %v", err)
+	}
+	if _, err := conn.Exec(ctx, `SELECT pg_advisory_lock($1)`, claveCerrojo); err != nil {
+		conn.Release()
+		pool.Close()
+		t.Fatalf("no se pudo tomar el cerrojo de pruebas: %v", err)
 	}
 	t.Cleanup(func() {
+		conn.Exec(context.Background(), `SELECT pg_advisory_unlock($1)`, claveCerrojo)
+		conn.Release()
 		pool.Close()
-		cerrojo.Unlock()
 	})
+
+	if _, err := pool.Exec(ctx, "TRUNCATE "+tablas+" CASCADE"); err != nil {
+		t.Fatalf("no se pudo vaciar la base de pruebas: %v", err)
+	}
 	return pool
 }
