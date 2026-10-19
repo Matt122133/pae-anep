@@ -40,7 +40,7 @@ distintos y sin dependencias pendientes.
 - [x] T018 [US1] `backend/internal/auth/limites.go` + test: 5 fallos seguidos por usuario / 20 por IP en 15 min bloquean; bloqueado responde igual que credencial mala sin verificar hash; IP del cliente = última entrada de `X-Forwarded-For` con `CONFIAR_PROXY`, con prueba de que dos clientes detrás del mismo proxy no se bloquean entre sí (D4)
 - [x] T019 [US1] `backend/internal/auth/handlers.go` + test: `POST /auth/ingresar`, `POST /auth/salir`, `GET /yo`; mismo error para usuario inexistente y contraseña mala (FR-005)
 - [x] T020 [US1] `backend/cmd/cuentas/main.go` subcomando `crear` (`-usuario -nombre -rol`, contraseña por stdin sin eco, D17) y `listar`
-- [ ] T021 [US1] `backend/internal/legajo/lectura.go` + test: `GET /legajo` en la forma de `DatabaseState` con derivados de escuela (D10), `cuentas`, bitácora completa, `?incluir_inactivos=1`
+- [x] T021 [US1] `backend/internal/legajo/lectura.go` + test: `GET /legajo` en la forma de `DatabaseState` con derivados de escuela (D10), `cuentas`, bitácora completa, `?incluir_inactivos=1`
 - [ ] T022 [US1] Montar rutas de US1 en `backend/cmd/api/main.go` y prueba de que **cada** ruta de datos responde 401 sin credencial (SC-003) en `backend/cmd/api/main_test.go`
 - [ ] T023 [P] [US1] `src/services/sesion.ts` + `src/services/sesion.test.ts`: guardar/leer/borrar token y cuenta en `localStorage` (try/catch)
 - [ ] T024 [P] [US1] `src/services/api.ts` + `src/services/api.test.ts`: `fetch` con base `import.meta.env.VITE_API_URL`, token, errores tipados (`red`, `sesion`, `invalido` con campos, `conflicto` con actual, `servidor`); generador de id con respaldo para contexto no seguro
