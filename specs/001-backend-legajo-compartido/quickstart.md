@@ -52,3 +52,33 @@ go run ./cmd/importar -archivo cmd/importar/testdata/ejemplo.json
 
 Cuentas y datos de estas pruebas son **ficticios**. Nunca usar el JSON real
 para probar en local si la máquina no es la del dueño del repo.
+
+## Resultado al 2026-10-19
+
+`verify:` del plan **verde** (exit 0, ninguna prueba salteada: la base de
+pruebas estaba arriba). Prueba de humo del API levantado en local con datos
+ficticios: preflight CORS 204, ingreso de dos cuentas, 401 sin token, lectura
+del legajo importado, edición con entrada de bitácora a nombre de quien editó,
+y token inválido después de salir.
+
+| # | Cubierto por | Estado |
+|---|---|---|
+| 1 | `cmd/api/main_test.go` (401 en toda ruta) + humo | ✅ API · ⏳ pantalla |
+| 2 | `internal/auth/handlers_test.go` (mismo error) | ✅ API · ⏳ pantalla |
+| 3 | `internal/auth/sesion_test.go`, `handlers_test.go` (bloqueo) | ✅ API |
+| 4 | `cmd/api/flujo_test.go` + humo | ✅ API · ⏳ dos navegadores |
+| 5 | `internal/presencia`, `flujo_test.go` | ✅ API · ⏳ pantalla |
+| 6 | `escuelas_test.go`, `flujo_test.go` (409 con actual) | ✅ API · ⏳ pantalla |
+| 7 | `bitacora_test.go`, `flujo_test.go` (405 y trigger) | ✅ |
+| 8 | `src/services/borradores.test.ts` | ✅ lógica · ⏳ **DevTools offline + cerrar pestaña** |
+| 9 | `flujo_test.go` (doble POST), `idempotencia` en `visitas_test.go` | ✅ API · ⏳ pantalla |
+| 10 | `grep` sin `SyncModal`/`isOfflinePendingSync` en `src/` | ✅ código · ⏳ recorrer pantallas |
+| 11 | `cmd/cuentas/main_test.go` (reseteo cierra sesiones, por pipe real) | ✅ |
+| 12 | `cmd/importar/main_test.go` (con_errores.json) | ✅ |
+| 13 | `personal_test.go` (traslado) | ✅ API · ⏳ pantalla |
+| 14 | `escuelas_test.go` (baja lógica) | ✅ API · ⏳ pantalla |
+| 15 | — | ⏳ **en un teléfono** |
+
+⏳ = **no ejecutado**: necesita un navegador (y el 15, un teléfono). Es lo que
+falta para cerrar T058; ver la fila `High` del 2026-10-19 en
+`docs/tech-debt-tracker.md`.
