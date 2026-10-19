@@ -39,7 +39,7 @@ distintos y sin dependencias pendientes.
 - [x] T017 [US1] `backend/internal/auth/sesion.go` + test: emitir token (32 bytes, se guarda sha256), resolver con vencimiento por inactividad de 30 días y `ultimo_uso` como máximo cada 5 min, revocar una, revocar todas de una cuenta (D3)
 - [x] T018 [US1] `backend/internal/auth/limites.go` + test: 5 fallos seguidos por usuario / 20 por IP en 15 min bloquean; bloqueado responde igual que credencial mala sin verificar hash; IP del cliente = última entrada de `X-Forwarded-For` con `CONFIAR_PROXY`, con prueba de que dos clientes detrás del mismo proxy no se bloquean entre sí (D4)
 - [x] T019 [US1] `backend/internal/auth/handlers.go` + test: `POST /auth/ingresar`, `POST /auth/salir`, `GET /yo`; mismo error para usuario inexistente y contraseña mala (FR-005)
-- [ ] T020 [US1] `backend/cmd/cuentas/main.go` subcomando `crear` (`-usuario -nombre -rol`, contraseña por stdin sin eco, D17) y `listar`
+- [x] T020 [US1] `backend/cmd/cuentas/main.go` subcomando `crear` (`-usuario -nombre -rol`, contraseña por stdin sin eco, D17) y `listar`
 - [ ] T021 [US1] `backend/internal/legajo/lectura.go` + test: `GET /legajo` en la forma de `DatabaseState` con derivados de escuela (D10), `cuentas`, bitácora completa, `?incluir_inactivos=1`
 - [ ] T022 [US1] Montar rutas de US1 en `backend/cmd/api/main.go` y prueba de que **cada** ruta de datos responde 401 sin credencial (SC-003) en `backend/cmd/api/main_test.go`
 - [ ] T023 [P] [US1] `src/services/sesion.ts` + `src/services/sesion.test.ts`: guardar/leer/borrar token y cuenta en `localStorage` (try/catch)
@@ -81,8 +81,8 @@ distintos y sin dependencias pendientes.
 
 **Prueba independiente**: crear, ingresar, resetear: contraseña vieja falla y sesiones abiertas caen.
 
-- [ ] T047 [US4] Subcomandos `resetear` y `desactivar` en `backend/cmd/cuentas/main.go` que revocan todas las sesiones de la cuenta (FR-006) + `backend/cmd/cuentas/main_test.go`
-- [ ] T048 [US4] Prueba en `backend/internal/auth/handlers_test.go`: cuenta desactivada no ingresa y su sesión previa da 401; su autoría en bitácora se conserva
+- [x] T047 [US4] Subcomandos `resetear` y `desactivar` en `backend/cmd/cuentas/main.go` que revocan todas las sesiones de la cuenta (FR-006) + `backend/cmd/cuentas/main_test.go`
+- [x] T048 [US4] Prueba en `backend/internal/auth/handlers_test.go`: cuenta desactivada no ingresa y su sesión previa da 401; su autoría en bitácora se conserva
 
 ## Phase 7: User Story 5 — Cargar el catálogo real (P2)
 
