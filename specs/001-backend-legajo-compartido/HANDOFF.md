@@ -8,9 +8,8 @@ Archivo de traspaso entre sesiones. Borrarlo cuando el plan pase a `active`.
   commiteados (commit `14275d9`, con `HARNESS_BYPASS` por ser el bootstrap).
   **No pusheado.**
 - Fase: **Brief**. `spec.md` listo; `/speckit-clarify` hecho el 2026-10-18
-  (ver sección *Clarifications* del spec), **salvo dos pendientes que bloquean
-  el plan**: edición en tiempo real y si los borradores sin señal quedan en 001.
-  Están en *Pendientes de confirmación* del spec, con recomendación.
+  (ver sección *Clarifications* del spec), incluidos los dos seguimientos: rechazo +
+  aviso de presencia (co-edición en vivo → 003) y borradores sin señal en 001.
 - No hay plan, ni tareas, ni código de backend.
 
 ## Decisiones ya tomadas por el dueño del repo (no volver a preguntar)

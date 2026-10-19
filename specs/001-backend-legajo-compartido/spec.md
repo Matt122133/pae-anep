@@ -30,26 +30,13 @@ que el servidor no confirmó.
 
 ### Session 2026-10-18
 
-- Q: Si dos compañeras editan la misma ficha a la vez, ¿qué pasa con el segundo guardado? → A: **"Se tiene que hacer en tiempo real: ambas deberían poder editar al mismo tiempo y ver lo que está escribiendo la otra."** **Abierto, pendiente de confirmar el alcance** (ver *Pendientes de confirmación*).
+- Q: Si dos compañeras editan la misma ficha a la vez, ¿qué pasa con el segundo guardado? → A: **"Se tiene que hacer en tiempo real: ambas deberían poder editar al mismo tiempo y ver lo que está escribiendo la otra."** Resuelto en el seguimiento de abajo.
 - Q: ¿Cuánto dura la sesión? → A: 30 días sin uso (confirma FR-006).
 - Q: ¿Qué pasa con las bajas? → A: Borrado lógico (marca activo/inactivo); el registro se oculta pero se sigue pudiendo consultar. Si una auxiliar cambia de escuela, todo su historial se mantiene (nuevo FR-033).
-- Q: ¿Copia de solo lectura sin señal en 001? → A: **No: "dejemos todo lo offline para la 002".** Se quita la Historia 6 y FR-030. Si "todo" incluye los borradores "no enviados" (Historia 3) está **pendiente de confirmar**.
+- Q: ¿Copia de solo lectura sin señal en 001? → A: **No: "dejemos todo lo offline para la 002".** Se quita la Historia 6 y FR-030. Los borradores "no enviados" se resuelven abajo.
 
-### Pendientes de confirmación (bloquean `/speckit-plan`)
-
-1. **Edición en tiempo real.** Ver lo que escribe la otra mientras escribe es
-   co-edición en vivo (conexión permanente con el servidor y fusión de cambios
-   campo por campo). Es un salto de complejidad grande para 001 y choca con el
-   Principio III (simplicidad) y con trabajar sin señal. **Recomendación**:
-   001 mantiene el rechazo del segundo guardado (FR-014) y agrega un aviso de
-   presencia ("Karina está editando esta ficha"); la co-edición en vivo va a un
-   feature propio (003) con su ADR. Si el dueño del repo la quiere en 001, se
-   reescribe la Historia 2 y FR-014.
-2. **Borradores sin señal.** Si se sacan de 001 también los borradores "no
-   enviados", en 001 un guardado sin señal **pierde lo escrito**, lo que viola el
-   Principio I. Opciones: (a) mantener los borradores en 001 (recomendado: es lo
-   mínimo para no perder trabajo); (b) sacarlos, y 001 **no se usa en campo**
-   hasta que 002 esté listo, dicho por escrito en el plan.
+- Q: (seguimiento) ¿Edición en tiempo real en 001? → A: Se sigue la recomendación: 001 rechaza el segundo guardado (FR-014) y muestra un aviso de presencia cuando otra integrante tiene abierta la misma ficha en edición (FR-034). La co-edición en vivo pasa a un feature propio (003) con su ADR.
+- Q: (seguimiento) ¿Los borradores "no enviados" salen de 001? → A: No. Se sigue la recomendación: los borradores quedan en 001 (Historia 3, FR-028, FR-029) porque son lo mínimo para no perder trabajo (Principio I). Todo lo demás offline (copia de lectura, sincronización automática) va a 002.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -112,7 +99,10 @@ auxiliar actualizada y dos entradas de bitácora atribuidas a A.
 4. **Given** una entrada de bitácora existente, **When** alguien intenta
    modificarla o borrarla desde la app o directamente contra el servidor,
    **Then** el servidor lo rechaza.
-5. **Given** que la usuaria A abrió la ficha de una auxiliar y la usuaria B guardó
+5. **Given** que la usuaria B tiene abierta en edición la ficha de una auxiliar,
+   **When** la usuaria A abre esa misma ficha para editar, **Then** A ve "B está
+   editando esta ficha" y puede seguir igual.
+6. **Given** que la usuaria A abrió la ficha de una auxiliar y la usuaria B guardó
    un cambio en esa misma ficha después, **When** A guarda, **Then** el servidor
    rechaza el guardado de A en vez de pisar el de B, y A ve un aviso que le
    permite ver la versión actual y reintentar sin perder lo que escribió.
@@ -290,6 +280,11 @@ comprobar que no se cargó nada y que el informe nombra cada error.
   para elegir quiénes hicieron una visita) MUST venir del servidor (cuentas
   activas), no de una lista fija en el código.
 
+- **FR-034**: Cuando una integrante abre una ficha en edición y otra ya la tiene
+  abierta en edición, la app MUST mostrarle un aviso con el nombre de la otra
+  ("Karina está editando esta ficha"). El aviso es informativo: no bloquea, y
+  deja de mostrarse cuando la otra cierra la ficha o pasa un minuto sin señal de
+  vida de su sesión. No se muestra lo que la otra está escribiendo.
 - **FR-033**: Cuando una persona del personal de cocina cambia de escuela, el
   sistema MUST conservar todo su historial (en qué escuelas estuvo, desde y
   hasta cuándo, y las entradas de bitácora asociadas); el cambio de escuela no
