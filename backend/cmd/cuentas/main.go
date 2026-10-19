@@ -57,6 +57,13 @@ func main() {
 // lectorContrasena pide una contrasena mostrando el aviso.
 type lectorContrasena func(aviso string) (string, error)
 
+// entrada es UN lector para toda la ejecucion. Con un bufio.Reader nuevo por
+// lectura, el primero se tragaba todo el pipe y la confirmacion llegaba vacia:
+// `printf 'c\nc\n' | cuentas crear ...` fallaba con "no coinciden", que es
+// justo como se usa con `railway run`. Lo encontro la prueba de humo del
+// 2026-10-19; las pruebas unitarias inyectaban el lector y no lo veian.
+var entrada = bufio.NewReader(os.Stdin)
+
 func leerDeTerminal(aviso string) (string, error) {
 	fmt.Fprint(os.Stderr, aviso)
 	if term.IsTerminal(int(os.Stdin.Fd())) {
@@ -64,11 +71,13 @@ func leerDeTerminal(aviso string) (string, error) {
 		fmt.Fprintln(os.Stderr)
 		return string(b), err
 	}
-	return leerLinea(os.Stdin)
+	return leerLinea(entrada)
 }
 
-func leerLinea(r io.Reader) (string, error) {
-	linea, err := bufio.NewReader(r).ReadString('\n')
+// leerLinea pide un *bufio.Reader y no un io.Reader a proposito: envolver uno
+// nuevo en cada llamada es el bug de arriba.
+func leerLinea(r *bufio.Reader) (string, error) {
+	linea, err := r.ReadString('\n')
 	if err != nil && !errors.Is(err, io.EOF) {
 		return "", err
 	}

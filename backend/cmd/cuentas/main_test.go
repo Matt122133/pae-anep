@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"context"
+	"os"
+	"os/exec"
 	"strings"
 	"testing"
 
@@ -82,5 +84,22 @@ func TestErroresDeEntrada(t *testing.T) {
 	}
 	if err := ejecutar(ctx, repo, []string{"borrar"}, nil, &out); err == nil {
 		t.Error("subcomando desconocido deberia fallar")
+	}
+}
+
+// Regresion: el comando real, con la contraseña y su confirmacion por un pipe
+// (como en `railway run`), tiene que crear la cuenta. Corre el binario de
+// verdad: inyectar el lector, como las pruebas de arriba, no reproduce el bug.
+func TestCrearConContrasenaPorPipe(t *testing.T) {
+	pool := testdb.Abrir(t)
+	cmd := exec.Command("go", "run", ".", "crear", "-usuario", "laura", "-nombre", "Laura (prueba)",
+		"-rol", cuentas.RolNutricionista)
+	cmd.Env = append(os.Environ(), "DATABASE_URL="+testdb.URL())
+	cmd.Stdin = strings.NewReader("contraseña de prueba\ncontraseña de prueba\n")
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("%v\n%s", err, out)
+	}
+	if _, err := cuentas.Nuevo(pool).PorUsuario(context.Background(), "laura"); err != nil {
+		t.Fatalf("la cuenta no se creo: %v", err)
 	}
 }
