@@ -52,7 +52,7 @@ distintos y sin dependencias pendientes.
 
 **Prueba independiente**: A registra una visita y edita una auxiliar; B recarga y ve ambos cambios y dos entradas de bitácora de A.
 
-- [ ] T028 [US2] `backend/internal/bitacora/bitacora.go` + test: diff campo a campo entre registro de la base y el nuevo con etiquetas legibles, escritura dentro de una `pgx.Tx`, autor desde la cuenta; prueba de que `UPDATE`/`DELETE` sobre `bitacora` falla por el trigger
+- [x] T028 [US2] `backend/internal/bitacora/bitacora.go` + test: diff campo a campo entre registro de la base y el nuevo con etiquetas legibles, escritura dentro de una `pgx.Tx`, autor desde la cuenta; prueba de que `UPDATE`/`DELETE` sobre `bitacora` falla por el trigger
 - [ ] T029 [US2] `backend/internal/legajo/escuelas.go` + test: `POST` idempotente por id, `PUT` con versión (409 / 200 si igual, D7), `DELETE` lógico, `reactivar`; validación de listas cerradas con error por campo
 - [ ] T030 [US2] `backend/internal/legajo/personal.go` + test: alta, edición con versión, baja lógica, `POST /personal/{id}/traslado` con `personal_asignaciones` y bitácora en ambas escuelas (FR-033)
 - [ ] T031 [US2] `backend/internal/legajo/visitas.go` + test: `POST /visitas` con `newIssues` en una transacción, número correlativo con reintento ante choque, `contenido` validado con `DisallowUnknownFields`, `PUT` con versión, `DELETE` solo de no realizadas; escuela inactiva → 400 `schoolId: "escuela inactiva"`; prueba de dos altas simultáneas en la misma escuela
