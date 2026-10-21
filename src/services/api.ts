@@ -26,6 +26,12 @@ export class ErrorApi extends Error {
   }
 }
 
+/** El mensaje con el detalle de cada campo rechazado, si el servidor lo dio. */
+export function describirCampos(e: ErrorApi): string {
+  const campos = Object.entries(e.campos).map(([c, m]) => `${c}: ${m}`);
+  return campos.length ? `Hay datos para corregir — ${campos.join('; ')}` : e.message;
+}
+
 /** ¿Este error justifica guardar lo escrito como borrador "no enviado"? */
 export function generaBorrador(e: unknown): boolean {
   return e instanceof ErrorApi && (e.tipo === 'red' || e.tipo === 'sesion' || e.tipo === 'servidor');

@@ -25,6 +25,8 @@ interface MobileBottomNavProps {
   copiaDel?: string | null;
   enviando?: boolean;
   rechazados?: number;
+  /** No enviados de otra cuenta en este dispositivo: se avisan, no se envían (FR-014). */
+  deOtraCuenta?: number;
 }
 
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
@@ -39,7 +41,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   onOpenBorradores,
   copiaDel = null,
   enviando = false,
-  rechazados = 0
+  rechazados = 0,
+  deOtraCuenta = 0
 }) => {
   const sinConexion = !isOnline || !!copiaDel;
   const isDashboardActive = currentView === 'dashboard' && dashboardTab === 'overview';
@@ -50,7 +53,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   return (
     <div className="fixed bottom-0 inset-x-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-slate-800/90 text-white md:hidden shadow-lg pb-safe">
       {/* Mini Offline / Sync Status strip above nav bar on mobile */}
-      {(sinConexion || borradoresCount > 0) && (
+      {(sinConexion || borradoresCount > 0 || deOtraCuenta > 0) && (
         <div 
           onClick={onOpenBorradores}
           className="bg-amber-500 text-slate-950 px-3 py-1 text-[11px] font-extrabold flex items-center justify-between cursor-pointer border-b border-amber-600 shadow-xs"
@@ -64,11 +67,13 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             <span className="truncate">
               {sinConexion
                 ? copiaDel ? `Sin conexión — datos del ${fechaCorta(copiaDel)}` : 'Sin conexión: lo que guardes queda como no enviado'
-                : enviando ? 'Enviando…' : `${borradoresCount} no enviado${borradoresCount > 1 ? 's' : ''}`}
+                : enviando ? 'Enviando…'
+                : borradoresCount > 0 ? `${borradoresCount} no enviado${borradoresCount > 1 ? 's' : ''}`
+                : `${deOtraCuenta} de otra cuenta: no se envían con tu sesión`}
             </span>
           </div>
           <span className="text-[10px] bg-slate-900 text-amber-300 px-1.5 py-0.2 rounded font-black shrink-0">
-            {rechazados > 0 ? `${rechazados} PARA REVISAR` : borradoresCount > 0 ? `${borradoresCount} NO ENVIADOS` : 'SIN CONEXIÓN'}
+            {rechazados > 0 ? `${rechazados} PARA REVISAR` : borradoresCount > 0 ? `${borradoresCount} NO ENVIADOS` : sinConexion ? 'SIN CONEXIÓN' : 'OTRA CUENTA'}
           </span>
         </div>
       )}

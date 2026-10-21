@@ -45,8 +45,10 @@ Lo que un agente tiene que tener presente:
 
 - **El servidor es la fuente de verdad** desde `001`. El frontend pide
   `GET /legajo` y escribe por la API; `localStorage` solo guarda la sesión y los
-  borradores "no enviados". **No hay lectura sin conexión ni sincronización
-  automática** hasta `002`: no describir eso como funcionalidad existente.
+  borradores "no enviados". Desde `006` hay **copia del legajo en IndexedDB**
+  para abrir sin señal (se borra al cerrar sesión) y los "no enviados" **se
+  envían solos** al volver la red, con la app abierta. No hay envío con la app
+  cerrada. Ver la sección "Sin conexión" de `ARCHITECTURE.md`.
 - **Las pruebas del backend necesitan Postgres en `:55442` y FALLAN sin él**
   (no se saltean). Levantarlo con el comando de `backend/README.md`. Un
   `PAE_SIN_DB=1` en un `verify:` es trampa: no lo uses para ponerlo en verde.

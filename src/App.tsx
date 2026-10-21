@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { School, StaffMember, Visit, SchoolIssue, ActivityLog, CuentaEquipo, equipoDesdeCuentas } from './types';
 import { DatabaseState, getHealthCardStatus } from './services/storage';
-import { ErrorApi, generaBorrador, nuevoId, pedir } from './services/api';
+import { describirCampos, ErrorApi, generaBorrador, nuevoId, pedir } from './services/api';
 import { borrarSesion, leerSesion, Sesion } from './services/sesion';
 import { Borrador, buscarBorrador, descartarBorrador, guardarBorrador, listarBorradores, reenviarBorrador } from './services/borradores';
 import { fechaCorta } from './services/fechas';
@@ -37,11 +37,6 @@ interface Operacion {
   metodo: 'POST' | 'PUT' | 'DELETE';
   ruta: string;
   cuerpo: unknown;
-}
-
-function describirCampos(e: ErrorApi): string {
-  const campos = Object.entries(e.campos).map(([c, m]) => `${c}: ${m}`);
-  return campos.length ? `Hay datos para corregir — ${campos.join('; ')}` : e.message;
 }
 
 export default function App() {
@@ -646,6 +641,7 @@ export default function App() {
   // Los no enviados de otra cuenta no cuentan ni se envían (FR-014).
   const misBorradores = borradores.filter((b) => b.cuentaId === activeUserId);
   const rechazados = misBorradores.filter((b) => b.estado === 'rechazado').length;
+  const deOtraCuenta = borradores.length - misBorradores.length;
 
   const escuelasActivas = database.schools.filter((s) => s.active !== false);
   const personalActivo = database.staff.filter((s) => s.active !== false);
@@ -707,6 +703,7 @@ export default function App() {
           copiaDel={copiaDel}
           enviando={enviando}
           rechazados={rechazados}
+          deOtraCuenta={deOtraCuenta}
         />
 
         {aviso && (
@@ -950,6 +947,7 @@ export default function App() {
           copiaDel={copiaDel}
           enviando={enviando}
           rechazados={rechazados}
+          deOtraCuenta={deOtraCuenta}
         />
       </div>
     </EquipoProvider>

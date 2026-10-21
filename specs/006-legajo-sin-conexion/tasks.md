@@ -91,11 +91,11 @@ Rutas relativas a la raíz del repo. Todo frontend; `backend/` no se toca (R1).
 
 ## Phase 7: Polish & Cross-Cutting
 
-- [ ] T022 [P] Actualizar `ARCHITECTURE.md`: la sección "Sin conexión" describe la copia en IndexedDB (se borra al cerrar sesión), la cola con envío automático y los estados; agregar `copiaLegajo.ts` y `envio.ts` al layout.
-- [ ] T023 [P] Actualizar `AGENTS.md` y su copia byte a byte `CLAUDE.md`: reemplazar "No hay lectura sin conexión ni sincronización automática hasta `002`" por lo que existe desde `006`. Comprobar con `diff -q AGENTS.md CLAUDE.md`.
-- [ ] T024 [P] En `docs/tech-debt-tracker.md`: pasar a Resolved el ítem High "Sin lectura del legajo sin conexión" y el Medium "Un borrador con 400 no se puede abrir en el formulario", con referencia a `006`.
-- [ ] T025 Correr `verify:` (`npm run lint && npm test && npm run build`) y recorrer [quickstart.md](quickstart.md) con el backend local; anotar el resultado por escenario al final de este archivo. Lo que no se pudo probar se dice.
-- [ ] T026 Chequeo de datos reales antes del commit final: `git diff master..HEAD | grep "^+" | grep -oE "[0-9]\.[0-9]{3}\.[0-9]{3}-[0-9]|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+"` sin resultados reales.
+- [x] T022 [P] Actualizar `ARCHITECTURE.md`: la sección "Sin conexión" describe la copia en IndexedDB (se borra al cerrar sesión), la cola con envío automático y los estados; agregar `copiaLegajo.ts` y `envio.ts` al layout.
+- [x] T023 [P] Actualizar `AGENTS.md` y su copia byte a byte `CLAUDE.md`: reemplazar "No hay lectura sin conexión ni sincronización automática hasta `002`" por lo que existe desde `006`. Comprobar con `diff -q AGENTS.md CLAUDE.md`.
+- [x] T024 [P] En `docs/tech-debt-tracker.md`: pasar a Resolved el ítem High "Sin lectura del legajo sin conexión" y el Medium "Un borrador con 400 no se puede abrir en el formulario", con referencia a `006`.
+- [x] T025 Correr `verify:` (`npm run lint && npm test && npm run build`) y recorrer [quickstart.md](quickstart.md) con el backend local; anotar el resultado por escenario al final de este archivo. Lo que no se pudo probar se dice.
+- [x] T026 Chequeo de datos reales antes del commit final: `git diff master..HEAD | grep "^+" | grep -oE "[0-9]\.[0-9]{3}\.[0-9]{3}-[0-9]|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+"` sin resultados reales.
 
 ---
 
@@ -126,3 +126,35 @@ Polish:       T022 ‖ T023 ‖ T024 → T025 → T026
 2. US3: editar borradores y resolver rechazos (cierra la deuda del 400 de `001`).
 3. US4: sesión vencida y otra cuenta.
 4. Commits por fase, con el plan en `active`; al terminar, `status: completed` en un commit aparte.
+
+## Resultado de T025 (2026-10-21)
+
+`verify:` en verde: 5 archivos, 32 pruebas, build OK. Quickstart recorrido con
+`playwright-core` en Edge headless (escritorio, 1280×900) contra el build
+(`vite preview --base /pae-anep/`, service worker activo) y el backend local con
+los datos ficticios de `cmd/importar/testdata`. La red se cortó con la emulación
+offline del navegador; "servidor caído" fue detener el backend.
+
+| # | Resultado |
+|---|---|
+| 1 | OK — recarga sin red: legajo visible y "Sin conexión — datos del <fecha>". |
+| 2 | OK — al volver la red el aviso se va solo. |
+| 3 | OK — sin copia y sin red: "hace falta abrirla una vez con conexión", con Reintentar. |
+| 4 | OK — visita y nota sin red: el formulario se cierra, aviso de guardado, "2 no enviados", la visita no está en la ficha. |
+| 5 | OK — al volver la red, "enviando…" y "Se enviaron 2" en ~1 s; la visita queda una sola vez. |
+| 6 | OK — 3 notas sin red, pestaña cerrada, reabierta con red: "Se enviaron 3"; cada una una vez en la base. |
+| 7 | OK con arreglo — la escuela con número repetido queda "para revisar"; incidencia y nota llegan. **Arreglo**: el motivo decía solo "Hay datos para corregir."; ahora incluye el campo (`describirCampos` pasó a `api.ts` y lo usa `marcarRechazado`). |
+| 8 | OK — "Editar" abre el alta en su formulario; con otro número llega y sale de la lista. |
+| 9 | OK — aviso con "Abrir el borrador"; el formulario muestra el dato del servidor; guardar pide confirmar; cancelar deja el borrador; abrirlo trae lo escrito. |
+| 10 | OK — otra cuenta guarda la misma persona; el borrador queda "para revisar" por conflicto; "Aplicar sobre la versión actual" lo manda (queda su valor). |
+| 11 | OK — sesiones borradas en la base: pide reingresar con el aviso, la cola sigue; tras ingresar "Se envió 1". |
+| 12 | OK — backend detenido: pedidos a los 0 s, 60 s y 180 s (30 s base, el doble por cada falla); la cola sigue pendiente y nada dice "al día". |
+| 13 | OK con arreglo — al salir la base `pae` queda vacía y la cola se conserva; con otra cuenta no se envía y aparece aparte. **Arreglo**: con cero propios la barra no mostraba nada (FR-014 pide avisar); ahora muestra "N de otra cuenta". |
+| Duplicados | OK — 10 visitas sin red, red cortada y vuelta 3 veces durante el envío: 10 en la base, 10 ids distintos. |
+
+No probado: un teléfono real, la vista de celular (`MobileBottomNav`) y DevTools
+a mano. Anotado en `docs/tech-debt-tracker.md`.
+
+T026: el único resultado es el correo institucional del programa, que ya está
+en `master` desde el primer commit; aparece en el diff porque T017 reescribió
+esas líneas para la precarga. Sin cédulas ni datos de personas.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ErrorApi } from './api';
+import { describirCampos, ErrorApi } from './api';
 import {
   Borrador,
   buscarBorrador,
@@ -75,7 +75,7 @@ describe('borradores', () => {
       const quedo = listarBorradores(a);
       expect(quedo).toHaveLength(1);
       expect(quedo[0].tipoError).toBe(err.tipo);
-      expect(quedo[0].ultimoError).toBe(err.message);
+      expect(quedo[0].ultimoError).toBe(describirCampos(err));
     }
   });
 
@@ -86,6 +86,13 @@ describe('borradores', () => {
     expect(listarBorradores(a, 'c-1')[0].cuentaId).toBe('c-1');
     // La migración queda guardada, y no pisa una cuenta ya asignada.
     expect(listarBorradores(a, 'c-2')[0].cuentaId).toBe('c-1');
+  });
+
+  it('un rechazo por datos guarda qué campo corregir', () => {
+    const a = almacen();
+    guardarBorrador({ ...base, cuentaId: 'c-1' }, a);
+    marcarRechazado(base.clave, new ErrorApi('invalido', 'Hay datos para corregir.', 400, { number: 'ya existe' }), undefined, a);
+    expect(buscarBorrador(base.clave, a)!.ultimoError).toBe('Hay datos para corregir — number: ya existe');
   });
 
   it('editar conserva creadoEn, actualiza actualizadoEn y vuelve a pendiente', async () => {

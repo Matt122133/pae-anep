@@ -15,7 +15,7 @@
 // reenvía. Cada borrador es de la cuenta que lo generó: con otra sesión no se
 // envía (el autor lo decide la sesión, Principio II).
 
-import { ErrorApi, pedir, TipoError } from './api';
+import { describirCampos, ErrorApi, pedir, TipoError } from './api';
 
 export interface Borrador {
   /** Clave estable de la operación (p. ej. "visita:<id>"): repetir no duplica. */
@@ -135,7 +135,7 @@ export function marcarRechazado(
   motivo?: string,
   almacen: Almacen | undefined = almacenPorDefecto(),
 ): void {
-  actualizar(clave, { estado: 'rechazado', ultimoError: motivo ?? error.message, tipoError: error.tipo }, almacen);
+  actualizar(clave, { estado: 'rechazado', ultimoError: motivo ?? describirCampos(error), tipoError: error.tipo }, almacen);
 }
 
 export function esRechazo(e: ErrorApi): boolean {
