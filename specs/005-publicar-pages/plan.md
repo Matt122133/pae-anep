@@ -1,6 +1,6 @@
 ---
 ticket: none
-status: active
+status: completed
 covers:
   - vite.config.ts
   - .github/workflows/pages.yml
