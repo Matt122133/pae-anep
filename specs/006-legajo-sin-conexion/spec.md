@@ -9,7 +9,7 @@
 
 ### Session 2026-10-21
 
-- Q: Al cerrar sesión, ¿qué pasa con la copia del legajo en el dispositivo? → A: **Se conserva**; la ve solo la misma cuenta al volver a ingresar (FR-006, FR-005).
+- Q: Al cerrar sesión, ¿qué pasa con la copia del legajo en el dispositivo? → A: **Se borra** (FR-006). Primero se eligió conservarla; el dueño lo cambió al ver que reingresar ya exige señal y el legajo se baja en ese momento, así que conservarla no aportaba y dejaba datos personales en el equipo.
 - Q: Lo guardado sin señal, ¿se ve dentro del legajo o solo en "No enviados"? → A: **Solo en "No enviados"**, "a modo draft, como los emails cuando no los mandás, para que no se pierda nada" (FR-016).
 - Q: ¿Qué elementos de "No enviados" se pueden abrir en el formulario: solo los rechazados o todos? → A: **Todos son editables**, como un borrador de correo (FR-016, FR-017). Un pedido de borrar/dar de baja no tiene formulario: solo se puede descartar.
 - Q: Si una ficha tiene un borrador pendiente y se la vuelve a abrir desde el legajo, ¿qué muestra el formulario? → A: **Lo del servidor, con un aviso** de que hay un borrador sin enviar en esa ficha (y la opción de abrirlo); guardar ahí pide confirmar que se reemplaza el borrador (FR-021).
@@ -180,9 +180,10 @@ de ingresar se envía sola.
 - **FR-005**: Hay una sola copia por dispositivo y MUST pertenecer a la cuenta
   que la recibió: otra cuenta no la ve, y si ingresa (caso raro: cada
   integrante usa su propio dispositivo) la copia se reemplaza por la suya.
-- **FR-006**: Al cerrar sesión la copia del legajo MUST conservarse en el
-  dispositivo, y mostrarse solo cuando vuelve a ingresar la misma cuenta
-  (FR-005). Ingresar de nuevo exige la contraseña y, por lo tanto, señal.
+- **FR-006**: Al cerrar sesión la copia del legajo MUST borrarse del
+  dispositivo. Los "No enviados" NO se borran (siguen siendo de esa cuenta y se
+  envían cuando vuelva a ingresar). La copia se usa sin señal mientras la
+  sesión siga abierta (vence a los 30 días sin uso).
 
 **Cola de envío**
 

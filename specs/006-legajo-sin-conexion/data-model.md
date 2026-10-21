@@ -17,7 +17,7 @@ Base `pae`, versión 1, almacén `copia`, una sola clave `'legajo'`.
   fusión parcial.
 - Se **lee** solo si `cuentaId` coincide con la sesión. Si no coincide, se
   borra al ingresar (research R10).
-- **No** se borra al cerrar sesión (clarify Q1).
+- Se **borra** al cerrar sesión (clarify Q1); los borradores no.
 
 ## Borrador / elemento de la cola (`localStorage`, `pae.borradores.v1`)
 
@@ -52,6 +52,8 @@ Extiende el `Borrador` de `001` (`src/services/borradores.ts`). Campos nuevos en
   recorrido.
 - Un `rechazado` nunca se reintenta solo (FR-011, US3-4).
 - Un borrador de otra cuenta no cambia de estado ni se envía (FR-014).
+- En pantalla, `rechazado` se muestra como "Para revisar" ("N necesitan
+  revisión" en el aviso de fin de envío); `rechazado` es solo el nombre interno.
 
 ## Estado de envío (memoria, `App.tsx`)
 

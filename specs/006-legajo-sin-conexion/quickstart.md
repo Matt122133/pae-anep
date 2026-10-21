@@ -26,7 +26,7 @@ Automático: `npm run lint && npm test` (lógica de cola, copia, corte por tiemp
 | 10 | Con un borrador pendiente, editar la misma ficha desde otra pestaña con red (versión nueva). Volver a enviar. | El borrador queda "para revisar" por conflicto; "Aplicar sobre la versión actual" lo manda. |
 | 11 | Con pendientes, desactivar la cuenta o borrar su sesión en la base; volver a Online. | Pide reingresar; la lista sigue intacta; tras reingresar se envía sola. |
 | 12 | Detener el backend con pendientes y red. | No se envía; la espera crece (Network: pedidos cada vez más espaciados, tope 5 min); nada dice "al día". |
-| 13 | Cerrar sesión con la copia guardada; ingresar con **otra** cuenta. | No se ve el legajo anterior; los "No enviados" de la otra cuenta aparecen aparte y no se envían. |
+| 13 | Con un pendiente guardado, cerrar sesión. Ver IndexedDB. Ingresar con **otra** cuenta. | La base `pae` quedó vacía al salir; con la otra cuenta, los "No enviados" de la anterior aparecen aparte y no se envían. |
 
 ## Prueba de duplicados (SC-003)
 

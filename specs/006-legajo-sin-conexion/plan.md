@@ -67,12 +67,12 @@ el servidor ya trata como idempotentes todos los reenvíos ([research R1](resear
 | I. El territorio manda | Copia para consultar sin señal; cola que sobrevive a cerrar la app y se envía sola; nada "sincronizado" sin confirmación (FR-019); reenvío idempotente por id del dispositivo (R1). Es el feature que este principio pide. | ✅ |
 | II. Un legajo, cada cambio con autor | El autor sigue saliendo de la sesión; la cola no se envía con otra cuenta (FR-014, R10). Conflictos: regla escrita (rechazado → la usuaria decide; FR-018, FR-021). | ✅ |
 | III. Simplicidad | Sin dependencias nuevas, sin service worker propio, sin Background Sync; un bucle por pestaña; backend intacto. | ✅ |
-| IV. Datos personales | La copia guarda datos de terceros **en el dispositivo** y no se borra al salir (decisión del dueño, clarify Q1). Mitigación: una copia por dispositivo, legible solo por la cuenta que la recibió; dispositivos personales. No entra nada al repo. Ver *Complexity Tracking*. | ✅ con nota |
+| IV. Datos personales | La copia guarda datos de terceros en el dispositivo **solo mientras la sesión está abierta**: se borra al cerrar sesión y si entra otra cuenta (clarify Q1). No entra nada al repo. | ✅ |
 | V. Hosting económico | Nada nuevo en Railway; todo en el cliente. | ✅ |
 | VI. Mobile-first | Avisos y "Editar" en la lista existente; sin pantallas nuevas. | ✅ |
 | Harness | `covers:` lista cada ruta; `verify:` corre tipos, pruebas y build. | ✅ |
 
-**Post-diseño**: sin cambios; la única nota sigue siendo IV.
+**Post-diseño**: sin violaciones.
 
 ## Project Structure
 
@@ -120,6 +120,4 @@ Medium del 400 sin formulario).
 
 ## Complexity Tracking
 
-| Tensión | Por qué se acepta | Alternativa descartada |
-|---|---|---|
-| Datos personales del legajo persisten en el dispositivo tras cerrar sesión (IV) | Decisión explícita del dueño (clarify Q1); cada integrante usa su propio dispositivo; la copia solo se muestra a la misma cuenta y se borra si entra otra. | Borrar al salir. **Costo real casi nulo**: reingresar ya exige señal (contraseña), y el legajo se baja en ese mismo momento; conservarla solo ayuda si el ingreso sale y el `GET /legajo` falla justo después. Se le señaló al dueño al presentar el plan. |
+Sin violaciones de la constitución que justificar.

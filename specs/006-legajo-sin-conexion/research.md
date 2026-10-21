@@ -170,7 +170,8 @@ una escuela; una incidencia nueva de una visita viaja dentro de la misma visita.
 **Decisión**: al ingresar, si la copia es de otra cuenta se borra y se pide la
 nueva. Los borradores con otro `cuentaId` quedan en la lista agrupados como "De
 otra cuenta (<nombre>)": no se envían ni se editan; solo se pueden descartar con
-confirmación. Al cerrar sesión **no** se borra la copia (clarify Q1).
+confirmación. Al cerrar sesión se borra la copia (clarify Q1), no los
+borradores.
 
 ## R11. Indicadores (FR-019, FR-020)
 
@@ -185,7 +186,7 @@ muestra el aviso existente (`avisar`) con "Se enviaron N" y, si corresponde,
 **Decisión**: lógica pura con vitest (sin DOM, como hoy): `envio.test.ts`
 (orden, rechazado no frena, red frena, 401 frena, espera creciente, dependencia),
 `borradores.test.ts` (migración de `cuentaId`, `creadoEn` conservado, estados),
-`copiaLegajo.test.ts` con un IndexedDB falso inyectado (la función recibe la
-fábrica), `api.test.ts` (corte a los 15 s → `red`). La interfaz se verifica a
+`copiaLegajo.test.ts` con un `AlmacenCopia` en memoria inyectado (el adaptador
+de IndexedDB se prueba a mano), `api.test.ts` (corte a los 15 s → `red`). La interfaz se verifica a
 mano con [quickstart.md](quickstart.md) (no hay sensor de interfaz: deuda
 abierta en el tracker).

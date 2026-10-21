@@ -9,13 +9,16 @@ las tareas no las rediseñen sobre la marcha.
 
 ```ts
 interface Copia { cuentaId: string; recibidoEn: string; legajo: Legajo }
+interface AlmacenCopia { leer(): Promise<Copia | undefined>; guardar(c: Copia): Promise<void>; borrar(): Promise<void> }
 
-guardarCopia(c: Copia, idb?: IDBFactory): Promise<boolean>   // false = no se pudo
-leerCopia(cuentaId: string, idb?: IDBFactory): Promise<Copia | null> // null si no hay o es de otra cuenta
-borrarCopia(idb?: IDBFactory): Promise<void>
+almacenIndexedDB(): AlmacenCopia                                  // API nativa; base 'pae', almacén 'copia'
+guardarCopia(c: Copia, almacen?: AlmacenCopia): Promise<boolean>  // false = no se pudo
+leerCopia(cuentaId: string, almacen?: AlmacenCopia): Promise<Copia | null> // null si no hay o es de otra cuenta
+borrarCopia(almacen?: AlmacenCopia): Promise<void>                // al cerrar sesión y al entrar otra cuenta
 ```
 
-Nunca tira: los fallos de IndexedDB devuelven `false` / `null`.
+Nunca tira: los fallos de IndexedDB devuelven `false` / `null`. Las pruebas
+inyectan un `AlmacenCopia` en memoria (sin dependencia de IndexedDB falso).
 
 ## `src/services/borradores.ts` (se extiende)
 
