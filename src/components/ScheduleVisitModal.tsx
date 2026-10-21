@@ -18,6 +18,7 @@ import {
   Save,
   CheckCircle2
 } from 'lucide-react';
+import { AvisoBorrador, AvisoBorradorProps } from './AvisoBorrador';
 
 interface ScheduleVisitModalProps {
   isOpen: boolean;
@@ -28,6 +29,8 @@ interface ScheduleVisitModalProps {
   initialDate?: string;
   initialSchoolId?: string;
   visitToEdit?: Visit | null;
+  /** Hay un "no enviado" de esta ficha (006, FR-021). */
+  avisoBorrador?: AvisoBorradorProps;
   activeUserId?: string;
 }
 
@@ -39,6 +42,7 @@ export const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({
   initialDate,
   initialSchoolId,
   visitToEdit,
+  avisoBorrador,
   activeUserId = ''
 }) => {
   const [selectedSchoolId, setSelectedSchoolId] = useState<string>(
@@ -217,6 +221,7 @@ export const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+          {avisoBorrador && <AvisoBorrador {...avisoBorrador} />}
           
           {/* Escuela Selector */}
           <div>

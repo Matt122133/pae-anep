@@ -3,7 +3,8 @@ import { School, StaffMember, Visit, SchoolIssue, ActivityLog, CuentaEquipo, equ
 import { DatabaseState, getHealthCardStatus } from './services/storage';
 import { ErrorApi, generaBorrador, nuevoId, pedir } from './services/api';
 import { borrarSesion, leerSesion, Sesion } from './services/sesion';
-import { Borrador, descartarBorrador, guardarBorrador, listarBorradores, reenviarBorrador } from './services/borradores';
+import { Borrador, buscarBorrador, descartarBorrador, guardarBorrador, listarBorradores, reenviarBorrador } from './services/borradores';
+import { fechaCorta } from './services/fechas';
 import { borrarCopia, guardarCopia, leerCopia } from './services/copiaLegajo';
 import { enviarCola, ESPERA_MINIMA_MS, pendientesDe, siguienteEspera } from './services/envio';
 import { EquipoProvider } from './services/equipo';
@@ -20,6 +21,8 @@ import { ExportImportModal } from './components/ExportImportModal';
 import { SchoolReportModal } from './components/SchoolReportModal';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { BorradoresModal } from './components/BorradoresModal';
+import { ScheduleVisitModal } from './components/ScheduleVisitModal';
+import type { AvisoBorradorProps } from './components/AvisoBorrador';
 import { Loader2, WifiOff, X } from 'lucide-react';
 
 // Respuesta de GET /legajo: la forma de DatabaseState más las cuentas del
@@ -62,6 +65,11 @@ export default function App() {
   const esperaRef = useRef(ESPERA_MINIMA_MS);
 
   const refrescarBorradores = () => setBorradores(listarBorradores(undefined, leerSesion()?.cuenta.id));
+
+  // Borrador abierto en un formulario (R7): guardar lo reemplaza sin preguntar.
+  const [abiertoDesde, setAbiertoDesde] = useState<string | null>(null);
+  const [visitaBorrador, setVisitaBorrador] = useState<{ visit: Visit; newIssues: SchoolIssue[] } | null>(null);
+  const [programadaBorrador, setProgramadaBorrador] = useState<Visit | null>(null);
 
   // --- navegación y modales (sin cambios respecto del prototipo)
   const [currentView, setCurrentView] = useState<'dashboard' | 'schools' | 'school-detail'>('dashboard');
@@ -246,9 +254,21 @@ export default function App() {
     alConfirmar: (r: T) => void,
     alConflicto?: (actual: any) => void,
   ): Promise<string | null> => {
+    // Un borrador de esta ficha nunca se reemplaza en silencio (FR-021): si el
+    // formulario no se abrió desde él, se pide confirmar.
+    const previo = buscarBorrador(op.clave);
+    if (previo && previo.cuentaId === leerSesion()?.cuenta.id && abiertoDesde !== op.clave &&
+      !confirm(`Ya hay cambios sin enviar en esta ficha (guardados el ${fechaCorta(previo.actualizadoEn ?? previo.creadoEn)}). ¿Reemplazarlos por estos?`)) {
+      return 'No se guardó: los cambios anteriores siguen en "No enviados". Podés abrirlos desde el aviso de arriba.';
+    }
     try {
       const r = await pedir<T>(op.ruta, { metodo: op.metodo, cuerpo: op.cuerpo });
       alConfirmar(r);
+      // Lo que se guardó reemplaza al borrador de la misma ficha, si había.
+      if (previo) {
+        descartarBorrador(op.clave);
+        refrescarBorradores();
+      }
       // La bitácora y los derivados los calcula el servidor: se recarga.
       cargarLegajo();
       return null;
@@ -499,6 +519,51 @@ export default function App() {
     refrescarBorradores();
   };
 
+  // Abre un "no enviado" en su formulario, precargado con lo escrito (R7).
+  // Guardar reemplaza el mismo borrador: misma clave, mismo lugar en la cola.
+  const editarBorrador = (b: Borrador) => {
+    const cuerpo = b.cuerpo as Record<string, any>;
+    const schoolId: string | undefined = cuerpo.schoolId ?? cuerpo.visit?.schoolId;
+    if (!b.clave.startsWith('escuela:') && !database?.schools.some((s) => s.id === schoolId)) {
+      avisar('La escuela de este borrador todavía no está en el legajo: primero tiene que llegar su alta.');
+      return;
+    }
+    setIsBorradoresOpen(false);
+    setAbiertoDesde(b.clave);
+    if (schoolId) setSelectedSchoolId(schoolId);
+    if (b.clave.startsWith('visita:')) {
+      const visita: Visit = b.metodo === 'PUT' ? (cuerpo as Visit) : cuerpo.visit;
+      if (b.metodo === 'POST' && visita.status === 'Realizada') {
+        setVisitaBorrador({ visit: visita, newIssues: cuerpo.newIssues ?? [] });
+        setIsVisitModalOpen(true);
+      } else {
+        setProgramadaBorrador(visita);
+      }
+    } else if (b.clave.startsWith('personal:')) {
+      setStaffToEdit(cuerpo as StaffMember);
+      setIsStaffModalOpen(true);
+    } else if (b.clave.startsWith('incidencia:')) {
+      setIssueToEdit(cuerpo as SchoolIssue);
+      setIsIssueModalOpen(true);
+    } else if (b.clave.startsWith('escuela:')) {
+      setSchoolToEdit(cuerpo as School);
+      setIsSchoolModalOpen(true);
+    }
+  };
+
+  const guardarNota = (b: Borrador, summary: string, notes: string) => {
+    guardarBorrador({ ...b, descripcion: `Nota: ${summary}`, cuerpo: { ...(b.cuerpo as object), summary, notes } });
+    refrescarBorradores();
+    enviarPendientes();
+  };
+
+  /** Aviso para una ficha abierta desde el legajo que tiene un "no enviado" (FR-021). */
+  const avisoDe = (clave: string | null): AvisoBorradorProps | undefined => {
+    if (!clave || clave === abiertoDesde) return undefined;
+    const b = borradores.find((x) => x.clave === clave && x.cuentaId === activeUserId);
+    return b ? { guardadoEn: b.actualizadoEn ?? b.creadoEn, onAbrir: () => editarBorrador(b) } : undefined;
+  };
+
   const cerrarSesion = async () => {
     if (borradores.length > 0 &&
       !confirm(`Tenés ${borradores.length} guardado(s) sin enviar. Quedan en este dispositivo y los podés reenviar al volver a ingresar. ¿Cerrar sesión igual?`)) {
@@ -546,7 +611,7 @@ export default function App() {
                 <button onClick={cargarLegajo} className="px-4 py-2 bg-emerald-600 rounded-xl text-sm font-bold">Reintentar</button>
                 {borradores.length > 0 && (
                   <button onClick={() => setIsBorradoresOpen(true)} className="px-4 py-2 bg-amber-600 rounded-xl text-sm font-bold">
-                    {borradores.length} no enviado{borradores.length > 1 ? 's' : ''}
+                    No enviados ({borradores.filter((b) => b.cuentaId === sesion.cuenta.id).length})
                   </button>
                 )}
                 <button onClick={cerrarSesion} className="px-4 py-2 bg-slate-700 rounded-xl text-sm font-bold">Cerrar sesión</button>
@@ -562,11 +627,14 @@ export default function App() {
         {isBorradoresOpen && (
           <BorradoresModal
             borradores={borradores}
+            cuentaId={sesion.cuenta.id}
             isOnline={isOnline}
             onClose={() => setIsBorradoresOpen(false)}
             onReenviar={reenviar}
             onAplicarSobreActual={aplicarSobreActual}
             onDescartar={descartar}
+            onEditar={() => alert('Para editarlo en su formulario hace falta tener el legajo cargado. Lo escrito sigue a salvo acá.')}
+            onGuardarNota={guardarNota}
           />
         )}
       </div>
@@ -742,6 +810,8 @@ export default function App() {
               setIsVisitModalOpen(false);
               setVisitDefaultDate(undefined);
               setVisitDefaultTime(undefined);
+              setVisitaBorrador(null);
+              setAbiertoDesde(null);
             }}
             school={selectedSchool}
             existingVisitsCount={selectedSchoolVisits.length}
@@ -750,49 +820,75 @@ export default function App() {
             initialDate={visitDefaultDate}
             initialTime={visitDefaultTime}
             isOnline={isOnline}
+            borrador={visitaBorrador ?? undefined}
           />
         )}
 
+        {/* Una visita programada que no se envió, abierta desde "No enviados" (R7). */}
+        {programadaBorrador && (
+          <ScheduleVisitModal
+            isOpen
+            onClose={() => {
+              setProgramadaBorrador(null);
+              setAbiertoDesde(null);
+            }}
+            schools={escuelasActivas}
+            onSaveScheduledVisit={handleSaveScheduledVisit}
+            visitToEdit={programadaBorrador}
+            activeUserId={activeUserId}
+          />
+        )}
+
+        {/* key: abrir el borrador desde el aviso vuelve a montar el formulario con lo escrito. */}
         {isStaffModalOpen && selectedSchool && (
           <StaffModal
+            key={abiertoDesde ?? 'legajo'}
             isOpen={isStaffModalOpen}
             onClose={() => {
               setIsStaffModalOpen(false);
               setStaffToEdit(null);
+              setAbiertoDesde(null);
             }}
             schoolId={selectedSchool.id}
             staffToEdit={staffToEdit}
             onSave={handleSaveStaff}
             schools={escuelasActivas}
             onTrasladar={handleTrasladarStaff}
+            avisoBorrador={avisoDe(staffToEdit && `personal:${staffToEdit.id}`)}
           />
         )}
 
         {isIssueModalOpen && selectedSchool && (
           <IssueModal
+            key={abiertoDesde ?? 'legajo'}
             isOpen={isIssueModalOpen}
             onClose={() => {
               setIsIssueModalOpen(false);
               setIssueToEdit(null);
+              setAbiertoDesde(null);
             }}
             schoolId={selectedSchool.id}
             issueToEdit={issueToEdit}
             visitsCount={selectedSchoolVisits.length}
             onSave={handleSaveIssue}
+            avisoBorrador={avisoDe(issueToEdit && `incidencia:${issueToEdit.id}`)}
           />
         )}
 
         {isSchoolModalOpen && (
           <SchoolModal
+            key={abiertoDesde ?? 'legajo'}
             isOpen={isSchoolModalOpen}
             onClose={() => {
               setIsSchoolModalOpen(false);
               setSchoolToEdit(null);
+              setAbiertoDesde(null);
             }}
             schoolToEdit={schoolToEdit}
             nextSchoolNumber={Math.max(0, ...database.schools.map((s) => s.number)) + 1}
             onSave={handleSaveSchool}
             onDarDeBaja={handleDeleteSchool}
+            avisoBorrador={avisoDe(schoolToEdit && `escuela:${schoolToEdit.id}`)}
           />
         )}
 
@@ -814,11 +910,14 @@ export default function App() {
         {isBorradoresOpen && (
           <BorradoresModal
             borradores={borradores}
+            cuentaId={activeUserId}
             isOnline={isOnline}
             onClose={() => setIsBorradoresOpen(false)}
             onReenviar={reenviar}
             onAplicarSobreActual={aplicarSobreActual}
             onDescartar={descartar}
+            onEditar={editarBorrador}
+            onGuardarNota={guardarNota}
           />
         )}
 
