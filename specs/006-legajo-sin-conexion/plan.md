@@ -1,6 +1,6 @@
 ---
 ticket: none
-status: draft
+status: active
 covers:
   - src/services/
   - src/App.tsx
@@ -20,7 +20,7 @@ covers:
   - specs/006-legajo-sin-conexion/
   - .specify/feature.json
 verify: npm run lint && npm test && npm run build
-analyzed:
+analyzed: 2026-10-21 (analyze sin críticos; I1, C2, T1 aplicados; aprobado por el dueño del repo: "si, apruebo el plan, arrancá con el MVP")
 ---
 
 # Implementation Plan: Legajo sin conexión y envío automático
