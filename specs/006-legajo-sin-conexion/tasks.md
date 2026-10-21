@@ -16,15 +16,15 @@ Rutas relativas a la raíz del repo. Todo frontend; `backend/` no se toca (R1).
 
 ## Phase 1: Setup
 
-- [ ] T001 Verificar el punto de partida: `npm run lint && npm test && npm run build` en verde en la rama `006-legajo-sin-conexion` antes de tocar código; si algo falla, frenar y reportar.
+- [x] T001 Verificar el punto de partida: `npm run lint && npm test && npm run build` en verde en la rama `006-legajo-sin-conexion` antes de tocar código; si algo falla, frenar y reportar.
 
 ---
 
 ## Phase 2: Foundational (bloquea todas las historias)
 
-- [ ] T002 [P] En `src/services/api.ts`, `pedir` corta a los 15 s con `AbortController` y lo informa como `ErrorApi('red', 'No hay conexión con el servidor.')`; opción `tiempoMs` en `Opciones` para pruebas (R5). Agregar el caso en `src/services/api.test.ts` (un `fetchImpl` que no resuelve hasta que lo abortan → tipo `red`).
-- [ ] T003 [P] Extender `Borrador` en `src/services/borradores.ts` según [data-model.md](data-model.md): campos opcionales `cuentaId`, `estado` (`'pendiente' | 'rechazado'`), `actualizadoEn`. `listarBorradores(almacen?, cuentaActual?)` asigna `cuentaId = cuentaActual` a los que no lo tienen y persiste la migración. `guardarBorrador` conserva `creadoEn` si ya existía la clave, pone `actualizadoEn = ahora` y `estado = 'pendiente'`. Nuevas `marcarRechazado(clave, error, motivo?, almacen?)` y `buscarBorrador(clave, almacen?)`. `reenviarBorrador` deja el borrador en `pendiente` antes de mandar y lo marca `rechazado` si vuelve 400/409. Actualizar el comentario de cabecera (ya no dice "el reenvío es manual").
-- [ ] T004 [P] Pruebas en `src/services/borradores.test.ts`: migración de `cuentaId`; `creadoEn` conservado al reemplazar; `actualizadoEn` cambia; `estado` vuelve a `pendiente` al guardar; `marcarRechazado` guarda motivo y tipo; un 400 en `reenviarBorrador` deja `rechazado`.
+- [x] T002 [P] En `src/services/api.ts`, `pedir` corta a los 15 s con `AbortController` y lo informa como `ErrorApi('red', 'No hay conexión con el servidor.')`; opción `tiempoMs` en `Opciones` para pruebas (R5). Agregar el caso en `src/services/api.test.ts` (un `fetchImpl` que no resuelve hasta que lo abortan → tipo `red`).
+- [x] T003 [P] Extender `Borrador` en `src/services/borradores.ts` según [data-model.md](data-model.md): campos opcionales `cuentaId`, `estado` (`'pendiente' | 'rechazado'`), `actualizadoEn`. `listarBorradores(almacen?, cuentaActual?)` asigna `cuentaId = cuentaActual` a los que no lo tienen y persiste la migración. `guardarBorrador` conserva `creadoEn` si ya existía la clave, pone `actualizadoEn = ahora` y `estado = 'pendiente'`. Nuevas `marcarRechazado(clave, error, motivo?, almacen?)` y `buscarBorrador(clave, almacen?)`. `reenviarBorrador` deja el borrador en `pendiente` antes de mandar y lo marca `rechazado` si vuelve 400/409. Actualizar el comentario de cabecera (ya no dice "el reenvío es manual").
+- [x] T004 [P] Pruebas en `src/services/borradores.test.ts`: migración de `cuentaId`; `creadoEn` conservado al reemplazar; `actualizadoEn` cambia; `estado` vuelve a `pendiente` al guardar; `marcarRechazado` guarda motivo y tipo; un 400 en `reenviarBorrador` deja `rechazado`.
 
 **Checkpoint**: cola con cuenta y estado; pedidos que no cuelgan.
 
