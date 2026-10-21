@@ -5,8 +5,10 @@ import path from 'path';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-export default defineConfig(() => {
+// En GitHub Pages el sitio vive bajo /pae-anep/; en dev, en la raiz.
+export default defineConfig(({ command }) => {
   return {
+    base: command === 'build' ? '/pae-anep/' : '/',
     plugins: [
       react(), 
       tailwindcss(),
@@ -14,7 +16,7 @@ export default defineConfig(() => {
         registerType: 'autoUpdate',
         includeAssets: ['favicon.png', 'apple-touch-icon.png', 'icon.svg'],
         manifest: {
-          id: '/',
+          id: './',
           name: 'Legajo Escolar - Comedores & Visitas',
           short_name: 'Legajo PAE',
           description: 'Sistema integral de gestión de legajos de escuelas, comedores escolares, visitas de campo técnicas, auxiliares y control de remitos.',
@@ -22,24 +24,24 @@ export default defineConfig(() => {
           background_color: '#0f172a',
           display: 'standalone',
           orientation: 'any',
-          start_url: '/',
-          scope: '/',
+          start_url: './',
+          scope: './',
           categories: ['education', 'productivity', 'government'],
           icons: [
             {
-              src: '/pwa-192x192.png',
+              src: 'pwa-192x192.png',
               sizes: '192x192',
               type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/pwa-512x512.png',
+              src: 'pwa-512x512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/pwa-maskable-512x512.png',
+              src: 'pwa-maskable-512x512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'maskable',
@@ -47,25 +49,25 @@ export default defineConfig(() => {
           ],
           shortcuts: [
             {
-              name: '140 Escuelas',
+              name: 'Escuelas',
               short_name: 'Escuelas',
-              description: 'Catálogo de las 140 escuelas y comedores de Tacuarembó',
-              url: '/?view=schools',
-              icons: [{ src: '/pwa-192x192.png', sizes: '192x192' }]
+              description: 'Catálogo de escuelas y comedores de Tacuarembó',
+              url: './?view=schools',
+              icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }]
             },
             {
               name: 'Calendario de Visitas',
               short_name: 'Agenda',
               description: 'Cronograma y planificación de visitas técnicas',
-              url: '/?tab=calendar',
-              icons: [{ src: '/pwa-192x192.png', sizes: '192x192' }]
+              url: './?tab=calendar',
+              icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }]
             },
             {
               name: 'Bitácora de Actividad',
               short_name: 'Bitácora',
               description: 'Historial cronológico de cambios y eventos',
-              url: '/?tab=bitacora',
-              icons: [{ src: '/pwa-192x192.png', sizes: '192x192' }]
+              url: './?tab=bitacora',
+              icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }]
             }
           ]
         },

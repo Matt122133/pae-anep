@@ -51,6 +51,8 @@ necesite conocer el repo. Al agregar un doc, sumar una línea en su sección.
   por feature.
 - [`processes/dev-setup.md`](processes/dev-setup.md) — toolchain, comandos, y
   cómo conectar el sensor de cobertura.
+- [`processes/despliegue.md`](processes/despliegue.md) — publicación del
+  frontend en GitHub Pages y cómo conectar el backend de Railway.
 
 ## Trackers
 
