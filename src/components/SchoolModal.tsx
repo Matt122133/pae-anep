@@ -3,6 +3,7 @@ import { PresenciaAviso } from './PresenciaAviso';
 import React, { useState, useEffect } from 'react';
 import { School, ModalityType, SchoolAreaType, MilkProgramType } from '../types';
 import { X, Building2, Save, Droplets, Milk, UserCheck, MapPin } from 'lucide-react';
+import { AvisoBorrador, AvisoBorradorProps } from './AvisoBorrador';
 
 interface SchoolModalProps {
   isOpen: boolean;
@@ -10,6 +11,8 @@ interface SchoolModalProps {
   /** Devuelve null si se guardó (o quedó como borrador), o el error a mostrar. */
   onSave: (school: School) => Promise<string | null>;
   schoolToEdit?: School | null;
+  /** Hay un "no enviado" de esta ficha (006, FR-021). */
+  avisoBorrador?: AvisoBorradorProps;
   nextSchoolNumber: number;
   /** Baja lógica: la escuela deja de listarse pero su historia queda (FR-015). */
   onDarDeBaja?: (schoolId: string) => void;
@@ -30,6 +33,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
   onClose,
   onSave,
   schoolToEdit,
+  avisoBorrador,
   nextSchoolNumber,
   onDarDeBaja
 }) => {
@@ -197,6 +201,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto flex-1 text-slate-800 text-sm">
+          {avisoBorrador && <AvisoBorrador {...avisoBorrador} />}
           {schoolToEdit && <PresenciaAviso tipo="escuela" id={schoolToEdit.id} />}
           {/* Clasificación Principal Tacuarembó: Rural o Urbana */}
           <div className="bg-emerald-50/80 border border-emerald-200 p-4 rounded-xl">

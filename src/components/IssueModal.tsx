@@ -3,6 +3,7 @@ import { PresenciaAviso } from './PresenciaAviso';
 import React, { useState, useEffect } from 'react';
 import { SchoolIssue, IssueCategory, IssueSeverity, IssueStatus } from '../types';
 import { X, AlertCircle, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
+import { AvisoBorrador, AvisoBorradorProps } from './AvisoBorrador';
 
 interface IssueModalProps {
   isOpen: boolean;
@@ -11,6 +12,8 @@ interface IssueModalProps {
   onSave: (issue: SchoolIssue) => Promise<string | null>;
   schoolId: string;
   issueToEdit?: SchoolIssue | null;
+  /** Hay un "no enviado" de esta ficha (006, FR-021). */
+  avisoBorrador?: AvisoBorradorProps;
   visitsCount?: number;
 }
 
@@ -20,6 +23,7 @@ export const IssueModal: React.FC<IssueModalProps> = ({
   onSave,
   schoolId,
   issueToEdit,
+  avisoBorrador,
   visitsCount = 1
 }) => {
   // Id estable por formulario: reintentar el guardado no duplica (FR-029).
@@ -117,6 +121,7 @@ export const IssueModal: React.FC<IssueModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {avisoBorrador && <AvisoBorrador {...avisoBorrador} />}
           {issueToEdit && <PresenciaAviso tipo="incidencia" id={issueToEdit.id} />}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">

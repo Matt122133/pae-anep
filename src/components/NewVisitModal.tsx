@@ -37,6 +37,8 @@ interface NewVisitModalProps {
   initialDate?: string;
   initialTime?: string;
   isOnline?: boolean;
+  /** Un "no enviado" que se edita (006): precarga todo y guarda con el mismo id. */
+  borrador?: { visit: Visit; newIssues: SchoolIssue[] };
 }
 
 export const NewVisitModal: React.FC<NewVisitModalProps> = ({
@@ -48,8 +50,10 @@ export const NewVisitModal: React.FC<NewVisitModalProps> = ({
   activeUserId = '',
   initialDate,
   initialTime,
-  isOnline = true
+  isOnline = true,
+  borrador
 }) => {
+  const v: Partial<Visit> | undefined = borrador?.visit;
   const nextVisitNumber = existingVisitsCount + 1;
   const today = new Date().toISOString().slice(0, 10);
   const currentTime = new Date().toTimeString().slice(0, 5);
@@ -59,132 +63,134 @@ export const NewVisitModal: React.FC<NewVisitModalProps> = ({
   // Encabezado oficial Tacuarembó y equipo visitador
   const equipo = useEquipo();
   // Id generado UNA vez por formulario: reintentar el guardado manda el mismo
-  // id y el servidor no duplica la visita (FR-029).
-  const [visitId] = useState(() => nuevoId());
+  // id y el servidor no duplica la visita (FR-029). Editar un borrador conserva
+  // su id: guardar reemplaza ese mismo borrador.
+  const [visitId] = useState(() => borrador?.visit.id ?? nuevoId());
   const [guardando, setGuardando] = useState(false);
   const [errorGuardado, setErrorGuardado] = useState<string | null>(null);
   const initialVisitors = [activeUserId].filter(Boolean);
   const initialTeam = formatTeamVisitors(initialVisitors, equipo);
-  const [selectedVisitors, setSelectedVisitors] = useState<string[]>(initialVisitors);
-  const [date, setDate] = useState(initialDate || today);
-  const [time, setTime] = useState(initialTime || currentTime);
-  const [inspectorName, setInspectorName] = useState(initialTeam.inspectorName);
-  const [inspectorRole, setInspectorRole] = useState(initialTeam.inspectorRole);
-  const [nutritionistName, setNutritionistName] = useState(initialTeam.nutritionistName);
-  const [assignedSchoolInspector, setAssignedSchoolInspector] = useState(school.assignedInspector || 'Inspector/a de Zona Tacuarembó');
-  const [attendedBy, setAttendedBy] = useState(`Maestro/a Director/a ${school.principalName} y Cocinera ${school.headCookName}`);
+  const [selectedVisitors, setSelectedVisitors] = useState<string[]>(v?.visitors ?? (initialVisitors));
+  const [date, setDate] = useState(v?.date ?? (initialDate || today));
+  const [time, setTime] = useState(v?.time ?? (initialTime || currentTime));
+  const [inspectorName, setInspectorName] = useState(v?.inspectorName ?? (initialTeam.inspectorName));
+  const [inspectorRole, setInspectorRole] = useState(v?.inspectorRole ?? (initialTeam.inspectorRole));
+  const [nutritionistName, setNutritionistName] = useState(v?.nutritionistName ?? (initialTeam.nutritionistName));
+  const [assignedSchoolInspector, setAssignedSchoolInspector] = useState(v?.assignedSchoolInspector ?? (school.assignedInspector || 'Inspector/a de Zona Tacuarembó'));
+  const [attendedBy, setAttendedBy] = useState(v?.attendedBy ?? (`Maestro/a Director/a ${school.principalName} y Cocinera ${school.headCookName}`));
 
   // 1. APARTADO PREVIO DE OBSERVACIONES Y ORIENTACIONES (solicitado expresamente por el usuario)
-  const [initialFieldObservations, setInitialFieldObservations] = useState(
+  const [initialFieldObservations, setInitialFieldObservations] = useState(v?.initialFieldObservations ?? (
     `Se realiza la visita técnica en compañía del equipo escolar. Se observa un clima ordenado en el comedor y buena predisposición del personal auxiliar en cocina. Se brinda orientación en cuanto a frecuencias del menú y almacenamiento.`
-  );
+  ));
 
   // 2. Asistencia y Nómina
-  const [dinersActualCount, setDinersActualCount] = useState(school.studentDinersCount);
-  const [actualAdultsCount, setActualAdultsCount] = useState(school.staffDinersCount || 3);
+  const [dinersActualCount, setDinersActualCount] = useState(v?.dinersActualCount ?? (school.studentDinersCount));
+  const [actualAdultsCount, setActualAdultsCount] = useState(v?.actualAdultsCount ?? (school.staffDinersCount || 3));
 
   // 3. Auxiliares
-  const [staffHygieneNotes, setStaffHygieneNotes] = useState(
+  const [staffHygieneNotes, setStaffHygieneNotes] = useState(v?.staffHygieneNotes ?? (
     'Auxiliares con uniforme completo reglamentario (delantal y cofia cubriendo la totalidad del cabello). Sin alhajas visibles ni uñas pintadas. Carnés de salud y de manipulación de alimentos vigentes.'
-  );
+  ));
 
   // 4. Higiene
-  const [facilityHygieneNotes, setFacilityHygieneNotes] = useState(
+  const [facilityHygieneNotes, setFacilityHygieneNotes] = useState(v?.facilityHygieneNotes ?? (
     'Condiciones edilicias de cocina y comedor en buen estado general en cada una de sus áreas. Superficies limpias, pisos desinfectados y ventilación adecuada.'
-  );
-  const [coldChain, setColdChain] = useState<HygieneRating>('Bien');
-  const [rawCookedSeparation, setRawCookedSeparation] = useState<HygieneRating>('Bien');
-  const [cleanliness, setCleanliness] = useState<HygieneRating>('Bien');
-  const [uniformAndCaps, setUniformAndCaps] = useState<HygieneRating>('Bien');
-  const [potableWaterChlorine, setPotableWaterChlorine] = useState<HygieneRating>(school.hasWaterSupply ? 'Bien' : 'Regular');
-  const [wasteDisposal, setWasteDisposal] = useState<HygieneRating>('Bien');
+  ));
+  const [coldChain, setColdChain] = useState<HygieneRating>(v?.hygieneChecklist?.coldChain ?? ('Bien'));
+  const [rawCookedSeparation, setRawCookedSeparation] = useState<HygieneRating>(v?.hygieneChecklist?.rawCookedSeparation ?? ('Bien'));
+  const [cleanliness, setCleanliness] = useState<HygieneRating>(v?.hygieneChecklist?.cleanliness ?? ('Bien'));
+  const [uniformAndCaps, setUniformAndCaps] = useState<HygieneRating>(v?.hygieneChecklist?.uniformAndCaps ?? ('Bien'));
+  const [potableWaterChlorine, setPotableWaterChlorine] = useState<HygieneRating>(v?.hygieneChecklist?.potableWaterChlorine ?? (school.hasWaterSupply ? 'Bien' : 'Regular'));
+  const [wasteDisposal, setWasteDisposal] = useState<HygieneRating>(v?.hygieneChecklist?.wasteDisposal ?? ('Bien'));
 
   // 5. Almacenamiento
-  const [storageNotes, setStorageNotes] = useState(
+  const [storageNotes, setStorageNotes] = useState(v?.storageNotes ?? (
     'Almacenamiento en frío y seco en condiciones adecuadas. Alimentos ordenados en estanterías elevadas, envases cerrados y rotulados. Fechas de vencimiento vigentes. No se observan alimentos de compra no autorizada.'
-  );
+  ));
 
   // 6. Servicio
-  const [serviceNotes, setServiceNotes] = useState(
+  const [serviceNotes, setServiceNotes] = useState(v?.serviceNotes ?? (
     'Horarios cumplidos con puntualidad. Buen orden y hábitos de higiene (lavado de manos previo). Temperaturas seguras en alimentos servidos (>65°C). Docente presente y responsable del comedor. Se consumen todos los alimentos en el recinto. Mesas completas: plato principal, jarra de agua potable, pan, postre, servilletas y cubiertos acordes a la preparación.'
-  );
+  ));
 
   // 7. Equipamiento y Menage
-  const [equipmentNotes, setEquipmentNotes] = useState(
+  const [equipmentNotes, setEquipmentNotes] = useState(v?.equipmentNotes ?? (
     school.areaType === 'Rural'
       ? 'Equipamiento acorde a la matrícula rural. Se verifica funcionamiento de refrigerador y cocina. Menage completo para alumnos y docentes.'
       : 'Equipamiento industrial en correcto estado operativo. Vajilla y menage en cantidad suficiente.'
-  );
+  ));
 
   // 8. Proveedores
-  const [providersNotes, setProvidersNotes] = useState(
+  const [providersNotes, setProvidersNotes] = useState(v?.providersNotes ?? (
     'Proveedores locales de Tacuarembó entregan mercadería según cronograma estipulado. Se controlan remitos y condiciones organolépticas en la recepción.'
-  );
+  ));
 
   // 9. Menú del día
-  const [lunchMenu, setLunchMenu] = useState('Cazuela de legumbres (lentejas) con carne magra vacuna, hortalizas de estación y arroz + Manzana fresca.');
-  const [breakfastOrSnackMenu, setBreakfastOrSnackMenu] = useState(
+  const [lunchMenu, setLunchMenu] = useState(v?.lunchMenu ?? ('Cazuela de legumbres (lentejas) con carne magra vacuna, hortalizas de estación y arroz + Manzana fresca.'));
+  const [breakfastOrSnackMenu, setBreakfastOrSnackMenu] = useState(v?.breakfastOrSnackMenu ?? (
     school.milkProgramType.includes('Copa de Leche') 
       ? 'Copa de leche tibia enriquecida con pan con dulce de membrillo casero.'
       : 'Leche caliente con panificados saludables.'
-  );
-  const [menuPlanned, setMenuPlanned] = useState('Cazuela de legumbres con carne magra y vegetales + Fruta');
-  const [menuServed, setMenuServed] = useState('');
-  const [menuEvaluation, setMenuEvaluation] = useState<Visit['menuEvaluation']>('Adecuado y Variado');
+  ));
+  const [menuPlanned, setMenuPlanned] = useState(v?.menuPlanned ?? ('Cazuela de legumbres con carne magra y vegetales + Fruta'));
+  const [menuServed, setMenuServed] = useState(v?.menuServed ?? (''));
+  const [menuEvaluation, setMenuEvaluation] = useState<Visit['menuEvaluation']>(v?.menuEvaluation ?? ('Adecuado y Variado'));
 
   // 10. Menú semanal
-  const [weeklyMenuDates, setWeeklyMenuDates] = useState('15/09 al 19/09');
-  const [weeklyMenuMonday, setWeeklyMenuMonday] = useState('Milanesas de carne al horno con puré mixto de calabaza y papa + Naranja');
-  const [weeklyMenuTuesday, setWeeklyMenuTuesday] = useState('Pastel de carne con base de puré y hortalizas + Banana');
-  const [weeklyMenuWednesday, setWeeklyMenuWednesday] = useState('Cazuela de lentejas y vegetales con arroz + Manzana');
-  const [weeklyMenuThursday, setWeeklyMenuThursday] = useState('Pollo al horno con ensalada de zanahoria, remolacha y choclo + Mandarina');
-  const [weeklyMenuFriday, setWeeklyMenuFriday] = useState('Torta de verduras con queso magro y arroz primavera + Ensalada de frutas');
+  const [weeklyMenuDates, setWeeklyMenuDates] = useState(v?.weeklyMenuDates ?? ('15/09 al 19/09'));
+  const [weeklyMenuMonday, setWeeklyMenuMonday] = useState(v?.weeklyMenuMonday ?? ('Milanesas de carne al horno con puré mixto de calabaza y papa + Naranja'));
+  const [weeklyMenuTuesday, setWeeklyMenuTuesday] = useState(v?.weeklyMenuTuesday ?? ('Pastel de carne con base de puré y hortalizas + Banana'));
+  const [weeklyMenuWednesday, setWeeklyMenuWednesday] = useState(v?.weeklyMenuWednesday ?? ('Cazuela de lentejas y vegetales con arroz + Manzana'));
+  const [weeklyMenuThursday, setWeeklyMenuThursday] = useState(v?.weeklyMenuThursday ?? ('Pollo al horno con ensalada de zanahoria, remolacha y choclo + Mandarina'));
+  const [weeklyMenuFriday, setWeeklyMenuFriday] = useState(v?.weeklyMenuFriday ?? ('Torta de verduras con queso magro y arroz primavera + Ensalada de frutas'));
 
   // 11. Cumplimiento y Variabilidad
-  const [recipeCompliance, setRecipeCompliance] = useState('Se cumple con los Recetarios oficiales ("Los Nuevos Sabores de mi Escuela" y "Las delicias de mi Escuela") y la planificación del menú.');
-  const [foodVariabilityAndDesserts, setFoodVariabilityAndDesserts] = useState('Se tiene en cuenta la variabilidad y frecuencias de los diferentes tipos de alimentos en todos los tiempos de comida brindados, incluyendo la frecuencia de frutas frescas como postre.');
-  const [menuVariabilitySuggestions, setMenuVariabilitySuggestions] = useState('Siempre tratar de incluir variedad de alimentos, alternando la presentación a los efectos de evitar la monotonía, tanto en almuerzo como en desayuno o merienda.');
+  const [recipeCompliance, setRecipeCompliance] = useState(v?.recipeCompliance ?? ('Se cumple con los Recetarios oficiales ("Los Nuevos Sabores de mi Escuela" y "Las delicias de mi Escuela") y la planificación del menú.'));
+  const [foodVariabilityAndDesserts, setFoodVariabilityAndDesserts] = useState(v?.foodVariabilityAndDesserts ?? ('Se tiene en cuenta la variabilidad y frecuencias de los diferentes tipos de alimentos en todos los tiempos de comida brindados, incluyendo la frecuencia de frutas frescas como postre.'));
+  const [menuVariabilitySuggestions, setMenuVariabilitySuggestions] = useState(v?.menuVariabilitySuggestions ?? ('Siempre tratar de incluir variedad de alimentos, alternando la presentación a los efectos de evitar la monotonía, tanto en almuerzo como en desayuno o merienda.'));
 
   // 12. Registros y Remitos
-  const [monthlySheetsSentToEmail, setMonthlySheetsSentToEmail] = useState('Sí, se envía Planilla de Registro Diario de Menú y boletas de manera mensual al correo paetacuarembo@gmail.com, como se solicita.');
-  const [kitchenLogbooksInOrder, setKitchenLogbooksInOrder] = useState('Sí, en cuanto a cuadernos de registro y de remitos en cocina están presentes, completos, en buen estado y al día. Art. 14- De los Registros, de la Circular N°6 del 23 de Febrero del 2024.');
-  const [recordsNotes, setRecordsNotes] = useState('Registros prolijos y rubricados diariamente. Coincidencia entre menú planificado y registros asentados.');
-  const [deliveryNotesChecked, setDeliveryNotesChecked] = useState(true);
-  const [deliveryNotesDetails, setDeliveryNotesDetails] = useState('Remitos firmados con fecha y sello al ingreso. Fechas de vencimiento y lote cotejados.');
+  const [monthlySheetsSentToEmail, setMonthlySheetsSentToEmail] = useState<string>((typeof v?.monthlySheetsSentToEmail === 'string' ? v.monthlySheetsSentToEmail : undefined) ?? ('Sí, se envía Planilla de Registro Diario de Menú y boletas de manera mensual al correo paetacuarembo@gmail.com, como se solicita.'));
+  const [kitchenLogbooksInOrder, setKitchenLogbooksInOrder] = useState<string>((typeof v?.kitchenLogbooksInOrder === 'string' ? v.kitchenLogbooksInOrder : undefined) ?? ('Sí, en cuanto a cuadernos de registro y de remitos en cocina están presentes, completos, en buen estado y al día. Art. 14- De los Registros, de la Circular N°6 del 23 de Febrero del 2024.'));
+  const [recordsNotes, setRecordsNotes] = useState(v?.recordsNotes ?? ('Registros prolijos y rubricados diariamente. Coincidencia entre menú planificado y registros asentados.'));
+  const [deliveryNotesChecked, setDeliveryNotesChecked] = useState(v?.deliveryNotesChecked ?? (true));
+  const [deliveryNotesDetails, setDeliveryNotesDetails] = useState(v?.deliveryNotesDetails ?? ('Remitos firmados con fecha y sello al ingreso. Fechas de vencimiento y lote cotejados.'));
 
   // 13. Alimentos no autorizados
-  const [unauthorizedPurchasesInRecords, setUnauthorizedPurchasesInRecords] = useState('No se observan alimentos de compra No Autorizada en los registros (cotejado con pág. 80 de "Los Nuevos Sabores de mi Escuela" y pág. 71 de "Las delicias de mi Escuela").');
-  const [unauthorizedItemsFound, setUnauthorizedItemsFound] = useState(false);
-  const [unauthorizedList, setUnauthorizedList] = useState<UnauthorizedItem[]>([]);
+  const [unauthorizedPurchasesInRecords, setUnauthorizedPurchasesInRecords] = useState(v?.unauthorizedPurchasesInRecords ?? ('No se observan alimentos de compra No Autorizada en los registros (cotejado con pág. 80 de "Los Nuevos Sabores de mi Escuela" y pág. 71 de "Las delicias de mi Escuela").'));
+  const [unauthorizedItemsFound, setUnauthorizedItemsFound] = useState(v?.unauthorizedItemsFound ?? (false));
+  const [unauthorizedList, setUnauthorizedList] = useState<UnauthorizedItem[]>(v?.unauthorizedItemsList ?? ([]));
   const [newItemName, setNewItemName] = useState('');
   const [newItemCategory, setNewItemCategory] = useState<UnauthorizedItem['category']>('Fiambres/Embutidos');
   const [newItemReason, setNewItemReason] = useState('Alimento procesado prohibido por normativa PAE.');
   const [newItemAction, setNewItemAction] = useState('Se retira del depósito y se asienta en acta.');
 
   // 14. Meriendas y Cantina
-  const [snackAndBreakfastRecorded, setSnackAndBreakfastRecorded] = useState('Se registra merienda y desayuno diariamente en las planillas oficiales.');
-  const [healthySnackNotes, setHealthySnackNotes] = useState('Se promueven meriendas saludables basadas en frutas de estación, agua y cereales sin azúcares añadidos.');
-  const [schoolCanteenNotes, setSchoolCanteenNotes] = useState(
+  const [snackAndBreakfastRecorded, setSnackAndBreakfastRecorded] = useState(v?.snackAndBreakfastRecorded ?? ('Se registra merienda y desayuno diariamente en las planillas oficiales.'));
+  const [healthySnackNotes, setHealthySnackNotes] = useState(v?.healthySnackNotes ?? ('Se promueven meriendas saludables basadas en frutas de estación, agua y cereales sin azúcares añadidos.'));
+  const [schoolCanteenNotes, setSchoolCanteenNotes] = useState(v?.schoolCanteenNotes ?? (
     school.areaType === 'Rural' 
       ? 'No cuenta con cantina comercial. La totalidad de las ingestas está cubierta por el comedor escolar PAE.' 
       : 'Cantina escolar sujeta al listado de alimentos saludables de la Ley 19.140.'
-  );
-  const [homeSnackNotes, setHomeSnackNotes] = useState('Se recomienda a las familias no enviar refrescos, jugos artificiales ni productos de copetín con sellos de advertencia.');
+  ));
+  const [homeSnackNotes, setHomeSnackNotes] = useState(v?.homeSnackNotes ?? ('Se recomienda a las familias no enviar refrescos, jugos artificiales ni productos de copetín con sellos de advertencia.'));
 
   // 15. Menúes Especiales
-  const [specialMenusNotes, setSpecialMenusNotes] = useState(
+  const [specialMenusNotes, setSpecialMenusNotes] = useState(v?.specialMenusNotes ?? (
     'Menúes especiales: Se responde adecuadamente a la patología si correspondiere. Se recuerda la necesidad de contar con Certificado médico y Acta correspondiente de la página 14 de la Circular N°6 del 23 de Febrero del 2024.'
-  );
+  ));
 
   // 16. Observaciones del personal y acuerdos
-  const [staffFeedbackNotes, setStaffFeedbackNotes] = useState('El personal de cocina manifiesta excelente disposición para continuar implementando las pautas y recetarios oficiales.');
-  const [meetingMinutes, setMeetingMinutes] = useState('Se mantuvo intercambio formal con la Maestra Directora y auxiliares. Se transmitieron las orientaciones aprobadas por la Licenciada en Nutrición.');
-  const [suggestions, setSuggestions] = useState('1. Mantener jarras de agua fresca en todas las mesas.\n2. Continuar remitiendo las boletas y planillas mensuales a paetacuarembo@gmail.com.');
-  const [generalObservations, setGeneralObservations] = useState('Visita altamente satisfactoria. Funcionamiento higiénico-sanitario correcto y cordial.');
+  const [staffFeedbackNotes, setStaffFeedbackNotes] = useState(v?.staffFeedbackNotes ?? ('El personal de cocina manifiesta excelente disposición para continuar implementando las pautas y recetarios oficiales.'));
+  const [meetingMinutes, setMeetingMinutes] = useState(v?.meetingMinutes ?? ('Se mantuvo intercambio formal con la Maestra Directora y auxiliares. Se transmitieron las orientaciones aprobadas por la Licenciada en Nutrición.'));
+  const [suggestions, setSuggestions] = useState(v?.suggestions ?? ('1. Mantener jarras de agua fresca en todas las mesas.\n2. Continuar remitiendo las boletas y planillas mensuales a paetacuarembo@gmail.com.'));
+  const [generalObservations, setGeneralObservations] = useState(v?.generalObservations ?? ('Visita altamente satisfactoria. Funcionamiento higiénico-sanitario correcto y cordial.'));
 
   // Seguimiento automático de problema si aplica
-  const [createAutoIssue, setCreateAutoIssue] = useState(false);
-  const [autoIssueTitle, setAutoIssueTitle] = useState('');
+  const issueBorrador = borrador?.newIssues.find((i) => i.id === `${visitId}-obs`);
+  const [createAutoIssue, setCreateAutoIssue] = useState(!!issueBorrador);
+  const [autoIssueTitle, setAutoIssueTitle] = useState(issueBorrador?.title ?? '');
 
   if (!isOpen) return null;
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { School } from '../types';
 import { useEquipo } from '../services/equipo';
+import { fechaCorta } from '../services/fechas';
 import { 
   UtensilsCrossed, 
   Building2, 
@@ -45,6 +46,14 @@ interface NavbarProps {
   /** Borradores "no enviados" guardados en este dispositivo (FR-028). */
   borradoresCount?: number;
   onOpenBorradores?: () => void;
+  /** Con valor, la pantalla muestra la copia del dispositivo recibida en esa fecha (006). */
+  copiaDel?: string | null;
+  /** La cola se está enviando. */
+  enviando?: boolean;
+  /** Cuántos no enviados rechazó el servidor y esperan revisión. */
+  rechazados?: number;
+  /** No enviados de otra cuenta en este dispositivo: se avisan, no se envían (FR-014). */
+  deOtraCuenta?: number;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -63,7 +72,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   onCerrarSesion,
   isOnline = true,
   borradoresCount = 0,
-  onOpenBorradores
+  onOpenBorradores,
+  copiaDel = null,
+  enviando = false,
+  rechazados = 0,
+  deOtraCuenta = 0
 }) => {
   const equipo = useEquipo();
   const [quickSearch, setQuickSearch] = useState('');
@@ -254,27 +267,34 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             {/* Borradores "no enviados": cuentan lo que el servidor NO confirmó (FR-028) */}
-            {borradoresCount > 0 && onOpenBorradores && (
+            {(borradoresCount > 0 || deOtraCuenta > 0) && onOpenBorradores && (
               <button
                 type="button"
                 onClick={onOpenBorradores}
                 className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 bg-amber-500/25 hover:bg-amber-500/35 text-amber-200 border border-amber-400/50 rounded-xl text-xs font-bold transition"
-                title={`${borradoresCount} guardado(s) que no llegaron al servidor. Tocá para reenviar.`}
+                title={borradoresCount > 0
+                  ? `${borradoresCount} guardado(s) que no llegaron al servidor. Se envían solos al haber conexión.`
+                  : `${deOtraCuenta} guardado(s) de otra cuenta en este dispositivo. No se envían con tu sesión.`}
               >
-                <CloudUpload className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0" />
-                <span className="font-extrabold text-[11px] sm:text-xs text-amber-100">{borradoresCount}</span>
-                <span className="hidden sm:inline text-[11px] text-amber-200 font-semibold">no enviado{borradoresCount > 1 ? 's' : ''}</span>
+                <CloudUpload className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0 ${enviando ? 'animate-pulse' : ''}`} />
+                <span className="font-extrabold text-[11px] sm:text-xs text-amber-100">{borradoresCount || deOtraCuenta}</span>
+                <span className="hidden sm:inline text-[11px] text-amber-200 font-semibold">
+                  {enviando ? 'enviando…' : borradoresCount > 0 ? `no enviado${borradoresCount > 1 ? 's' : ''}` : 'de otra cuenta'}
+                  {rechazados > 0 && ` · ${rechazados} para revisar`}
+                </span>
               </button>
             )}
 
-            {/* Estado real de la conexión del navegador */}
-            {!isOnline && (
+            {/* Estado real de la conexión; con copia, de cuándo son los datos (FR-003) */}
+            {(!isOnline || copiaDel) && (
               <span
                 className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-bold border bg-amber-950/60 text-amber-200 border-amber-500/60 shrink-0"
-                title="Sin conexión. Lo que guardes queda como borrador no enviado."
+                title="Sin conexión. Lo que guardes queda como no enviado y se envía solo al volver la conexión."
               >
                 <WifiOff className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span className="text-[11px] text-amber-300 font-black">Sin conexión</span>
+                <span className="text-[11px] text-amber-300 font-black">
+                  Sin conexión{copiaDel && <span className="hidden sm:inline"> — datos del {fechaCorta(copiaDel)}</span>}
+                </span>
               </span>
             )}
 

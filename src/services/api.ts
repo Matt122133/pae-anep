@@ -26,6 +26,12 @@ export class ErrorApi extends Error {
   }
 }
 
+/** El mensaje con el detalle de cada campo rechazado, si el servidor lo dio. */
+export function describirCampos(e: ErrorApi): string {
+  const campos = Object.entries(e.campos).map(([c, m]) => `${c}: ${m}`);
+  return campos.length ? `Hay datos para corregir — ${campos.join('; ')}` : e.message;
+}
+
 /** ¿Este error justifica guardar lo escrito como borrador "no enviado"? */
 export function generaBorrador(e: unknown): boolean {
   return e instanceof ErrorApi && (e.tipo === 'red' || e.tipo === 'sesion' || e.tipo === 'servidor');
@@ -43,7 +49,16 @@ interface Opciones {
   token?: string | null;
   fetchImpl?: typeof fetch;
   base?: string;
+  /** Corte del pedido; por defecto TIEMPO_MAXIMO_MS. */
+  tiempoMs?: number;
 }
+
+/**
+ * Con un portal cautivo o wifi sin salida, `fetch` puede quedar colgado
+ * minutos aunque el dispositivo diga que hay red. Pasado este tiempo el pedido
+ * se corta y cuenta como sin conexión (research 006 R5).
+ */
+export const TIEMPO_MAXIMO_MS = 15_000;
 
 export async function pedir<T>(ruta: string, op: Opciones = {}): Promise<T> {
   const base = op.base ?? urlBase();
@@ -55,15 +70,20 @@ export async function pedir<T>(ruta: string, op: Opciones = {}): Promise<T> {
   if (token) cabeceras['Authorization'] = `Bearer ${token}`;
   if (op.cuerpo !== undefined) cabeceras['Content-Type'] = 'application/json';
 
+  const corte = new AbortController();
+  const reloj = setTimeout(() => corte.abort(), op.tiempoMs ?? TIEMPO_MAXIMO_MS);
   let resp: Response;
   try {
     resp = await (op.fetchImpl ?? fetch)(base + ruta, {
       method: op.metodo ?? 'GET',
       headers: cabeceras,
       body: op.cuerpo === undefined ? undefined : JSON.stringify(op.cuerpo),
+      signal: corte.signal,
     });
   } catch {
     throw new ErrorApi('red', 'No hay conexión con el servidor.');
+  } finally {
+    clearTimeout(reloj);
   }
 
   if (resp.status === 204) return undefined as T;

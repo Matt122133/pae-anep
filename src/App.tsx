@@ -1,9 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { School, StaffMember, Visit, SchoolIssue, ActivityLog, CuentaEquipo, equipoDesdeCuentas } from './types';
 import { DatabaseState, getHealthCardStatus } from './services/storage';
-import { ErrorApi, generaBorrador, nuevoId, pedir } from './services/api';
+import { describirCampos, ErrorApi, generaBorrador, nuevoId, pedir } from './services/api';
 import { borrarSesion, leerSesion, Sesion } from './services/sesion';
-import { Borrador, descartarBorrador, guardarBorrador, listarBorradores, reenviarBorrador } from './services/borradores';
+import { Borrador, buscarBorrador, descartarBorrador, guardarBorrador, listarBorradores, reenviarBorrador } from './services/borradores';
+import { fechaCorta } from './services/fechas';
+import { borrarCopia, guardarCopia, leerCopia } from './services/copiaLegajo';
+import { enviarCola, ESPERA_MINIMA_MS, pendientesDe, siguienteEspera } from './services/envio';
 import { EquipoProvider } from './services/equipo';
 import { Login } from './components/Login';
 import { Navbar } from './components/Navbar';
@@ -18,6 +21,8 @@ import { ExportImportModal } from './components/ExportImportModal';
 import { SchoolReportModal } from './components/SchoolReportModal';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { BorradoresModal } from './components/BorradoresModal';
+import { ScheduleVisitModal } from './components/ScheduleVisitModal';
+import type { AvisoBorradorProps } from './components/AvisoBorrador';
 import { Loader2, WifiOff, X } from 'lucide-react';
 
 // Respuesta de GET /legajo: la forma de DatabaseState más las cuentas del
@@ -34,11 +39,6 @@ interface Operacion {
   cuerpo: unknown;
 }
 
-function describirCampos(e: ErrorApi): string {
-  const campos = Object.entries(e.campos).map(([c, m]) => `${c}: ${m}`);
-  return campos.length ? `Hay datos para corregir — ${campos.join('; ')}` : e.message;
-}
-
 export default function App() {
   // --- sesión y datos del servidor
   const [sesion, setSesion] = useState<Sesion | null>(() => leerSesion());
@@ -46,8 +46,25 @@ export default function App() {
   const [database, setDatabase] = useState<DatabaseState | null>(null);
   const [cuentas, setCuentas] = useState<CuentaEquipo[]>([]);
   const [errorCarga, setErrorCarga] = useState<string | null>(null);
-  const [borradores, setBorradores] = useState<Borrador[]>(() => listarBorradores());
+  const [borradores, setBorradores] = useState<Borrador[]>(() => listarBorradores(undefined, leerSesion()?.cuenta.id));
   const [aviso, setAviso] = useState<string | null>(null);
+
+  // --- sin conexión (006): copia del legajo en el dispositivo y envío automático
+  /** Con valor, la pantalla muestra la copia del dispositivo, recibida en esa fecha. */
+  const [copiaDel, setCopiaDel] = useState<string | null>(null);
+  const [enviando, setEnviando] = useState(false);
+  const recibidoRef = useRef<string | null>(null);
+  const hayDatosRef = useRef(false);
+  const avisoCopiaRef = useRef(false);
+  const enviandoRef = useRef(false);
+  const esperaRef = useRef(ESPERA_MINIMA_MS);
+
+  const refrescarBorradores = () => setBorradores(listarBorradores(undefined, leerSesion()?.cuenta.id));
+
+  // Borrador abierto en un formulario (R7): guardar lo reemplaza sin preguntar.
+  const [abiertoDesde, setAbiertoDesde] = useState<string | null>(null);
+  const [visitaBorrador, setVisitaBorrador] = useState<{ visit: Visit; newIssues: SchoolIssue[] } | null>(null);
+  const [programadaBorrador, setProgramadaBorrador] = useState<Visit | null>(null);
 
   // --- navegación y modales (sin cambios respecto del prototipo)
   const [currentView, setCurrentView] = useState<'dashboard' | 'schools' | 'school-detail'>('dashboard');
@@ -90,38 +107,137 @@ export default function App() {
 
   // La sesión no sirve más: se vuelve al ingreso. Los borradores NO se tocan:
   // son de este dispositivo y se reenvían después de reingresar.
+  // La copia del legajo tampoco: es de esta cuenta y sirve al reingresar.
   const perderSesion = useCallback((motivo: string) => {
     borrarSesion();
     setSesion(null);
     setDatabase(null);
+    hayDatosRef.current = false;
+    setCopiaDel(null);
     setAvisoIngreso(motivo);
   }, []);
 
+  const aplicarLegajo = (l: Legajo) => {
+    const { cuentas: cs, ...estado } = l;
+    setDatabase(estado);
+    setCuentas(cs);
+    hayDatosRef.current = true;
+  };
+
   const cargarLegajo = useCallback(async () => {
+    const cuentaId = leerSesion()?.cuenta.id;
     try {
       // Con inactivos: una escuela o persona dada de baja sigue consultable
       // (FR-015). Los listados las filtran; SchoolList permite verlas.
       const l = await pedir<Legajo>('/legajo?incluir_inactivos=1');
-      const { cuentas: cs, ...estado } = l;
-      setDatabase(estado);
-      setCuentas(cs);
+      aplicarLegajo(l);
       setErrorCarga(null);
+      setCopiaDel(null);
+      const recibidoEn = new Date().toISOString();
+      recibidoRef.current = recibidoEn;
+      if (cuentaId && !(await guardarCopia({ cuentaId, recibidoEn, legajo: l })) && !avisoCopiaRef.current) {
+        avisoCopiaRef.current = true;
+        avisar('Este dispositivo no puede guardar el legajo para usarlo sin señal.');
+      }
     } catch (e) {
       if (e instanceof ErrorApi && e.tipo === 'sesion') {
         perderSesion('Tu sesión venció. Volvé a ingresar.');
         return;
       }
+      // Sin servidor: lo que ya está en pantalla es la última versión recibida.
+      if (hayDatosRef.current) {
+        setCopiaDel(recibidoRef.current ?? new Date().toISOString());
+        return;
+      }
+      const copia = cuentaId ? await leerCopia<Legajo>(cuentaId) : null;
+      if (copia) {
+        aplicarLegajo(copia.legajo);
+        recibidoRef.current = copia.recibidoEn;
+        setCopiaDel(copia.recibidoEn);
+        setErrorCarga(null);
+        return;
+      }
       setErrorCarga(
         e instanceof ErrorApi && e.tipo === 'red'
-          ? 'No hay conexión con el servidor. Para ver el legajo hace falta señal; lo que ya guardaste como "no enviado" sigue a salvo en este dispositivo.'
+          ? 'No hay conexión con el servidor. Para usar la app sin señal hace falta abrirla una vez con conexión; lo que ya guardaste como "no enviado" sigue a salvo en este dispositivo.'
           : 'El servidor no pudo entregar el legajo. Probá de nuevo en un momento.',
       );
     }
   }, [perderSesion]);
 
+  // Al abrir con sesión: primero la copia del dispositivo (si es de esta
+  // cuenta), después el servidor. Una copia de otra cuenta se borra (FR-005).
   useEffect(() => {
-    if (sesion) cargarLegajo();
+    if (!sesion) return;
+    let vigente = true;
+    (async () => {
+      const copia = await leerCopia<Legajo>(sesion.cuenta.id);
+      if (!vigente) return;
+      if (copia && !hayDatosRef.current) {
+        aplicarLegajo(copia.legajo);
+        recibidoRef.current = copia.recibidoEn;
+      } else if (!copia) {
+        await borrarCopia();
+      }
+      cargarLegajo();
+    })();
+    return () => {
+      vigente = false;
+    };
   }, [sesion, cargarLegajo]);
+
+  useEffect(() => {
+    if (!sesion) return;
+    window.addEventListener('online', cargarLegajo);
+    return () => window.removeEventListener('online', cargarLegajo);
+  }, [sesion, cargarLegajo]);
+
+  // Envío automático de los no enviados (FR-008): al abrir, al volver la red y
+  // con espera creciente mientras queden pendientes. Sin pedir confirmación;
+  // al terminar se avisa qué llegó (FR-020).
+  const enviarPendientes = useCallback(async () => {
+    const cuentaId = leerSesion()?.cuenta.id;
+    if (!cuentaId || enviandoRef.current) return;
+    if (pendientesDe(cuentaId, listarBorradores(undefined, cuentaId)).length === 0) return;
+    enviandoRef.current = true;
+    setEnviando(true);
+    try {
+      const r = await enviarCola(cuentaId);
+      esperaRef.current = siguienteEspera(esperaRef.current, r);
+      refrescarBorradores();
+      const revisar = r.rechazados > 0 ? `${r.rechazados} necesita${r.rechazados > 1 ? 'n' : ''} revisión en "No enviados"` : '';
+      if (r.enviados > 0) {
+        cargarLegajo();
+        avisar(`Se envi${r.enviados > 1 ? 'aron' : 'ó'} ${r.enviados} guardado${r.enviados > 1 ? 's' : ''}${revisar ? `; ${revisar}` : ''}.`);
+      } else if (revisar) {
+        avisar(`${revisar[0].toUpperCase()}${revisar.slice(1)}.`);
+      }
+      if (r.frenadoPor === 'sesion') {
+        perderSesion('Tu sesión venció. Lo que no se envió sigue guardado y se envía solo después de ingresar.');
+      }
+    } finally {
+      enviandoRef.current = false;
+      setEnviando(false);
+    }
+  }, [cargarLegajo, perderSesion]);
+
+  useEffect(() => {
+    if (!sesion) return;
+    enviarPendientes();
+    window.addEventListener('online', enviarPendientes);
+    return () => window.removeEventListener('online', enviarPendientes);
+  }, [sesion, enviarPendientes]);
+
+  // Cada cambio en la lista (o el fin de un envío) reprograma el próximo intento.
+  useEffect(() => {
+    if (!sesion || enviando) return;
+    if (pendientesDe(sesion.cuenta.id, borradores).length === 0) {
+      esperaRef.current = ESPERA_MINIMA_MS;
+      return;
+    }
+    const t = window.setTimeout(enviarPendientes, esperaRef.current);
+    return () => window.clearTimeout(t);
+  }, [sesion, borradores, enviando, enviarPendientes]);
 
   /**
    * Manda una operación. Devuelve null si el servidor la aceptó o si quedó
@@ -133,24 +249,36 @@ export default function App() {
     alConfirmar: (r: T) => void,
     alConflicto?: (actual: any) => void,
   ): Promise<string | null> => {
+    // Un borrador de esta ficha nunca se reemplaza en silencio (FR-021): si el
+    // formulario no se abrió desde él, se pide confirmar.
+    const previo = buscarBorrador(op.clave);
+    if (previo && previo.cuentaId === leerSesion()?.cuenta.id && abiertoDesde !== op.clave &&
+      !confirm(`Ya hay cambios sin enviar en esta ficha (guardados el ${fechaCorta(previo.actualizadoEn ?? previo.creadoEn)}). ¿Reemplazarlos por estos?`)) {
+      return 'No se guardó: los cambios anteriores siguen en "No enviados". Podés abrirlos desde el aviso de arriba.';
+    }
     try {
       const r = await pedir<T>(op.ruta, { metodo: op.metodo, cuerpo: op.cuerpo });
       alConfirmar(r);
+      // Lo que se guardó reemplaza al borrador de la misma ficha, si había.
+      if (previo) {
+        descartarBorrador(op.clave);
+        refrescarBorradores();
+      }
       // La bitácora y los derivados los calcula el servidor: se recarga.
       cargarLegajo();
       return null;
     } catch (e) {
       if (generaBorrador(e)) {
         const err = e as ErrorApi;
-        const guardado = guardarBorrador({ ...op, ultimoError: err.message, tipoError: err.tipo });
-        setBorradores(listarBorradores());
+        const guardado = guardarBorrador({ ...op, ultimoError: err.message, tipoError: err.tipo, cuentaId: leerSesion()?.cuenta.id });
+        refrescarBorradores();
         if (!guardado) {
           return 'No se pudo enviar y este dispositivo tampoco pudo guardarlo. No cierres el formulario: copiá lo escrito antes de salir.';
         }
         if (err.tipo === 'sesion') {
           perderSesion('Tu sesión venció. Lo que estabas guardando quedó en "No enviados": reenvialo después de ingresar.');
         } else {
-          avisar(`No se envió: "${op.descripcion}" quedó guardado en este dispositivo. Reenvialo desde "No enviados".`);
+          avisar(`No se envió: "${op.descripcion}" quedó guardado en este dispositivo y se envía solo cuando vuelva la conexión.`);
         }
         return null;
       }
@@ -355,7 +483,7 @@ export default function App() {
 
   const reenviar = async (b: Borrador): Promise<string | null> => {
     const r = await reenviarBorrador(b);
-    setBorradores(listarBorradores());
+    refrescarBorradores();
     if (r.ok) {
       cargarLegajo();
       return null;
@@ -376,14 +504,59 @@ export default function App() {
         return reenviar(nuevo);
       }
     }
-    setBorradores(listarBorradores());
+    refrescarBorradores();
     if (r.ok) cargarLegajo();
     return r.ok ? null : r.error.message;
   };
 
   const descartar = (b: Borrador) => {
     descartarBorrador(b.clave);
-    setBorradores(listarBorradores());
+    refrescarBorradores();
+  };
+
+  // Abre un "no enviado" en su formulario, precargado con lo escrito (R7).
+  // Guardar reemplaza el mismo borrador: misma clave, mismo lugar en la cola.
+  const editarBorrador = (b: Borrador) => {
+    const cuerpo = b.cuerpo as Record<string, any>;
+    const schoolId: string | undefined = cuerpo.schoolId ?? cuerpo.visit?.schoolId;
+    if (!b.clave.startsWith('escuela:') && !database?.schools.some((s) => s.id === schoolId)) {
+      avisar('La escuela de este borrador todavía no está en el legajo: primero tiene que llegar su alta.');
+      return;
+    }
+    setIsBorradoresOpen(false);
+    setAbiertoDesde(b.clave);
+    if (schoolId) setSelectedSchoolId(schoolId);
+    if (b.clave.startsWith('visita:')) {
+      const visita: Visit = b.metodo === 'PUT' ? (cuerpo as Visit) : cuerpo.visit;
+      if (b.metodo === 'POST' && visita.status === 'Realizada') {
+        setVisitaBorrador({ visit: visita, newIssues: cuerpo.newIssues ?? [] });
+        setIsVisitModalOpen(true);
+      } else {
+        setProgramadaBorrador(visita);
+      }
+    } else if (b.clave.startsWith('personal:')) {
+      setStaffToEdit(cuerpo as StaffMember);
+      setIsStaffModalOpen(true);
+    } else if (b.clave.startsWith('incidencia:')) {
+      setIssueToEdit(cuerpo as SchoolIssue);
+      setIsIssueModalOpen(true);
+    } else if (b.clave.startsWith('escuela:')) {
+      setSchoolToEdit(cuerpo as School);
+      setIsSchoolModalOpen(true);
+    }
+  };
+
+  const guardarNota = (b: Borrador, summary: string, notes: string) => {
+    guardarBorrador({ ...b, descripcion: `Nota: ${summary}`, cuerpo: { ...(b.cuerpo as object), summary, notes } });
+    refrescarBorradores();
+    enviarPendientes();
+  };
+
+  /** Aviso para una ficha abierta desde el legajo que tiene un "no enviado" (FR-021). */
+  const avisoDe = (clave: string | null): AvisoBorradorProps | undefined => {
+    if (!clave || clave === abiertoDesde) return undefined;
+    const b = borradores.find((x) => x.clave === clave && x.cuentaId === activeUserId);
+    return b ? { guardadoEn: b.actualizadoEn ?? b.creadoEn, onAbrir: () => editarBorrador(b) } : undefined;
   };
 
   const cerrarSesion = async () => {
@@ -396,9 +569,14 @@ export default function App() {
     } catch {
       // Sin señal no se revoca en el servidor; igual se borra de este dispositivo.
     }
+    // El legajo no queda en el dispositivo al salir (FR-006); los no enviados sí.
+    await borrarCopia();
     borrarSesion();
     setSesion(null);
     setDatabase(null);
+    hayDatosRef.current = false;
+    recibidoRef.current = null;
+    setCopiaDel(null);
     setAvisoIngreso(undefined);
   };
 
@@ -428,7 +606,7 @@ export default function App() {
                 <button onClick={cargarLegajo} className="px-4 py-2 bg-emerald-600 rounded-xl text-sm font-bold">Reintentar</button>
                 {borradores.length > 0 && (
                   <button onClick={() => setIsBorradoresOpen(true)} className="px-4 py-2 bg-amber-600 rounded-xl text-sm font-bold">
-                    {borradores.length} no enviado{borradores.length > 1 ? 's' : ''}
+                    No enviados ({borradores.filter((b) => b.cuentaId === sesion.cuenta.id).length})
                   </button>
                 )}
                 <button onClick={cerrarSesion} className="px-4 py-2 bg-slate-700 rounded-xl text-sm font-bold">Cerrar sesión</button>
@@ -444,11 +622,14 @@ export default function App() {
         {isBorradoresOpen && (
           <BorradoresModal
             borradores={borradores}
+            cuentaId={sesion.cuenta.id}
             isOnline={isOnline}
             onClose={() => setIsBorradoresOpen(false)}
             onReenviar={reenviar}
             onAplicarSobreActual={aplicarSobreActual}
             onDescartar={descartar}
+            onEditar={() => alert('Para editarlo en su formulario hace falta tener el legajo cargado. Lo escrito sigue a salvo acá.')}
+            onGuardarNota={guardarNota}
           />
         )}
       </div>
@@ -456,6 +637,11 @@ export default function App() {
   }
 
   // --- legajo
+
+  // Los no enviados de otra cuenta no cuentan ni se envían (FR-014).
+  const misBorradores = borradores.filter((b) => b.cuentaId === activeUserId);
+  const rechazados = misBorradores.filter((b) => b.estado === 'rechazado').length;
+  const deOtraCuenta = borradores.length - misBorradores.length;
 
   const escuelasActivas = database.schools.filter((s) => s.active !== false);
   const personalActivo = database.staff.filter((s) => s.active !== false);
@@ -512,8 +698,12 @@ export default function App() {
           nombreSesion={sesion.cuenta.nombre}
           onCerrarSesion={cerrarSesion}
           isOnline={isOnline}
-          borradoresCount={borradores.length}
+          borradoresCount={misBorradores.length}
           onOpenBorradores={() => setIsBorradoresOpen(true)}
+          copiaDel={copiaDel}
+          enviando={enviando}
+          rechazados={rechazados}
+          deOtraCuenta={deOtraCuenta}
         />
 
         {aviso && (
@@ -617,6 +807,8 @@ export default function App() {
               setIsVisitModalOpen(false);
               setVisitDefaultDate(undefined);
               setVisitDefaultTime(undefined);
+              setVisitaBorrador(null);
+              setAbiertoDesde(null);
             }}
             school={selectedSchool}
             existingVisitsCount={selectedSchoolVisits.length}
@@ -625,49 +817,75 @@ export default function App() {
             initialDate={visitDefaultDate}
             initialTime={visitDefaultTime}
             isOnline={isOnline}
+            borrador={visitaBorrador ?? undefined}
           />
         )}
 
+        {/* Una visita programada que no se envió, abierta desde "No enviados" (R7). */}
+        {programadaBorrador && (
+          <ScheduleVisitModal
+            isOpen
+            onClose={() => {
+              setProgramadaBorrador(null);
+              setAbiertoDesde(null);
+            }}
+            schools={escuelasActivas}
+            onSaveScheduledVisit={handleSaveScheduledVisit}
+            visitToEdit={programadaBorrador}
+            activeUserId={activeUserId}
+          />
+        )}
+
+        {/* key: abrir el borrador desde el aviso vuelve a montar el formulario con lo escrito. */}
         {isStaffModalOpen && selectedSchool && (
           <StaffModal
+            key={abiertoDesde ?? 'legajo'}
             isOpen={isStaffModalOpen}
             onClose={() => {
               setIsStaffModalOpen(false);
               setStaffToEdit(null);
+              setAbiertoDesde(null);
             }}
             schoolId={selectedSchool.id}
             staffToEdit={staffToEdit}
             onSave={handleSaveStaff}
             schools={escuelasActivas}
             onTrasladar={handleTrasladarStaff}
+            avisoBorrador={avisoDe(staffToEdit && `personal:${staffToEdit.id}`)}
           />
         )}
 
         {isIssueModalOpen && selectedSchool && (
           <IssueModal
+            key={abiertoDesde ?? 'legajo'}
             isOpen={isIssueModalOpen}
             onClose={() => {
               setIsIssueModalOpen(false);
               setIssueToEdit(null);
+              setAbiertoDesde(null);
             }}
             schoolId={selectedSchool.id}
             issueToEdit={issueToEdit}
             visitsCount={selectedSchoolVisits.length}
             onSave={handleSaveIssue}
+            avisoBorrador={avisoDe(issueToEdit && `incidencia:${issueToEdit.id}`)}
           />
         )}
 
         {isSchoolModalOpen && (
           <SchoolModal
+            key={abiertoDesde ?? 'legajo'}
             isOpen={isSchoolModalOpen}
             onClose={() => {
               setIsSchoolModalOpen(false);
               setSchoolToEdit(null);
+              setAbiertoDesde(null);
             }}
             schoolToEdit={schoolToEdit}
             nextSchoolNumber={Math.max(0, ...database.schools.map((s) => s.number)) + 1}
             onSave={handleSaveSchool}
             onDarDeBaja={handleDeleteSchool}
+            avisoBorrador={avisoDe(schoolToEdit && `escuela:${schoolToEdit.id}`)}
           />
         )}
 
@@ -689,11 +907,14 @@ export default function App() {
         {isBorradoresOpen && (
           <BorradoresModal
             borradores={borradores}
+            cuentaId={activeUserId}
             isOnline={isOnline}
             onClose={() => setIsBorradoresOpen(false)}
             onReenviar={reenviar}
             onAplicarSobreActual={aplicarSobreActual}
             onDescartar={descartar}
+            onEditar={editarBorrador}
+            onGuardarNota={guardarNota}
           />
         )}
 
@@ -721,8 +942,12 @@ export default function App() {
           onOpenExportModal={() => setIsExportModalOpen(true)}
           totalAlerts={totalAlerts}
           isOnline={isOnline}
-          borradoresCount={borradores.length}
+          borradoresCount={misBorradores.length}
           onOpenBorradores={() => setIsBorradoresOpen(true)}
+          copiaDel={copiaDel}
+          enviando={enviando}
+          rechazados={rechazados}
+          deOtraCuenta={deOtraCuenta}
         />
       </div>
     </EquipoProvider>

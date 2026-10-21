@@ -30,10 +30,28 @@ Desde `001` (2026-10-19) hay **dos superficies**:
 cookies; CORS se restringe a `CORS_ORIGENES`. Ver
 [ADR backend-persistence-stack](docs/decisions/backend-persistence-stack.md).
 
-**Sin conexión** (hasta `002`): no se puede leer el legajo; lo que se guarda sin
-red queda como **borrador "no enviado"** en el dispositivo
-(`src/services/borradores.ts`) y se reenvía a mano. Nada se muestra como
-"sincronizado" si el servidor no lo confirmó.
+**Sin conexión** (desde `006`):
+
+- **Lectura.** Cada legajo recibido se guarda como **copia** en IndexedDB
+  (`src/services/copiaLegajo.ts`, base `pae`, una por dispositivo, con la cuenta
+  y la fecha). Sin señal la app abre con esa copia y lo dice ("Sin conexión —
+  datos del …"). Cerrar sesión la borra; una copia de otra cuenta no se muestra.
+- **Escritura.** Lo que no llega al servidor (sin red, 401, 5xx o sin respuesta
+  en 15 s) queda como **borrador "no enviado"** (`src/services/borradores.ts`,
+  `localStorage`), con la cuenta que lo escribió y un estado: `pendiente` o
+  `rechazado` ("para revisar": 400 con el campo a corregir, o 409).
+- **Envío.** `src/services/envio.ts` manda los pendientes de la cuenta activa
+  solo, sin confirmar: al abrir, al volver la red y con espera creciente
+  (30 s, el doble con cada falla de red o servidor, tope 5 min). De a uno y en
+  el orden en que se escribieron; un rechazo no frena a los demás, la red o la
+  sesión sí. El mismo id en cada reintento hace que el servidor no duplique.
+- **Edición.** Todo borrador con formulario (visita, personal, incidencia,
+  escuela) se reabre en él; las notas se editan en la lista. Una ficha abierta
+  desde el legajo que tiene un borrador muestra los datos del servidor, avisa
+  (`AvisoBorrador`) y pide confirmar antes de reemplazarlo.
+
+Nada se muestra como enviado si el servidor no lo confirmó. No hay envío con la
+app cerrada (sin Background Sync).
 
 ## Layout
 
@@ -46,7 +64,10 @@ src/
   types/index.ts      # Modelo de dominio + equipo PAE + estilos de etiquetas
   services/api.ts     # Cliente HTTP: token, errores tipados, id del dispositivo
   services/sesion.ts  # Token y cuenta en localStorage
-  services/borradores.ts # Guardados que no llegaron al servidor (reenvío manual)
+  services/borradores.ts # Guardados que no llegaron al servidor: cola por cuenta, estado
+  services/envio.ts   # Envío automático de la cola: orden, rechazos, espera creciente
+  services/copiaLegajo.ts # Copia del legajo en IndexedDB para abrir sin señal
+  services/fechas.ts  # Fecha corta para avisos ("dd/mm hh:mm")
   services/equipo.tsx # Contexto con el equipo (cuentas activas del servidor)
   services/storage.ts # Solo exportación CSV/JSON y estado de carnés
   hooks/usePWAInstall.ts
@@ -102,7 +123,8 @@ Navegación: `currentView` (`dashboard` | `schools` | `school-detail`) y
 | `SchoolReportModal` | Informe imprimible (`window.print()`) |
 | `ExportImportModal` | Exportación JSON y CSV (la importación es solo por el servidor) |
 | `Login` | Ingreso con usuario y contraseña |
-| `BorradoresModal` | Lista de "no enviados": reenviar, aplicar sobre la versión actual, descartar |
+| `BorradoresModal` | Lista de "no enviados": editar, enviar ahora, aplicar sobre la versión actual, descartar; los de otra cuenta aparte |
+| `AvisoBorrador` | Franja "Hay cambios sin enviar en esta ficha" con "Abrir el borrador" |
 | `PresenciaAviso` | "X está editando esta ficha" (latido cada 20 s) |
 | `PWAInstall*`, `PWAPromptBanner` | Instalación de la PWA |
 

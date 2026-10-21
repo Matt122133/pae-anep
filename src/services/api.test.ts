@@ -55,6 +55,15 @@ describe('pedir', () => {
     expect((await error(pedir('/x', { base, token: 't', fetchImpl }))).tipo).toBe('red');
   });
 
+  it('un pedido colgado se corta y es tipo red', async () => {
+    // Wifi sin salida: fetch no responde hasta que lo abortan.
+    const fetchImpl = ((_url: string, init: RequestInit) =>
+      new Promise((_, rechazar) => {
+        init.signal!.addEventListener('abort', () => rechazar(new DOMException('abortado', 'AbortError')));
+      })) as unknown as typeof fetch;
+    expect((await error(pedir('/x', { base, token: 't', fetchImpl, tiempoMs: 10 }))).tipo).toBe('red');
+  });
+
   it('204 devuelve undefined', async () => {
     expect(await pedir('/x', { base, token: 't', fetchImpl: respuesta(204) as any })).toBeUndefined();
   });

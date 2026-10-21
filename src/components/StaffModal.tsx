@@ -3,6 +3,7 @@ import { PresenciaAviso } from './PresenciaAviso';
 import React, { useState, useEffect } from 'react';
 import { School, StaffMember, InstitutionContractType, StaffRole, SocialSecurityStatus } from '../types';
 import { X, UserCheck, ShieldAlert, AlertCircle } from 'lucide-react';
+import { AvisoBorrador, AvisoBorradorProps } from './AvisoBorrador';
 
 interface StaffModalProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ interface StaffModalProps {
   onTrasladar?: (staffId: string, schoolId: string) => Promise<string | null>;
   schoolId: string;
   staffToEdit?: StaffMember | null;
+  /** Hay un "no enviado" de esta ficha (006, FR-021). */
+  avisoBorrador?: AvisoBorradorProps;
 }
 
 export const StaffModal: React.FC<StaffModalProps> = ({
@@ -23,6 +26,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
   onSave,
   schoolId,
   staffToEdit,
+  avisoBorrador,
   schools = [],
   onTrasladar
 }) => {
@@ -152,6 +156,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+          {avisoBorrador && <AvisoBorrador {...avisoBorrador} />}
           {staffToEdit && <PresenciaAviso tipo="personal" id={staffToEdit.id} />}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
