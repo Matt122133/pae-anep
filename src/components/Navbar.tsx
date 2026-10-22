@@ -128,7 +128,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-md shadow-emerald-900/30 group-hover:scale-105 transition shrink-0">
               <UtensilsCrossed className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 hidden lg:block">
               <div className="flex items-center gap-1.5">
                 <span className="text-sm sm:text-base font-extrabold tracking-tight text-white group-hover:text-emerald-400 transition truncate">
                   Legajo Escolar
@@ -147,6 +147,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <nav className="hidden md:flex items-center gap-1">
             <button
               onClick={() => onNavigate('dashboard')}
+              title="Panel General"
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
                 currentView === 'dashboard'
                   ? 'bg-emerald-600 text-white shadow-xs'
@@ -154,11 +155,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <LayoutDashboard className="w-4 h-4" />
-              Panel General
+              <span className="hidden xl:inline">Panel General</span>
             </button>
 
             <button
               onClick={() => onNavigate('schools')}
+              title={`${schools.length} Escuelas`}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
                 currentView === 'schools' || currentView === 'school-detail'
                   ? 'bg-emerald-600 text-white shadow-xs'
@@ -166,26 +168,28 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <Building2 className="w-4 h-4" />
-              {schools.length} Escuelas
+              <span className="hidden xl:inline">{schools.length} Escuelas</span>
             </button>
 
             {onNavigateToCalendar && (
               <button
                 onClick={onNavigateToCalendar}
+                title="Calendario"
                 className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-2"
               >
                 <Calendar className="w-4 h-4 text-sky-400" />
-                Calendario
+                <span className="hidden xl:inline">Calendario</span>
               </button>
             )}
 
             {onNavigateToBitacora && (
               <button
                 onClick={onNavigateToBitacora}
+                title="Bitácora"
                 className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-2"
               >
                 <History className="w-4 h-4 text-emerald-400" />
-                <span>Bitácora</span>
+                <span className="hidden xl:inline">Bitácora</span>
                 {activityLogsCount > 0 && (
                   <span className="text-[10px] bg-emerald-500/25 text-emerald-300 border border-emerald-400/30 px-1.5 py-0.2 rounded-full font-bold">
                     {activityLogsCount}
@@ -272,16 +276,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 type="button"
                 onClick={onOpenBorradores}
                 className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 bg-amber-500/25 hover:bg-amber-500/35 text-amber-200 border border-amber-400/50 rounded-xl text-xs font-bold transition"
-                title={borradoresCount > 0
-                  ? `${borradoresCount} guardado(s) que no llegaron al servidor. Se envían solos al haber conexión.`
-                  : `${deOtraCuenta} guardado(s) de otra cuenta en este dispositivo. No se envían con tu sesión.`}
+                title={(borradoresCount > 0
+                  ? `${borradoresCount} no enviado${borradoresCount > 1 ? 's' : ''}${enviando ? ', enviando…' : ''}. Se envían solos al haber conexión.`
+                  : `${deOtraCuenta} guardado(s) de otra cuenta en este dispositivo. No se envían con tu sesión.`)
+                  + (rechazados > 0 ? ` ${rechazados} para revisar.` : '')}
               >
                 <CloudUpload className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0 ${enviando ? 'animate-pulse' : ''}`} />
                 <span className="font-extrabold text-[11px] sm:text-xs text-amber-100">{borradoresCount || deOtraCuenta}</span>
-                <span className="hidden sm:inline text-[11px] text-amber-200 font-semibold">
-                  {enviando ? 'enviando…' : borradoresCount > 0 ? `no enviado${borradoresCount > 1 ? 's' : ''}` : 'de otra cuenta'}
-                  {rechazados > 0 && ` · ${rechazados} para revisar`}
-                </span>
               </button>
             )}
 
@@ -289,11 +290,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             {(!isOnline || copiaDel) && (
               <span
                 className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-bold border bg-amber-950/60 text-amber-200 border-amber-500/60 shrink-0"
-                title="Sin conexión. Lo que guardes queda como no enviado y se envía solo al volver la conexión."
+                title={`Sin conexión${copiaDel ? ` — datos del ${fechaCorta(copiaDel)}` : ''}. Lo que guardes queda como no enviado y se envía solo al volver la conexión.`}
               >
                 <WifiOff className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span className="text-[11px] text-amber-300 font-black">
-                  Sin conexión{copiaDel && <span className="hidden sm:inline"> — datos del {fechaCorta(copiaDel)}</span>}
+                <span className="hidden 2xl:inline text-[11px] text-amber-300 font-black">
+                  Sin conexión
                 </span>
               </span>
             )}
@@ -306,7 +307,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
                 <span className="text-[11px] sm:text-xs">{totalAlerts}</span>
-                <span className="hidden sm:inline text-xs">alertas</span>
               </button>
             )}
 
@@ -316,7 +316,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               title="Respaldo y Excel"
             >
               <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-              <span className="hidden md:inline">Respaldo / Excel</span>
+              <span className="hidden xl:inline">Respaldo / Excel</span>
             </button>
 
             {/* Cuenta con sesión */}
@@ -355,11 +355,12 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               onClick={onOpenNewSchoolModal}
+              title="Nueva Escuela"
+              aria-label="Nueva Escuela"
               className="px-2.5 sm:px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-xs"
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Nueva Escuela</span>
-              <span className="sm:hidden text-xs">Escuela</span>
+              <span className="hidden xl:inline">Nueva Escuela</span>
             </button>
 
             {/* Mobile burger toggle */}
