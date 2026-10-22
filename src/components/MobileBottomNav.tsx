@@ -73,7 +73,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             </span>
           </div>
           <span className="text-[10px] bg-slate-900 text-amber-300 px-1.5 py-0.2 rounded font-black shrink-0">
-            {rechazados > 0 ? `${rechazados} PARA REVISAR` : borradoresCount > 0 ? `${borradoresCount} NO ENVIADOS` : sinConexion ? 'SIN CONEXIÓN' : 'OTRA CUENTA'}
+            {rechazados > 0 ? `${rechazados} PARA REVISAR` : borradoresCount > 0 ? `${borradoresCount} NO ENVIADO${borradoresCount > 1 ? 'S' : ''}` : sinConexion ? 'SIN CONEXIÓN' : 'OTRA CUENTA'}
           </span>
         </div>
       )}
