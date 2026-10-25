@@ -511,7 +511,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
                   className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded text-sm font-semibold"
                 />
               </div>
-              <div className="flex items-center gap-3 pt-4">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-4">
                 <label className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
                   <input
                     type="checkbox"
