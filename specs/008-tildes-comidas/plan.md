@@ -1,6 +1,6 @@
 ---
 ticket: none
-status: active
+status: completed
 covers:
   - src/components/SchoolModal.tsx
   - specs/008-tildes-comidas/
