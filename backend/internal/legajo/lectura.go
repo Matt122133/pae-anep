@@ -37,7 +37,7 @@ const columnasEscuela = `e.id, e.numero, e.nombre, e.departamento, e.ambito, e.z
 	e.direccion, e.telefono, e.email, e.director, e.cocinera_responsable, e.modalidad,
 	e.comensales_alumnos, e.comensales_personal, e.servicio_desayuno, e.servicio_almuerzo,
 	e.servicio_merienda, e.agua_ose, e.rubro_agua, e.notas_agua, e.programa_leche, e.leche_kg,
-	e.notas_leche, e.notas, e.activo, e.version,
+	e.notas_leche, e.notas, e.proveedores, e.activo, e.version,
 	(SELECT max(v.fecha) FROM visitas v WHERE v.escuela_id = e.id AND v.estado = 'Realizada'),
 	(SELECT count(*) FROM visitas v WHERE v.escuela_id = e.id AND v.estado = 'Realizada'),
 	(SELECT count(*) FROM incidencias i WHERE i.escuela_id = e.id AND i.estado <> 'Resuelto')`
@@ -49,7 +49,7 @@ func escanearEscuela(f pgx.Row) (School, error) {
 		&s.Address, &s.Phone, &s.Email, &s.PrincipalName, &s.HeadCookName, &s.Modality,
 		&s.StudentDinersCount, &s.StaffDinersCount, &s.MealServices.Breakfast, &s.MealServices.Lunch,
 		&s.MealServices.Snack, &s.HasWaterSupply, &s.WaterPurchaseAllowance, &s.WaterNotes,
-		&s.MilkProgramType, &s.MilkPowderKg, &s.MilkNotes, &s.Notes, &s.Active, &s.Version,
+		&s.MilkProgramType, &s.MilkPowderKg, &s.MilkNotes, &s.Notes, &s.Providers, &s.Active, &s.Version,
 		&ultima, &s.TotalVisits, &s.ActiveIssuesCount)
 	s.LastVisitDate = fecha(ultima)
 	return s, err

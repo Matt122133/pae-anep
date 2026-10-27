@@ -45,6 +45,9 @@ type School struct {
 	MilkPowderKg           float64      `json:"milkPowderKg"`
 	MilkNotes              string       `json:"milkNotes,omitempty"`
 	Notes                  string       `json:"notes"`
+	// Providers son nombres de texto libre (009). nil = el pedido no trajo el
+	// campo: un PUT asi conserva la lista guardada (research R2).
+	Providers []string `json:"providers"`
 
 	LastVisitDate     string `json:"lastVisitDate,omitempty"`
 	TotalVisits       int    `json:"totalVisits"`

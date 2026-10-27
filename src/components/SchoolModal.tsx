@@ -2,7 +2,8 @@ import { nuevoId } from '../services/api';
 import { PresenciaAviso } from './PresenciaAviso';
 import React, { useState, useEffect } from 'react';
 import { School, ModalityType, SchoolAreaType, MilkProgramType } from '../types';
-import { X, Building2, Save, Droplets, Milk, UserCheck, MapPin } from 'lucide-react';
+import { X, Building2, Save, Droplets, Milk, UserCheck, MapPin, Truck, Plus } from 'lucide-react';
+import { agregarProveedor, quitarProveedor, LARGO_MAXIMO_PROVEEDOR } from '../services/proveedores';
 import { AvisoBorrador, AvisoBorradorProps } from './AvisoBorrador';
 
 interface SchoolModalProps {
@@ -71,6 +72,10 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
 
   const [notes, setNotes] = useState('');
 
+  // Proveedores (009): texto libre, sin catálogo
+  const [providers, setProviders] = useState<string[]>([]);
+  const [nuevoProveedor, setNuevoProveedor] = useState('');
+
   useEffect(() => {
     if (schoolToEdit) {
       setNumber(schoolToEdit.number);
@@ -100,6 +105,8 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
       setMilkNotes(schoolToEdit.milkNotes || '');
 
       setNotes(schoolToEdit.notes || '');
+      setProviders(schoolToEdit.providers ?? []);
+      setNuevoProveedor('');
     } else {
       setNumber(nextSchoolNumber);
       setName(`N° ${nextSchoolNumber} "Escuela"`);
@@ -125,6 +132,8 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
       setMilkPowderKg(15);
       setMilkNotes('Cuota mensual de leche en polvo asignada.');
       setNotes('');
+      setProviders([]);
+      setNuevoProveedor('');
     }
   // Se reinicia al abrir OTRA ficha (cambia el id), no cuando llega una versión
   // nueva de la misma: ante un conflicto (409) la app carga la versión vigente y
@@ -132,6 +141,20 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
   }, [schoolToEdit?.id, nextSchoolNumber, isOpen]);
 
   if (!isOpen) return null;
+
+  // Lo que quedó escrito sin tocar "Agregar" también se guarda. Si la ficha vino
+  // sin el campo (copia anterior a 009) y la lista quedó vacía, no se manda:
+  // el servidor conserva lo que tenga (research R2).
+  const proveedoresAGuardar = (): Pick<School, 'providers'> => {
+    const lista = agregarProveedor(providers, nuevoProveedor);
+    if (schoolToEdit && schoolToEdit.providers === undefined && lista.length === 0) return {};
+    return { providers: lista };
+  };
+
+  const agregar = () => {
+    setProviders(agregarProveedor(providers, nuevoProveedor));
+    setNuevoProveedor('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,6 +188,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
       milkPowderKg: Number(milkPowderKg) || 0,
       milkNotes: milkNotes.trim(),
       notes: notes.trim(),
+      ...proveedoresAGuardar(),
       lastVisitDate: schoolToEdit?.lastVisitDate,
       totalVisits: schoolToEdit?.totalVisits || 0,
       activeIssuesCount: schoolToEdit?.activeIssuesCount || 0
@@ -541,6 +565,55 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
                 </label>
               </div>
             </div>
+          </div>
+
+          {/* Proveedores */}
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <h4 className="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+              <Truck className="w-3.5 h-3.5" />
+              Proveedores
+            </h4>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={nuevoProveedor}
+                maxLength={LARGO_MAXIMO_PROVEEDOR}
+                onChange={e => setNuevoProveedor(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    agregar();
+                  }
+                }}
+                placeholder="Nombre del proveedor"
+                className="flex-1 min-w-0 px-2.5 py-1.5 bg-white border border-slate-300 rounded text-sm"
+              />
+              <button
+                type="button"
+                onClick={agregar}
+                className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 rounded flex items-center gap-1"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Agregar
+              </button>
+            </div>
+            {providers.length > 0 && (
+              <ul className="mt-2 space-y-1">
+                {providers.map((p, i) => (
+                  <li key={p} className="flex items-center justify-between gap-2 bg-white border border-slate-200 rounded px-2.5 py-1 text-sm">
+                    <span className="break-words min-w-0">{p}</span>
+                    <button
+                      type="button"
+                      onClick={() => setProviders(quitarProveedor(providers, i))}
+                      title={`Quitar ${p}`}
+                      className="p-1 text-slate-400 hover:text-rose-600 rounded shrink-0"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div>

@@ -3,6 +3,7 @@ package legajo
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/Matt122133/pae-anep/backend/internal/cuentas"
@@ -142,6 +143,103 @@ func TestEscuelaValidacion(t *testing.T) {
 		if inv.Campos[campo] == "" {
 			t.Errorf("falta el error de %s: %v", campo, inv.Campos)
 		}
+	}
+}
+
+func TestEscuelaProveedoresAlta(t *testing.T) {
+	pool := testdb.Abrir(t)
+	r := NuevoRepositorio(pool)
+	ctx := context.Background()
+	a := autorDePrueba(t, pool, "valentina")
+
+	con := escuelaFicticia("esc-1", 1)
+	con.Providers = []string{" Proveedor Uno ", "Proveedor Dos"}
+	s, err := r.CrearEscuela(ctx, a, con)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.Join(s.Providers, "|"); got != "Proveedor Uno|Proveedor Dos" {
+		t.Errorf("proveedores guardados = %q (recortados y en orden)", got)
+	}
+
+	// Sin el campo: queda [] y el reenvio identico no es conflicto (R3).
+	sin, err := r.CrearEscuela(ctx, a, escuelaFicticia("esc-2", 2))
+	if err != nil || sin.Providers == nil || len(sin.Providers) != 0 {
+		t.Fatalf("alta sin proveedores: %v %#v", err, sin.Providers)
+	}
+	if _, err := r.CrearEscuela(ctx, a, escuelaFicticia("esc-2", 2)); err != nil {
+		t.Errorf("reenvio del alta sin proveedores: %v", err)
+	}
+
+	l, _ := r.Leer(ctx, false)
+	for _, e := range l.Schools {
+		if e.Providers == nil {
+			t.Errorf("la lectura de %s trae providers nil", e.ID)
+		}
+	}
+}
+
+func TestEscuelaProveedoresEdicion(t *testing.T) {
+	pool := testdb.Abrir(t)
+	r := NuevoRepositorio(pool)
+	ctx := context.Background()
+	a := autorDePrueba(t, pool, "valentina")
+
+	inicial := escuelaFicticia("esc-1", 1)
+	inicial.Providers = []string{"Proveedor Uno", "Proveedor Dos"}
+	s, _ := r.CrearEscuela(ctx, a, inicial)
+
+	// Quitar uno: queda el otro y la bitacora lo registra.
+	s.Providers = []string{"Proveedor Dos"}
+	s, err := r.EditarEscuela(ctx, a, s)
+	if err != nil || strings.Join(s.Providers, "|") != "Proveedor Dos" {
+		t.Fatalf("quitar uno: %v %v", err, s.Providers)
+	}
+	var detalle []byte
+	pool.QueryRow(ctx, `SELECT detalle FROM bitacora WHERE accion = 'UPDATE'`).Scan(&detalle)
+	if !contiene(string(detalle), `"providers"`) || !contiene(string(detalle), "Proveedores") {
+		t.Errorf("la bitacora no registra el cambio de proveedores: %s", detalle)
+	}
+
+	// Un PUT sin el campo (borrador viejo) cambia otra cosa y conserva la lista (FR-006).
+	viejo := s
+	viejo.Providers = nil
+	viejo.Notes = "nota nueva"
+	s, err = r.EditarEscuela(ctx, a, viejo)
+	if err != nil || strings.Join(s.Providers, "|") != "Proveedor Dos" || s.Notes != "nota nueva" {
+		t.Fatalf("edicion sin el campo: %v %+v", err, s)
+	}
+
+	// [] explicito vacia la lista.
+	s.Providers = []string{}
+	s, err = r.EditarEscuela(ctx, a, s)
+	if err != nil || len(s.Providers) != 0 {
+		t.Errorf("vaciar la lista: %v %v", err, s.Providers)
+	}
+}
+
+func TestEscuelaProveedoresValidacion(t *testing.T) {
+	r := NuevoRepositorio(testdb.Abrir(t))
+	casos := map[string][]string{
+		"vacio":        {""},
+		"solo espacio": {"   "},
+		"largo":        {strings.Repeat("ñ", 121)},
+		"repetido":     {"Proveedor Uno", " proveedor uno"},
+	}
+	for nombre, lista := range casos {
+		s := escuelaFicticia("esc-1", 1)
+		s.Providers = lista
+		_, err := r.CrearEscuela(context.Background(), &cuentas.Cuenta{}, s)
+		var inv *ErrInvalido
+		if !errors.As(err, &inv) || inv.Campos["providers"] == "" {
+			t.Errorf("%s: se esperaba error en providers, fue %v", nombre, err)
+		}
+	}
+	// 120 caracteres (no bytes) entra.
+	s := escuelaFicticia("esc-1", 1)
+	s.Providers = []string{strings.Repeat("ñ", 120)}
+	if err := ValidarEscuela(&s); err != nil {
+		t.Errorf("120 caracteres: %v", err)
 	}
 }
 

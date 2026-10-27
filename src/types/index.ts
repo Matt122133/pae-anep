@@ -223,6 +223,10 @@ export interface School {
   milkNotes?: string;
 
   notes: string;
+  /** Nombres de proveedores, texto libre (009). Opcional: las copias del
+   * legajo y los "no enviados" anteriores no lo traen, y sin el campo el
+   * servidor conserva la lista guardada. */
+  providers?: string[];
   lastVisitDate?: string;
   totalVisits: number;
   activeIssuesCount: number;

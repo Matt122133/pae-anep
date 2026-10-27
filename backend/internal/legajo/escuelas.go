@@ -19,7 +19,7 @@ var etiquetasEscuela = map[string]string{
 	"mealServices": "Servicios de comedor", "hasWaterSupply": "Agua de red OSE",
 	"waterPurchaseAllowance": "Rubro compra de agua", "waterNotes": "Notas de agua",
 	"milkProgramType": "Programa de leche", "milkPowderKg": "Leche en polvo (kg/mes)",
-	"milkNotes": "Notas de leche", "notes": "Notas",
+	"milkNotes": "Notas de leche", "notes": "Notas", "providers": "Proveedores",
 }
 
 // camposAguaYLeche: si todo lo que cambio es de aca, la entrada va en la
@@ -44,7 +44,7 @@ func argsEscuela(s *School) []any {
 		s.Address, s.Phone, s.Email, s.PrincipalName, s.HeadCookName, s.Modality,
 		s.StudentDinersCount, s.StaffDinersCount, s.MealServices.Breakfast, s.MealServices.Lunch,
 		s.MealServices.Snack, s.HasWaterSupply, s.WaterPurchaseAllowance, s.WaterNotes,
-		s.MilkProgramType, s.MilkPowderKg, s.MilkNotes, s.Notes}
+		s.MilkProgramType, s.MilkPowderKg, s.MilkNotes, s.Notes, s.Providers}
 }
 
 func numeroRepetido(err error) error {
@@ -60,8 +60,9 @@ var opEscuela = operaciones[School]{
 		tag, err := tx.Exec(ctx, `INSERT INTO escuelas (id, numero, nombre, departamento, ambito, zona,
 			inspector, direccion, telefono, email, director, cocinera_responsable, modalidad,
 			comensales_alumnos, comensales_personal, servicio_desayuno, servicio_almuerzo,
-			servicio_merienda, agua_ose, rubro_agua, notas_agua, programa_leche, leche_kg, notas_leche, notas)
-			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25)
+			servicio_merienda, agua_ose, rubro_agua, notas_agua, programa_leche, leche_kg, notas_leche, notas,
+			proveedores)
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26)
 			ON CONFLICT (id) DO NOTHING`, argsEscuela(s)...)
 		if err != nil {
 			return false, numeroRepetido(err)
@@ -74,6 +75,7 @@ var opEscuela = operaciones[School]{
 			cocinera_responsable=$12, modalidad=$13, comensales_alumnos=$14, comensales_personal=$15,
 			servicio_desayuno=$16, servicio_almuerzo=$17, servicio_merienda=$18, agua_ose=$19,
 			rubro_agua=$20, notas_agua=$21, programa_leche=$22, leche_kg=$23, notas_leche=$24, notas=$25,
+			proveedores=$26,
 			version = version + 1, actualizada_en = now()
 			WHERE id = $1`, argsEscuela(s)...)
 		return numeroRepetido(err)
@@ -114,6 +116,11 @@ func (r *Repositorio) CrearEscuela(ctx context.Context, autor *cuentas.Cuenta, s
 	if err := ValidarEscuela(&s); err != nil {
 		return School{}, err
 	}
+	// Ausente se guarda vacio antes del insert: si no, el reenvio del mismo
+	// alta compararia null contra [] y daria conflicto (research R3).
+	if s.Providers == nil {
+		s.Providers = []string{}
+	}
 	var out School
 	err := r.enTx(ctx, func(tx pgx.Tx) (err error) {
 		out, _, err = crear(ctx, tx, opEscuela, autor, &s)
@@ -129,10 +136,19 @@ func (r *Repositorio) EditarEscuela(ctx context.Context, autor *cuentas.Cuenta, 
 	}
 	var out School
 	err := r.enTx(ctx, func(tx pgx.Tx) (err error) {
-		out, err = editar(ctx, tx, opEscuela, autor, &s, nil)
+		out, err = editar(ctx, tx, opEscuela, autor, &s, conservarProveedores)
 		return err
 	})
 	return out, err
+}
+
+// conservarProveedores: un PUT sin el campo (un "no enviado" o una copia del
+// legajo anteriores a 009) no borra la lista guardada (FR-006, research R2).
+func conservarProveedores(antes School, s *School) error {
+	if s.Providers == nil {
+		s.Providers = antes.Providers
+	}
+	return nil
 }
 
 // CambiarActivaEscuela es la baja logica (FR-015) y su reversa.
