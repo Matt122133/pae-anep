@@ -1,6 +1,6 @@
 ---
 ticket: none
-status: active
+status: completed
 covers:
   - backend/migrations/0003_tipo_institucion.sql
   - backend/internal/legajo/
