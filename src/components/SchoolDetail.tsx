@@ -302,6 +302,12 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
                   <span className="text-xs text-slate-500 block">Encargada de Cocina</span>
                   <span className="font-semibold text-slate-900 text-base">{school.headCookName || 'No asignada'}</span>
                 </div>
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 sm:col-span-2">
+                  <span className="text-xs text-slate-500 block">Proveedores</span>
+                  <span className="font-semibold text-slate-900">
+                    {school.providers?.length ? school.providers.join(', ') : 'Sin proveedores registrados'}
+                  </span>
+                </div>
                 <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
                   <span className="text-xs text-slate-500 block">Correo Electrónico Institucional</span>
                   <span className="font-semibold text-slate-900">{school.email || 'Sin correo registrado'}</span>

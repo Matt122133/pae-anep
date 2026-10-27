@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 // Listas cerradas. Son las de src/types/index.ts y las de los CHECK de la
@@ -72,6 +73,26 @@ func (e errores) noNegativo(campo string, v float64) {
 	}
 }
 
+// proveedores recorta cada nombre en su lugar y rechaza vacios, largos y
+// repetidos sin distinguir mayusculas (009, contracts/escuela.md).
+func (e errores) proveedores(lista []string) {
+	vistos := map[string]bool{}
+	for i, nombre := range lista {
+		nombre = strings.TrimSpace(nombre)
+		lista[i] = nombre
+		clave := strings.ToLower(nombre)
+		switch {
+		case nombre == "":
+			e["providers"] = "hay un nombre vacío"
+		case utf8.RuneCountInString(nombre) > 120:
+			e["providers"] = "cada nombre admite hasta 120 caracteres"
+		case vistos[clave]:
+			e["providers"] = "nombre repetido: " + nombre
+		}
+		vistos[clave] = true
+	}
+}
+
 func (e errores) err() error {
 	if len(e) == 0 {
 		return nil
@@ -98,6 +119,7 @@ func ValidarEscuela(s *School) error {
 	if s.Department == "" {
 		s.Department = "Tacuarembó"
 	}
+	e.proveedores(s.Providers)
 	return e.err()
 }
 

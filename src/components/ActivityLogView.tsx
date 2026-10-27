@@ -39,6 +39,14 @@ import {
   RefreshCw
 } from 'lucide-react';
 
+/** Valor de un cambio para mostrar: las listas (proveedores) unidas por coma;
+ * vacío o ausente es null. */
+function valorLegible(v: unknown): string | null {
+  if (v === undefined || v === null) return null;
+  if (Array.isArray(v)) return v.length ? v.join(', ') : null;
+  return String(v);
+}
+
 interface ActivityLogViewProps {
   logs: ActivityLog[];
   schools: School[];
@@ -924,16 +932,16 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({
                                   {diff.fieldLabel || diff.field}
                                 </span>
                                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                                  {diff.oldValue !== undefined && diff.oldValue !== null && (
+                                  {valorLegible(diff.oldValue) !== null && (
                                     <span className="px-2 py-0.5 rounded bg-rose-50 text-rose-800 border border-rose-200 line-through text-[11px] truncate">
-                                      {String(diff.oldValue)}
+                                      {valorLegible(diff.oldValue)}
                                     </span>
                                   )}
-                                  {diff.oldValue !== undefined && diff.oldValue !== null && (
+                                  {valorLegible(diff.oldValue) !== null && (
                                     <ArrowRight className="w-3 h-3 text-slate-400 shrink-0" />
                                   )}
                                   <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold text-[11px] truncate">
-                                    {String(diff.newValue ?? '(eliminado / vacío)')}
+                                    {valorLegible(diff.newValue) ?? '(eliminado / vacío)'}
                                   </span>
                                 </div>
                               </div>

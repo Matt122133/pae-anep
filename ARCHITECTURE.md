@@ -135,6 +135,12 @@ son **espejo**, con los mismos nombres JSON; se sincronizan a mano. Las listas
 cerradas (modalidad, rol, severidad…) existen tres veces: en el tipo TS, en
 `validar.go` y en los `CHECK` de la migración. Si cambia una, cambian las tres.
 
+`School.providers` (009) es la única excepción a "el PUT trae la ficha
+entera": si no viene, el servidor **conserva** la lista guardada, para que un
+"no enviado" o una copia del legajo anteriores al campo no la borren; `[]`
+explícito sí la vacía. Por lo mismo, un campo nuevo en un cuerpo exige
+desplegar Railway **antes** que Pages: el servidor viejo lo rechaza con 400.
+
 Los contadores de `School` (`totalVisits`, `lastVisitDate`, `activeIssuesCount`)
 los **deriva el servidor** en cada lectura; lo que mande la app se ignora.
 
