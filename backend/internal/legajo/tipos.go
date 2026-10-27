@@ -48,6 +48,9 @@ type School struct {
 	// Providers son nombres de texto libre (009). nil = el pedido no trajo el
 	// campo: un PUT asi conserva la lista guardada (research R2).
 	Providers []string `json:"providers"`
+	// SchoolType es "Escuela" o "Jardín" (010). Vacio = el pedido no trajo el
+	// campo: un PUT asi conserva el guardado.
+	SchoolType string `json:"schoolType"`
 
 	LastVisitDate     string `json:"lastVisitDate,omitempty"`
 	TotalVisits       int    `json:"totalVisits"`
