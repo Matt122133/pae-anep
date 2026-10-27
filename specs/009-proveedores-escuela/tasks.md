@@ -44,7 +44,7 @@ Sin tareas: no hay dependencias ni estructura nueva.
 - [X] T017 Recorrer `specs/009-proveedores-escuela/quickstart.md` en navegador contra backend local; anotar resultado en el plan
 - [X] T018 Chequeo de datos reales sobre el diff (`git diff master..HEAD | grep "^+" | grep -oE ...` de AGENTS.md) y nombres de prueba ficticios
 
-- [ ] T019 Antes de mergear el PR: desplegar `backend/` a Railway (`railway up` desde `backend/`), confirmar que `GET /legajo` en producción trae `providers` en las escuelas, y recién ahí mergear (Pages publica en cada push a `master`)
+- [X] T019 Antes de mergear el PR: desplegar `backend/` a Railway (`railway up` desde `backend/`), confirmar que `GET /legajo` en producción trae `providers` en las escuelas, y recién ahí mergear (Pages publica en cada push a `master`)
 
 ## Dependencies
 
