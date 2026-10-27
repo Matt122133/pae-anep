@@ -42,6 +42,9 @@ necesite conocer el repo. Al agregar un doc, sumar una línea en su sección.
 - [`decisions/backend-persistence-stack.md`](decisions/backend-persistence-stack.md)
   — frontend estático en GitHub Pages, backend Go + Postgres en Railway, ingreso
   con usuario y contraseña, online primero y offline automático en `002`.
+- [`decisions/jardin-tipo-de-institucion.md`](decisions/jardin-tipo-de-institucion.md)
+  — el jardín es una fila más de `escuelas` con `tipo`, no una tabla propia
+  (`010`).
 
 ## Procesos
 
