@@ -1,6 +1,6 @@
 ---
 ticket: none
-status: active
+status: completed
 covers:
   - src/components/
   - src/services/storage.ts
@@ -22,3 +22,9 @@ Rama `010-jardines` (sale con el PR #10). Spec: [spec.md](spec.md).
 5. `verify:` y una mirada en el navegador al directorio, la ficha y el formulario.
 
 Sin cambios de backend ni de datos.
+
+## Resultado (2026-10-26)
+
+- `verify:` en verde (lint, 42 pruebas, build).
+- En navegador: panel ("instituciones por visitar"), directorio ("Número" en ordenar), formulario ("Inspector/a Asignado/a", "las instituciones se dividen…") OK. Lo único que sigue diciendo "Escuela" en pantalla son nombres cargados y el botón "Escuela Rural/Urbana", que cambia a "Jardín" al elegir el tipo.
+- Quedan sin tocar, a propósito (FR-003): modalidades "Escuelas de Educación…", recetarios "…de mi Escuela", valores por defecto del alta (correo `escuelaN@dgeip.edu.uy`, nota de agua "Escuela rural sin conexión…").
