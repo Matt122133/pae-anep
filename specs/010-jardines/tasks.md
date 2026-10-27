@@ -52,10 +52,10 @@ Sin tareas.
 
 - [X] T024 Barrido (SC-002): `grep -rn "Escuela N°\|escuela N°" src backend/internal` sin resultados fuera de `institucion.ts`, `nombreInstitucion` del servidor y pruebas; además revisar cada `Escuela`/`escuela` restante en `src/components/` y corregir los que nombran a una institución concreta (los genéricos y las modalidades "Escuelas de Educación …" quedan)
 - [X] T025 `ARCHITECTURE.md`, "Modelo de dominio": `schoolType` (jardín = fila con tipo, ver ADR) y que ausente se conserva como `providers`; ADR a `status: accepted`
-- [ ] T026 `verify:` del plan con Postgres de pruebas; corregir hasta verde
-- [ ] T027 Quickstart en navegador contra backend local; resultado en el plan
-- [ ] T028 Chequeo de datos reales sobre `master..HEAD`
-- [ ] T029 Plan a `status: completed` con resultados, **en la rama, antes de pedir el merge**; PR con aviso de mergear en un momento sin uso
+- [X] T026 `verify:` del plan con Postgres de pruebas; corregir hasta verde
+- [X] T027 Quickstart en navegador contra backend local; resultado en el plan
+- [X] T028 Chequeo de datos reales sobre `master..HEAD`
+- [X] T029 Plan a `status: completed` con resultados, **en la rama, antes de pedir el merge**; PR con aviso de mergear en un momento sin uso
 
 ## Dependencies
 

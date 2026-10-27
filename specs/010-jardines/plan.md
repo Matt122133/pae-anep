@@ -106,3 +106,12 @@ src/
 ## Complexity Tracking
 
 Sin violaciones que justificar.
+
+## Resultado (2026-10-26)
+
+- `verify:` en verde: lint, 42 pruebas de vitest, build, `go vet` y `go test` contra Postgres en `:55442` (3 pruebas nuevas: alta/edición/baja de jardín con resúmenes por tipo, validación y número único entre tipos, traslado escuela → jardín).
+- Quickstart recorrido en Edge headless (`playwright-core`) contra backend (con `0003` aplicada) y frontend locales: 18/18 controles OK (pasos 1–12).
+- Encontrado en el recorrido y corregido: "Volver al Directorio de Escuelas" en la ficha → "Instituciones".
+- Barrido de SC-002: sin "Escuela N°" fuera de `institucion.ts` y del servidor; las frases "esta escuela" de la ficha nombran por tipo. Quedan sin tocar los genéricos (búsqueda, ordenar, recetarios, inspector de escuela, ayuda del ámbito) según las Assumptions.
+- Chequeo de datos reales sobre `master..HEAD`: sin cédulas ni correos.
+- Después del merge: Railway aplica `0003` y Pages publica solos; verificar en producción que una institución abre con su tipo.

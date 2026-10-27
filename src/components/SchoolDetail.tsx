@@ -120,7 +120,7 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-300 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition"
             >
               <ArrowLeft className="w-4 h-4" />
-              Volver al Directorio de Escuelas
+              Volver al Directorio de Instituciones
             </button>
 
             <div className="flex items-center gap-2 flex-wrap">
