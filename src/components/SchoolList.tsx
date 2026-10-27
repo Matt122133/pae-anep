@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { School, StaffMember, SchoolIssue, Visit } from '../types';
+import { School, StaffMember, SchoolIssue, Visit, SchoolType } from '../types';
+import { nombreInstitucion, tipoDe } from '../services/institucion';
 import { getHealthCardStatus } from '../services/storage';
 import { 
   Search, 
@@ -99,6 +100,7 @@ export const SchoolList: React.FC<SchoolListProps> = ({
   // Search & Filter State
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedArea, setSelectedArea] = useState<'Todas' | 'Rural' | 'Urbana'>(parsed.area);
+  const [selectedType, setSelectedType] = useState<'Todas' | SchoolType>('Todas');
   const [selectedModality, setSelectedModality] = useState<string>(parsed.modality);
   const [selectedRisk, setSelectedRisk] = useState<RiskLevelFilter>(parsed.risk);
   const [selectedVisitDate, setSelectedVisitDate] = useState<VisitDateFilter>(parsed.visitDate);
@@ -242,6 +244,7 @@ export const SchoolList: React.FC<SchoolListProps> = ({
   }, []);
 
   // Counts for filters
+  const jardinCount = useMemo(() => schools.filter(s => tipoDe(s) === 'Jardín').length, [schools]);
   const ruralCount = useMemo(() => schools.filter(s => s.areaType === 'Rural').length, [schools]);
   const urbanaCount = useMemo(() => schools.filter(s => s.areaType === 'Urbana').length, [schools]);
   const waterAllowanceCount = useMemo(() => schools.filter(s => s.waterPurchaseAllowance).length, [schools]);
@@ -336,6 +339,11 @@ export const SchoolList: React.FC<SchoolListProps> = ({
         return false;
       }
 
+      // Tipo de institución (010)
+      if (selectedType !== 'Todas' && tipoDe(s) !== selectedType) {
+        return false;
+      }
+
       // Modality filter
       if (selectedModality !== 'Todas') {
         if (selectedModality === 'Escuelas de Educación Especial' || selectedModality === 'Especial') {
@@ -408,6 +416,7 @@ export const SchoolList: React.FC<SchoolListProps> = ({
     schools,
     searchTerm,
     selectedArea,
+    selectedType,
     selectedModality,
     selectedRisk,
     selectedVisitDate,
@@ -426,17 +435,19 @@ export const SchoolList: React.FC<SchoolListProps> = ({
     let count = 0;
     if (searchTerm.trim()) count++;
     if (selectedArea !== 'Todas') count++;
+    if (selectedType !== 'Todas') count++;
     if (selectedModality !== 'Todas') count++;
     if (selectedRisk !== 'Todos') count++;
     if (selectedVisitDate !== 'Todas') count++;
     if (selectedWater !== 'Todas') count++;
     if (selectedInspector !== 'Todas') count++;
     return count;
-  }, [searchTerm, selectedArea, selectedModality, selectedRisk, selectedVisitDate, selectedWater, selectedInspector]);
+  }, [searchTerm, selectedArea, selectedType, selectedModality, selectedRisk, selectedVisitDate, selectedWater, selectedInspector]);
 
   const resetAllFilters = () => {
     setSearchTerm('');
     setSelectedArea('Todas');
+    setSelectedType('Todas');
     setSelectedModality('Todas');
     setSelectedRisk('Todos');
     setSelectedVisitDate('Todas');
@@ -468,7 +479,7 @@ export const SchoolList: React.FC<SchoolListProps> = ({
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
                 <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 shrink-0" />
-                Directorio Oficial • {schools.length} Escuelas de Tacuarembó
+                Directorio Oficial • {schools.length} Instituciones de Tacuarembó
               </h1>
               <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300">
                 PAE • DGEIP
@@ -494,7 +505,7 @@ export const SchoolList: React.FC<SchoolListProps> = ({
               className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center gap-1.5 min-h-[44px]"
             >
               <Plus className="w-4 h-4" />
-              <span>Nueva Escuela</span>
+              <span>Nueva Institución</span>
             </button>
           </div>
         </div>
@@ -523,7 +534,7 @@ export const SchoolList: React.FC<SchoolListProps> = ({
                 </button>
               )}
               <span className="hidden sm:inline-block text-[11px] font-bold text-slate-600 bg-slate-200/80 px-2 py-0.5 rounded-lg">
-                {filteredSchools.length} {filteredSchools.length === 1 ? 'escuela' : 'escuelas'}
+                {filteredSchools.length} {filteredSchools.length === 1 ? 'institución' : 'instituciones'}
               </span>
             </div>
           </div>
@@ -590,6 +601,28 @@ export const SchoolList: React.FC<SchoolListProps> = ({
               >
                 🏢 Urbanas ({urbanaCount})
               </button>
+            </div>
+
+            {/* Tipo de institución (010) */}
+            <div className="flex items-center bg-slate-100/90 rounded-xl p-1 border border-slate-200">
+              {([
+                ['Todas', `Todas (${schools.length})`],
+                ['Escuela', `Escuelas (${schools.length - jardinCount})`],
+                ['Jardín', `Jardines (${jardinCount})`],
+              ] as ['Todas' | SchoolType, string][]).map(([valor, texto]) => (
+                <button
+                  key={valor}
+                  type="button"
+                  onClick={() => setSelectedType(valor)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition min-h-[32px] ${
+                    selectedType === valor
+                      ? 'bg-white text-slate-900 shadow-2xs font-black'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {texto}
+                </button>
+              ))}
             </div>
 
             {/* Rubro Agua Rápido */}
@@ -915,7 +948,7 @@ export const SchoolList: React.FC<SchoolListProps> = ({
                     Resultados del Filtro
                   </h4>
                   <p className="text-xl font-black mt-1">
-                    {filteredSchools.length} <span className="text-xs font-normal text-emerald-300">de {schools.length} escuelas</span>
+                    {filteredSchools.length} <span className="text-xs font-normal text-emerald-300">de {schools.length} instituciones</span>
                   </p>
                   {cantidadInactivas > 0 && (
                     <label className="mt-1 flex items-center gap-1.5 text-[11px] text-emerald-200 cursor-pointer">
@@ -955,6 +988,15 @@ export const SchoolList: React.FC<SchoolListProps> = ({
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-900 border border-emerald-200 font-bold">
                 Búsqueda: &ldquo;{searchTerm}&rdquo;
                 <button type="button" onClick={() => setSearchTerm('')} className="hover:text-rose-600">
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
+            {selectedType !== 'Todas' && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-50 text-slate-900 border border-slate-200 font-bold">
+                Tipo: {selectedType === 'Jardín' ? 'Jardines' : 'Escuelas'}
+                <button type="button" onClick={() => setSelectedType('Todas')} className="hover:text-rose-600">
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -1033,7 +1075,7 @@ export const SchoolList: React.FC<SchoolListProps> = ({
             <Search className="w-7 h-7" />
           </div>
           <h3 className="text-lg font-bold text-slate-900">
-            No se encontraron escuelas con los criterios seleccionados
+            No se encontraron instituciones con los criterios seleccionados
           </h3>
           <p className="text-xs text-slate-500 max-w-md mx-auto">
             Prueba ajustando el término de búsqueda o cambiando los filtros avanzados de modalidad, nivel de riesgo o fecha de última visita.
@@ -1072,7 +1114,7 @@ export const SchoolList: React.FC<SchoolListProps> = ({
                       <div className="flex items-center gap-1.5 flex-wrap">
                         
                         <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-950 group-hover:bg-emerald-700 group-hover:text-white transition">
-                          N° {school.number}
+                          {nombreInstitucion(school)}
                         </span>
 
                         <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
@@ -1278,7 +1320,7 @@ export const SchoolList: React.FC<SchoolListProps> = ({
                       onClick={() => onSelectSchool(school)}
                       className="hover:bg-slate-50/80 cursor-pointer transition"
                     >
-                      <td className="p-3 font-black text-slate-900">#{school.number}</td>
+                      <td className="p-3 font-black text-slate-900">{nombreInstitucion(school)}</td>
                       <td className="p-3 font-bold text-slate-900">
                         {school.name}
                         <span className="block text-[11px] text-slate-400 font-normal">{school.address}</span>

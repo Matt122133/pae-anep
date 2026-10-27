@@ -1,7 +1,8 @@
 import { nuevoId } from '../services/api';
 import { PresenciaAviso } from './PresenciaAviso';
 import React, { useState, useEffect } from 'react';
-import { School, ModalityType, SchoolAreaType, MilkProgramType } from '../types';
+import { School, ModalityType, SchoolAreaType, MilkProgramType, SchoolType } from '../types';
+import { conArticulo, nombreInstitucion } from '../services/institucion';
 import { X, Building2, Save, Droplets, Milk, UserCheck, MapPin, Truck, Plus } from 'lucide-react';
 import { agregarProveedor, quitarProveedor, LARGO_MAXIMO_PROVEEDOR } from '../services/proveedores';
 import { AvisoBorrador, AvisoBorradorProps } from './AvisoBorrador';
@@ -43,6 +44,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
   const [guardando, setGuardando] = React.useState(false);
   const [errorGuardado, setErrorGuardado] = React.useState<string | null>(null);
   const [number, setNumber] = useState(nextSchoolNumber);
+  const [schoolType, setSchoolType] = useState<SchoolType>('Escuela');
   const [name, setName] = useState('');
   const [department, setDepartment] = useState('Tacuarembó');
   const [areaType, setAreaType] = useState<SchoolAreaType>('Rural');
@@ -79,6 +81,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
   useEffect(() => {
     if (schoolToEdit) {
       setNumber(schoolToEdit.number);
+      setSchoolType(schoolToEdit.schoolType ?? 'Escuela');
       setName(schoolToEdit.name);
       setDepartment(schoolToEdit.department || 'Tacuarembó');
       setAreaType(schoolToEdit.areaType || (schoolToEdit.modality === 'Rural' ? 'Rural' : 'Urbana'));
@@ -109,6 +112,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
       setNuevoProveedor('');
     } else {
       setNumber(nextSchoolNumber);
+      setSchoolType('Escuela');
       setName(`N° ${nextSchoolNumber} "Escuela"`);
       setDepartment('Tacuarembó');
       setAreaType('Rural');
@@ -163,7 +167,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
       id: schoolToEdit ? schoolToEdit.id : idNuevo,
       version: schoolToEdit?.version,
       number: Number(number),
-      name: name.trim() || `Escuela N° ${number}`,
+      name: name.trim() || nombreInstitucion({ number: Number(number), schoolType }),
       department,
       areaType,
       zone: zone.trim() || (areaType === 'Rural' ? 'Zona Rural' : 'Zona Urbana'),
@@ -189,6 +193,9 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
       milkNotes: milkNotes.trim(),
       notes: notes.trim(),
       ...proveedoresAGuardar(),
+      // Una ficha sin el campo (copia anterior a 010) en la que no se tocó el
+      // tipo no lo manda: el servidor conserva el guardado.
+      ...(schoolToEdit && schoolToEdit.schoolType === undefined && schoolType === 'Escuela' ? {} : { schoolType }),
       lastVisitDate: schoolToEdit?.lastVisitDate,
       totalVisits: schoolToEdit?.totalVisits || 0,
       activeIssuesCount: schoolToEdit?.activeIssuesCount || 0
@@ -214,7 +221,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
             <Building2 className="w-5 h-5 text-emerald-300" />
             <div>
               <h2 className="text-base font-bold">
-                {schoolToEdit ? `Ficha Institucional - Escuela N° ${schoolToEdit.number}` : 'Registrar Nueva Escuela en Tacuarembó'}
+                {schoolToEdit ? `Ficha Institucional - ${nombreInstitucion(schoolToEdit)}` : 'Registrar Nueva Institución en Tacuarembó'}
               </h2>
               <p className="text-xs text-emerald-200">Programa de Alimentación Escolar (PAE - DGEIP Tacuarembó)</p>
             </div>
@@ -227,6 +234,29 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto flex-1 text-slate-800 text-sm">
           {avisoBorrador && <AvisoBorrador {...avisoBorrador} />}
           {schoolToEdit && <PresenciaAviso tipo="escuela" id={schoolToEdit.id} />}
+          {/* Tipo de institución (010) */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 border border-slate-200 p-4 rounded-xl">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-700">Tipo de institución</span>
+            <div className="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-300 shadow-xs">
+              {(['Escuela', 'Jardín'] as SchoolType[]).map(t => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => {
+                    // El nombre provisorio del alta acompaña al tipo mientras no se escribió otro.
+                    if (!schoolToEdit && name === `N° ${number} "${schoolType}"`) setName(`N° ${number} "${t}"`);
+                    setSchoolType(t);
+                  }}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition ${
+                    schoolType === t ? 'bg-emerald-700 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Clasificación Principal Tacuarembó: Rural o Urbana */}
           <div className="bg-emerald-50/80 border border-emerald-200 p-4 rounded-xl">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -254,7 +284,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
                   }`}
                 >
                   <MapPin className="w-3.5 h-3.5" />
-                  Escuela Rural
+                  {schoolType} Rural
                 </button>
                 <button
                   type="button"
@@ -273,7 +303,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
                   }`}
                 >
                   <Building2 className="w-3.5 h-3.5" />
-                  Escuela Urbana
+                  {schoolType} Urbana
                 </button>
               </div>
             </div>
@@ -282,7 +312,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
           {/* Datos básicos */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">N° de Escuela *</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Número *</label>
               <input
                 type="number"
                 required
@@ -634,7 +664,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  if (confirm(`¿Dar de baja la Escuela N° ${schoolToEdit.number}? Deja de aparecer en los listados, pero sus visitas, incidencias y bitácora se conservan y se puede reactivar.`)) {
+                  if (confirm(`¿Dar de baja ${conArticulo(schoolToEdit)}? Deja de aparecer en los listados, pero sus visitas, incidencias y bitácora se conservan y se puede reactivar.`)) {
                     onDarDeBaja(schoolToEdit.id);
                     onClose();
                   }

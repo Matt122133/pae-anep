@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { School, StaffMember, Visit, SchoolIssue, ActivityLog, CuentaEquipo, equipoDesdeCuentas } from './types';
 import { DatabaseState, getHealthCardStatus } from './services/storage';
+import { aLa, deLa, nombreInstitucion } from './services/institucion';
 import { describirCampos, ErrorApi, generaBorrador, nuevoId, pedir } from './services/api';
 import { borrarSesion, leerSesion, Sesion } from './services/sesion';
 import { Borrador, buscarBorrador, descartarBorrador, guardarBorrador, listarBorradores, reenviarBorrador } from './services/borradores';
@@ -300,7 +301,15 @@ export default function App() {
 
   const escuelaN = (schoolId: string) => {
     const s = database?.schools.find((x) => x.id === schoolId);
-    return s ? `Escuela N° ${s.number}` : 'escuela';
+    return s ? nombreInstitucion(s) : 'institución';
+  };
+  const aLaN = (schoolId: string) => {
+    const s = database?.schools.find((x) => x.id === schoolId);
+    return s ? aLa(s) : 'a la institución';
+  };
+  const deLaN = (schoolId: string) => {
+    const s = database?.schools.find((x) => x.id === schoolId);
+    return s ? deLa(s) : 'de la institución';
   };
 
   // --- handlers del legajo (FR-026): todos contra la API
@@ -320,7 +329,7 @@ export default function App() {
     escribir<{ visit: Visit; newIssues: SchoolIssue[] }>(
       {
         clave: `visita:${visit.id}`,
-        descripcion: `Visita a la ${escuelaN(visit.schoolId)} (${visit.date})`,
+        descripcion: `Visita ${aLaN(visit.schoolId)} (${visit.date})`,
         metodo: 'POST',
         ruta: '/visitas',
         cuerpo: { visit, newIssues },
@@ -335,8 +344,8 @@ export default function App() {
     const existe = database?.visits.some((v) => v.id === visit.id);
     return escribir<Visit | { visit: Visit }>(
       existe
-        ? { clave: `visita:${visit.id}`, descripcion: `Visita programada a la ${escuelaN(visit.schoolId)}`, metodo: 'PUT', ruta: `/visitas/${visit.id}`, cuerpo: visit }
-        : { clave: `visita:${visit.id}`, descripcion: `Visita programada a la ${escuelaN(visit.schoolId)} (${visit.date})`, metodo: 'POST', ruta: '/visitas', cuerpo: { visit, newIssues: [] } },
+        ? { clave: `visita:${visit.id}`, descripcion: `Visita programada ${aLaN(visit.schoolId)}`, metodo: 'PUT', ruta: `/visitas/${visit.id}`, cuerpo: visit }
+        : { clave: `visita:${visit.id}`, descripcion: `Visita programada ${aLaN(visit.schoolId)} (${visit.date})`, metodo: 'POST', ruta: '/visitas', cuerpo: { visit, newIssues: [] } },
       (r) => reemplazar('visits', 'visit' in r ? r.visit : r),
       (actual) => reemplazar('visits', actual),
     );
@@ -346,7 +355,7 @@ export default function App() {
     const v = database?.visits.find((x) => x.id === visitId);
     if (!v) return;
     escribirSinFormulario(
-      { clave: `visita-borrar:${visitId}`, descripcion: `Borrar visita N° ${v.visitNumber} de la ${escuelaN(v.schoolId)}`, metodo: 'DELETE', ruta: `/visitas/${visitId}`, cuerpo: { version: v.version } },
+      { clave: `visita-borrar:${visitId}`, descripcion: `Borrar visita N° ${v.visitNumber} ${deLaN(v.schoolId)}`, metodo: 'DELETE', ruta: `/visitas/${visitId}`, cuerpo: { version: v.version } },
       () => quitar('visits', visitId),
     );
   };
@@ -384,7 +393,7 @@ export default function App() {
     return escribir<StaffMember>(
       {
         clave: `personal-traslado:${staffId}`,
-        descripcion: `Traslado de ${s.fullName} a la ${escuelaN(schoolId)}`,
+        descripcion: `Traslado de ${s.fullName} ${aLaN(schoolId)}`,
         metodo: 'POST',
         ruta: `/personal/${staffId}/traslado`,
         cuerpo: { schoolId, fecha: new Date().toISOString().slice(0, 10), version: s.version },
@@ -435,11 +444,12 @@ export default function App() {
   };
 
   const handleSaveSchool = (school: School) => {
-    const existe = database?.schools.some((s) => s.id === school.id);
+    const anterior = database?.schools.find((s) => s.id === school.id);
+    const existe = !!anterior;
     return escribir<School>(
       {
         clave: `escuela:${school.id}`,
-        descripcion: `${existe ? 'Edición' : 'Alta'} de la Escuela N° ${school.number}`,
+        descripcion: `${existe ? 'Edición' : 'Alta'} ${deLa({ number: school.number, schoolType: school.schoolType ?? anterior?.schoolType })}`,
         metodo: existe ? 'PUT' : 'POST',
         ruta: existe ? `/escuelas/${school.id}` : '/escuelas',
         cuerpo: school,
@@ -456,7 +466,7 @@ export default function App() {
     const s = database?.schools.find((x) => x.id === schoolId);
     if (!s) return;
     escribirSinFormulario(
-      { clave: `escuela-baja:${schoolId}`, descripcion: `Baja de la Escuela N° ${s.number}`, metodo: 'DELETE', ruta: `/escuelas/${schoolId}`, cuerpo: { version: s.version } },
+      { clave: `escuela-baja:${schoolId}`, descripcion: `Baja ${deLa(s)}`, metodo: 'DELETE', ruta: `/escuelas/${schoolId}`, cuerpo: { version: s.version } },
       () => {
         quitar('schools', schoolId);
         setCurrentView('schools');

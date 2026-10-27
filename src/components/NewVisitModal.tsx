@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Visit, School, UnauthorizedItem, HygieneRating, SchoolIssue, formatTeamVisitors } from '../types';
+import { nombreInstitucion, tipoDe } from '../services/institucion';
 import { useEquipo } from '../services/equipo';
 import { nuevoId } from '../services/api';
 import { TeamVisitorSelector } from './TeamVisitorSelector';
@@ -367,7 +368,7 @@ export const NewVisitModal: React.FC<NewVisitModalProps> = ({
                 <span className={`text-xs px-2 py-0.5 rounded-md font-bold ${
                   school.areaType === 'Rural' ? 'bg-amber-500/20 text-amber-200' : 'bg-blue-500/20 text-blue-200'
                 }`}>
-                  Escuela {school.areaType}
+                  {tipoDe(school)} {school.areaType}
                 </span>
                 {school.waterPurchaseAllowance && (
                   <span className="text-[11px] bg-sky-500/30 text-sky-200 px-2 py-0.5 rounded-md flex items-center gap-1">
@@ -376,7 +377,7 @@ export const NewVisitModal: React.FC<NewVisitModalProps> = ({
                 )}
               </div>
               <h2 className="text-base sm:text-lg font-bold">
-                Acta & Devolución de Visita - Escuela N° {school.number} ({school.name})
+                Acta & Devolución de Visita - {nombreInstitucion(school)} ({school.name})
               </h2>
             </div>
           </div>
@@ -1205,7 +1206,7 @@ export const NewVisitModal: React.FC<NewVisitModalProps> = ({
                   <strong>Fecha del día de la visita:</strong> {date}
                 </p>
                 <p>
-                  En el día de la fecha se realiza la visita a cocina comedor de escuela <strong>N° {school.number}</strong> a cargo del Maestro/a Director/a <strong>{school.principalName}</strong> por parte de <strong>{inspectorName}</strong>.
+                  En el día de la fecha se realiza la visita a cocina comedor {tipoDe(school) === 'Jardín' ? 'del jardín' : 'de escuela'} <strong>N° {school.number}</strong> a cargo del Maestro/a Director/a <strong>{school.principalName}</strong> por parte de <strong>{inspectorName}</strong>.
                 </p>
                 <p className="text-slate-700">
                   Se remiten las observaciones realizadas durante la visita a la <strong>{nutritionistName}</strong>, con el propósito de que las mismas sean posteriormente elevadas al inspector/a de zona (<strong>{assignedSchoolInspector}</strong>).

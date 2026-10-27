@@ -2,6 +2,7 @@ import { nuevoId } from '../services/api';
 import { PresenciaAviso } from './PresenciaAviso';
 import React, { useState, useEffect } from 'react';
 import { School, StaffMember, InstitutionContractType, StaffRole, SocialSecurityStatus } from '../types';
+import { aLa } from '../services/institucion';
 import { X, UserCheck, ShieldAlert, AlertCircle } from 'lucide-react';
 import { AvisoBorrador, AvisoBorradorProps } from './AvisoBorrador';
 
@@ -35,7 +36,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
   const trasladar = async () => {
     if (!staffToEdit || !onTrasladar || !destino) return;
     const escuela = destinos.find(s => s.id === destino);
-    if (!confirm(`¿Trasladar a ${staffToEdit.fullName} a la Escuela N° ${escuela?.number}? Su historial se conserva en las dos escuelas.`)) return;
+    if (!confirm(`¿Trasladar a ${staffToEdit.fullName} ${escuela ? aLa(escuela) : 'a otra institución'}? Su historial se conserva en las dos instituciones.`)) return;
     setGuardando(true);
     setErrorGuardado(null);
     const error = await onTrasladar(staffToEdit.id, destino);

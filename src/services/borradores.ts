@@ -20,7 +20,7 @@ import { describirCampos, ErrorApi, pedir, TipoError } from './api';
 export interface Borrador {
   /** Clave estable de la operación (p. ej. "visita:<id>"): repetir no duplica. */
   clave: string;
-  /** Texto para la lista: "Visita a la Escuela N° 35". */
+  /** Texto para la lista: "Visita a la Escuela N° 35" / "Visita al Jardín N° 12". */
   descripcion: string;
   metodo: 'POST' | 'PUT' | 'DELETE';
   ruta: string;

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { School, Visit, VisitStatus } from '../types';
+import { aLa } from '../services/institucion';
 import { 
   Calendar as CalendarIcon, 
   ChevronLeft, 
@@ -803,7 +804,7 @@ export const VisitCalendar: React.FC<VisitCalendarProps> = ({
                             {onDeleteVisit && (
                               <button
                                 onClick={() => {
-                                  if (confirm(`¿Desea cancelar y eliminar la visita programada a la Escuela N° ${school?.number}?`)) {
+                                  if (confirm(`¿Desea cancelar y eliminar la visita programada ${school ? aLa(school) : 'a la institución'}?`)) {
                                     onDeleteVisit(v.id);
                                   }
                                 }}

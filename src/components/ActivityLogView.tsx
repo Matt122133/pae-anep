@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { nombreInstitucion, nombreInstitucionPorId } from '../services/institucion';
 import { 
   ActivityLog, 
   School, 
@@ -422,7 +423,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               {scopedSchool ? (
-                <>Bitácora del Legajo: Escuela N° {scopedSchool.number}</>
+                <>Bitácora del Legajo: {nombreInstitucion(scopedSchool)}</>
               ) : (
                 <>Bitácora de Actividad del Sistema</>
               )}
@@ -663,7 +664,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({
                 <option value="all">Todas las Escuelas ({schools.length})</option>
                 {schools.map(s => (
                   <option key={s.id} value={s.id}>
-                    Escuela N° {s.number} - {s.name.slice(0, 26)}
+                    {nombreInstitucion(s)} - {s.name.slice(0, 26)}
                   </option>
                 ))}
               </select>
@@ -874,7 +875,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({
                               title="Ver ficha completa de la escuela"
                             >
                               <Building2 className="w-3 h-3 text-emerald-600" />
-                              <span>Escuela N° {log.schoolNumber}</span>
+                              <span>{nombreInstitucionPorId(schools, log.schoolId, log.schoolNumber)}</span>
                               {log.schoolName && (
                                 <span className="text-slate-500 font-normal hidden md:inline">
                                   ({log.schoolName})
@@ -1010,7 +1011,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({
                 >
                   {schools.map(s => (
                     <option key={s.id} value={s.id}>
-                      Escuela N° {s.number} - {s.name} ({s.areaType})
+                      {nombreInstitucion(s)} - {s.name} ({s.areaType})
                     </option>
                   ))}
                 </select>

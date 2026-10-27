@@ -8,6 +8,8 @@
 // id del dispositivo y el servidor ya lo trata como idempotente (R1).
 
 import { ErrorApi, pedir } from './api';
+import { deLa } from './institucion';
+import { SchoolType } from '../types';
 import { anotarError, Borrador, descartarBorrador, esRechazo, listarBorradores, marcarRechazado } from './borradores';
 
 export interface ResultadoEnvio {
@@ -44,8 +46,8 @@ function motivoDependencia(b: Borrador, lista: Borrador[]): string | undefined {
   if (!schoolId || b.clave === `escuela:${schoolId}`) return undefined;
   const alta = lista.find((x) => x.clave === `escuela:${schoolId}` && x.estado === 'rechazado');
   if (!alta) return undefined;
-  const numero = (alta.cuerpo as { number?: unknown } | null)?.number;
-  return `Depende de la Escuela N° ${numero ?? '?'}, que todavía no se envió.`;
+  const cuerpo = alta.cuerpo as { number?: number; schoolType?: SchoolType } | null;
+  return `Depende ${deLa({ number: cuerpo?.number ?? NaN, schoolType: cuerpo?.schoolType }).replace('NaN', '?')}, que todavía no se envió.`;
 }
 
 export async function enviarCola(

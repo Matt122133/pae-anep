@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { School, StaffMember, Visit, SchoolIssue, ActivityLog } from '../types';
+import { deLaTipo, estaInstitucion, nombreInstitucion, tipoDe } from '../services/institucion';
 import { formatHealthCardBadge, getHealthCardStatus } from '../services/storage';
 import { SchoolReportModal } from './SchoolReportModal';
 import { ActivityLogView } from './ActivityLogView';
@@ -152,14 +153,14 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
             <div>
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                 <span className="px-3 py-0.5 rounded-full text-xs font-bold bg-emerald-500/30 text-emerald-300 border border-emerald-400/30">
-                  Escuela N° {school.number}
+                  {nombreInstitucion(school)}
                 </span>
                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
                   school.areaType === 'Rural' 
                     ? 'bg-amber-500/30 text-amber-200 border border-amber-400/30' 
                     : 'bg-blue-500/30 text-blue-200 border border-blue-400/30'
                 }`}>
-                  {school.areaType === 'Rural' ? '🌾 Escuela Rural' : '🏢 Escuela Urbana'}
+                  {school.areaType === 'Rural' ? `🌾 ${tipoDe(school)} Rural` : `🏢 ${tipoDe(school)} Urbana`}
                 </span>
                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
                   school.modality === 'Tiempo Completo'
@@ -439,7 +440,7 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
                   Referencias y Antecedentes de la Escuela
                 </h3>
                 <div className="p-4 bg-amber-50/50 rounded-xl border border-amber-200/70 text-slate-700 text-sm leading-relaxed">
-                  {school.notes || 'No hay notas particulares registradas para esta escuela.'}
+                  {school.notes || `No hay notas particulares registradas para ${estaInstitucion(school)}.`}
                 </div>
               </div>
             </div>
@@ -462,7 +463,7 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
 
               {staff.length === 0 ? (
                 <div className="text-center py-6 bg-slate-50 rounded-xl border border-dashed border-slate-300">
-                  <p className="text-xs text-slate-500">No hay auxiliares cargadas aún en esta escuela.</p>
+                  <p className="text-xs text-slate-500">No hay auxiliares cargadas aún en {estaInstitucion(school)}.</p>
                   <button
                     onClick={onOpenAddStaff}
                     className="mt-2 text-xs font-bold text-emerald-600 hover:text-emerald-700"
@@ -549,7 +550,7 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
                 </div>
               ) : (
                 <div className="text-center py-4 bg-amber-50/60 rounded-xl border border-amber-200">
-                  <p className="text-xs text-amber-800 font-medium">Esta escuela no registra visitas este año.</p>
+                  <p className="text-xs text-amber-800 font-medium first-letter:uppercase">{estaInstitucion(school)} no registra visitas este año.</p>
                   <button
                     onClick={onOpenNewVisit}
                     className="mt-2 text-xs font-bold text-emerald-700 hover:text-emerald-800 underline"
@@ -582,7 +583,7 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
                 className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 shrink-0"
               >
                 <Plus className="w-4 h-4" />
-                Agregar Auxiliar a esta Escuela
+                Agregar Auxiliar a {estaInstitucion(school)}
               </button>
             </div>
 
@@ -907,7 +908,7 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
                 <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-2" />
                 <h3 className="text-sm font-bold text-slate-800">Sin observaciones ni problemas pendientes</h3>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
-                  La cocina de la escuela opera en conformidad con las directivas.
+                  La cocina {deLaTipo(school)} opera en conformidad con las directivas.
                 </p>
               </div>
             ) : (
@@ -1028,7 +1029,7 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
               <div className="p-4 bg-rose-50 rounded-xl border border-rose-200 space-y-3">
                 <div className="flex items-center gap-2 text-rose-900 font-bold text-sm">
                   <ShieldAlert className="w-5 h-5 text-rose-600" />
-                  <span>Se han registrado {allUnauthorized.length} detección(es) de alimentos no autorizados en esta escuela</span>
+                  <span>Se han registrado {allUnauthorized.length} detección(es) de alimentos no autorizados en {estaInstitucion(school)}</span>
                 </div>
                 <div className="space-y-2">
                   {allUnauthorized.map((item, idx) => (
@@ -1187,7 +1188,7 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
                 <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 print-avoid-break">
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
                     <div className="p-2 bg-white rounded-lg border border-slate-200">
-                      <span className="text-[10px] text-slate-500 uppercase font-bold block">Escuela</span>
+                      <span className="text-[10px] text-slate-500 uppercase font-bold block">{tipoDe(school)}</span>
                       <span className="text-base font-black text-emerald-800">N° {school.number}</span>
                       <span className="text-[10px] text-slate-500 block truncate">{school.name}</span>
                     </div>
@@ -1259,7 +1260,7 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
                   </div>
 
                   {staff.length === 0 ? (
-                    <p className="text-xs text-slate-500 italic">No hay auxiliares de cocina registradas en el legajo de esta escuela.</p>
+                    <p className="text-xs text-slate-500 italic">No hay auxiliares de cocina registradas en el legajo de {estaInstitucion(school)}.</p>
                   ) : (
                     <table className="w-full text-left border-collapse border border-slate-300 text-[11px]">
                       <thead>
@@ -1382,7 +1383,7 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
                   {issues.length === 0 ? (
                     <div className="p-3 bg-emerald-50 text-emerald-800 rounded border border-emerald-200 text-xs flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>No existen incidencias ni observaciones registradas para esta escuela.</span>
+                      <span>No existen incidencias ni observaciones registradas para {estaInstitucion(school)}.</span>
                     </div>
                   ) : (
                     <table className="w-full text-left border-collapse border border-slate-300 text-[11px]">
@@ -1493,7 +1494,7 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
                     <div>
                       <div className="border-t border-slate-600 pt-2 mx-auto max-w-[240px]">
                         <p className="font-bold text-slate-900">{school.principalName || 'Dirección Escolar'}</p>
-                        <p className="text-slate-500 text-[11px]">Por Escuela N° {school.number} - {school.name}</p>
+                        <p className="text-slate-500 text-[11px]">Por {nombreInstitucion(school)} - {school.name}</p>
                         <p className="text-slate-400 text-[10px]">Firma, Aclaración y Sello del Centro</p>
                       </div>
                     </div>
@@ -1530,7 +1531,7 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
                     {/* Meta details table */}
                     <div className="grid grid-cols-2 gap-4 py-4 text-xs border-b border-slate-200">
                       <div>
-                        <p><strong>Escuela:</strong> N° {school.number} - "{school.name}"</p>
+                        <p><strong>{tipoDe(school)}:</strong> N° {school.number} - "{school.name}"</p>
                         <p><strong>Modalidad:</strong> {school.modality}</p>
                         <p><strong>Dirección:</strong> {school.address} ({school.zone})</p>
                         <p><strong>Directora:</strong> {school.principalName}</p>
@@ -1640,7 +1641,7 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
                       </div>
                       <div className="border-t border-slate-400 pt-2">
                         <p className="font-bold text-slate-900">{school.principalName || 'Dirección Escolar'}</p>
-                        <p className="text-slate-500">Por Escuela N° {school.number}</p>
+                        <p className="text-slate-500">Por {nombreInstitucion(school)}</p>
                       </div>
                     </div>
                   </div>

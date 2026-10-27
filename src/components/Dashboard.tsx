@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { School, StaffMember, Visit, SchoolIssue, ActivityLog } from '../types';
 import { getHealthCardStatus } from '../services/storage';
+import { nombreInstitucion, nombreInstitucionPorId } from '../services/institucion';
 import { 
   Building2, 
   Users, 
@@ -150,7 +151,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-emerald-500 hover:shadow-md transition cursor-pointer group"
         >
           <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Universo Escolar</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Instituciones</span>
             <div className="p-2 rounded-xl bg-slate-100 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
               <Building2 className="w-4 h-4" />
             </div>
@@ -381,7 +382,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               <span className="font-extrabold text-sm text-slate-900">
-                                Escuela N° {s.number} - {s.name}
+                                {nombreInstitucion(s)} - {s.name}
                               </span>
                               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                                 s.areaType === 'Rural' ? 'bg-amber-100 text-amber-900' : 'bg-blue-100 text-blue-900'
@@ -483,7 +484,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         >
                           <div className="flex items-center justify-between">
                             <span className="font-extrabold text-sky-950">
-                              Escuela N° {sc?.number} — {sc?.name}
+                              {sc && nombreInstitucion(sc)} — {sc?.name}
                             </span>
                             <span className="text-[10px] bg-sky-200 text-sky-900 font-black px-1.5 py-0.5 rounded">
                               {v.date.slice(5)} ({v.time})
@@ -538,7 +539,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             </span>
                           </div>
                           <p className="text-slate-600 mt-1">
-                            Escuela N° {sc?.number} • {st.role} ({st.institutionType})
+                            {sc && nombreInstitucion(sc)} • {st.role} ({st.institutionType})
                           </p>
                           <p className="text-rose-700 font-semibold mt-0.5">
                             Venció: {st.healthCardValidUntil}
@@ -562,7 +563,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             </span>
                           </div>
                           <p className="text-slate-600 mt-1">
-                            Escuela N° {sc?.number} • {st.role}
+                            {sc && nombreInstitucion(sc)} • {st.role}
                           </p>
                           <p className="text-amber-800 font-semibold mt-0.5">
                             Vence: {st.healthCardValidUntil}
@@ -595,7 +596,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         >
                           <div className="flex items-center justify-between">
                             <span className="font-bold text-slate-900">
-                              Escuela N° {sc?.number} (Visita #{v.visitNumber})
+                              {sc && nombreInstitucion(sc)} (Visita #{v.visitNumber})
                             </span>
                             <span className="text-slate-500 font-medium">{v.date}</span>
                           </div>
@@ -654,7 +655,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             onClick={() => sc && onSelectSchool(sc)}
                             className="font-bold text-emerald-700 hover:underline cursor-pointer"
                           >
-                            Escuela N° {log.schoolNumber}
+                            {nombreInstitucionPorId(schools, log.schoolId, log.schoolNumber)}
                           </span>
                         )}
                         <span className="text-slate-400">•</span>

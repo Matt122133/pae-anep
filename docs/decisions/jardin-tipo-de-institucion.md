@@ -1,7 +1,7 @@
 ---
 id: jardin-tipo-de-institucion
 owner: pae-anep
-status: proposed
+status: accepted
 last_reviewed: 2026-10-26
 update_trigger: on-institution-model-change
 ---
@@ -10,7 +10,7 @@ update_trigger: on-institution-model-change
 
 ## Status
 
-Propuesto con el plan de `specs/010-jardines/`; pasa a aceptado cuando el plan se aprueba.
+Aceptado el 2026-10-26 con el plan de `specs/010-jardines/`.
 
 ## Contexto
 

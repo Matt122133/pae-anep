@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { School } from '../types';
-import { aLa, conArticulo, nombreInstitucion, nombreInstitucionPorId, tipoDe } from './institucion';
+import { aLa, conArticulo, deLa, deLaTipo, estaInstitucion, nombreInstitucion, nombreInstitucionPorId, tipoDe } from './institucion';
 
 const escuela = { number: 5, schoolType: 'Escuela' as const };
 const jardin = { number: 12, schoolType: 'Jardín' as const };
@@ -22,6 +22,11 @@ describe('nombreInstitucion', () => {
     expect(conArticulo(jardin)).toBe('el Jardín N° 12');
     expect(aLa(escuela)).toBe('a la Escuela N° 5');
     expect(aLa(jardin)).toBe('al Jardín N° 12');
+    expect(deLa(escuela)).toBe('de la Escuela N° 5');
+    expect(deLa(jardin)).toBe('del Jardín N° 12');
+    expect(estaInstitucion(escuela)).toBe('esta escuela');
+    expect(estaInstitucion(jardin)).toBe('este jardín');
+    expect(deLaTipo(jardin)).toBe('del jardín');
   });
 });
 
