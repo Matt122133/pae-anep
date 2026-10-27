@@ -6,6 +6,7 @@
 // trae GET /legajo; acá solo quedan las funciones que trabajan sobre ese
 // estado en memoria.
 import { School, StaffMember, Visit, SchoolIssue, ActivityLog } from '../types';
+import { nombreInstitucion } from './institucion';
 
 export interface DatabaseState {
   schools: School[];
@@ -108,7 +109,7 @@ export function downloadSchoolsCsv(schools: School[]): void {
 }
 
 export function downloadStaffCsv(staff: StaffMember[], schools: School[]): void {
-  const schoolMap = new Map(schools.map(s => [s.id, `Escuela N° ${s.number}`]));
+  const schoolMap = new Map(schools.map(s => [s.id, nombreInstitucion(s)]));
   const headers = ['Escuela', 'Nombre Completo', 'CI / Documento', 'Rol en Cocina', 'Institución / Régimen', 'Empresa Tercerizada', 'Vencimiento Carne Salud', 'Estado Carne', 'Aportes / BPS', 'Telefono'];
   
   const rows = staff.map(st => {
@@ -145,8 +146,8 @@ export function downloadActivityLogsCsv(logs: ActivityLog[]): void {
     'Fecha y Hora (ISO)',
     'Fecha Legible',
     'Hora',
-    'N° Escuela',
-    'Nombre Escuela',
+    'N° Institución',
+    'Nombre Institución',
     'Usuario ID',
     'Autor / Responsable',
     'Cargo / Rol',

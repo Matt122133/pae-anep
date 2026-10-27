@@ -218,12 +218,13 @@ func (r *Repositorio) Trasladar(ctx context.Context, autor *cuentas.Cuenta, id s
 			return err
 		}
 		cambio := []bitacora.Cambio{{Field: "schoolId", FieldLabel: "Escuela",
-			OldValue: fmt.Sprintf("Escuela N° %d", origen.Numero), NewValue: fmt.Sprintf("Escuela N° %d", destino.Numero)}}
+			OldValue: mayuscula(nombreInstitucion(origen.Tipo, origen.Numero)),
+			NewValue: mayuscula(nombreInstitucion(destino.Tipo, destino.Numero))}}
 		for _, esc := range []*bitacora.Escuela{origen, destino} {
 			if err := bitacora.Escribir(ctx, tx, autor, bitacora.Entrada{
 				Escuela: esc, Accion: bitacora.AccionEditar, Categoria: bitacora.CatPersonal,
-				Resumen: fmt.Sprintf("Traslado de %s %s: escuela N° %d → N° %d (desde %s)",
-					out.Role, out.FullName, origen.Numero, destino.Numero, t.Fecha),
+				Resumen: fmt.Sprintf("Traslado de %s %s: %s → %s (desde %s)", out.Role, out.FullName,
+					nombreInstitucion(origen.Tipo, origen.Numero), nombreInstitucion(destino.Tipo, destino.Numero), t.Fecha),
 				Detalle: cambio,
 			}); err != nil {
 				return err

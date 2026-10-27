@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { School, Visit, formatTeamVisitors } from '../types';
+import { nombreInstitucion, tipoDe } from '../services/institucion';
 import { useEquipo } from '../services/equipo';
 import { nuevoId } from '../services/api';
 import { TeamVisitorSelector } from './TeamVisitorSelector';
@@ -121,7 +122,7 @@ export const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({
 
   const predefinedObjectives = [
     'Supervisión regular de cocina comedor, cotejo de remitos y condiciones higiénico-sanitarias',
-    'Relevamiento y control del rubro para compra de agua potable (Escuela Rural)',
+    'Relevamiento y control del rubro para compra de agua potable (institución rural)',
     'Verificación de carné de salud y buenas prácticas de manufactura de auxiliares',
     'Auditoría de planilla de registros mensuales y remitos (Circular N° 6/2024)',
     'Seguimiento a desvío de alimentos no autorizados y recomendaciones de menú',
@@ -133,7 +134,7 @@ export const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({
     'Circuito Ruta 5 Norte (Curtina - Peralta - Paso del Cerro)',
     'Circuito Ruta 26 Este (Caraguatá - Las Toscas - Ansina)',
     'Circuito Paso de los Toros y San Gregorio de Polanco',
-    'Circuito Tacuarembó Capital (Escuelas Urbanas)',
+    'Circuito Tacuarembó Capital (instituciones urbanas)',
     'Circuito Ruta 31 (Sauce de Batoví - Cuchilla del Ombú)'
   ];
 
@@ -207,7 +208,7 @@ export const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({
                 Itinerario de Campo • PAE Tacuarembó
               </span>
               <h2 className="text-xl font-black text-white">
-                {visitToEdit ? 'Modificar Visita Programada' : 'Agendar / Programar Visita a Escuela'}
+                {visitToEdit ? 'Modificar Visita Programada' : 'Agendar / Programar Visita a Institución'}
               </h2>
             </div>
           </div>
@@ -226,14 +227,14 @@ export const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({
           {/* Escuela Selector */}
           <div>
             <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5 flex items-center justify-between">
-              <span>Seleccionar Escuela ({schools.length} disponibles):</span>
+              <span>Seleccionar Institución ({schools.length} disponibles):</span>
               {selectedSchool && (
                 <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ${
                   selectedSchool.areaType === 'Rural' 
                     ? 'bg-amber-100 text-amber-900' 
                     : 'bg-blue-100 text-blue-900'
                 }`}>
-                  {selectedSchool.areaType === 'Rural' ? '🌾 Escuela Rural' : '🏢 Escuela Urbana'}
+                  {selectedSchool.areaType === 'Rural' ? `🌾 ${tipoDe(selectedSchool)} Rural` : `🏢 ${tipoDe(selectedSchool)} Urbana`}
                 </span>
               )}
             </label>
@@ -259,7 +260,7 @@ export const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({
             >
               {filteredSchools.map(s => (
                 <option key={s.id} value={s.id}>
-                  Escuela N° {s.number} - {s.name} ({s.areaType}) - {s.zone}
+                  {nombreInstitucion(s)} - {s.name} ({s.areaType}) - {s.zone}
                 </option>
               ))}
             </select>
@@ -269,7 +270,7 @@ export const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({
               <div className="mt-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-extrabold text-slate-900">
-                    Escuela N° {selectedSchool.number} — {selectedSchool.name}
+                    {nombreInstitucion(selectedSchool)} — {selectedSchool.name}
                   </span>
                   <span className="text-slate-500 font-medium">
                     {selectedSchool.studentDinersCount} comensales

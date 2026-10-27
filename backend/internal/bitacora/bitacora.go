@@ -78,6 +78,9 @@ type Escuela struct {
 	ID     string
 	Numero int
 	Nombre string
+	// Tipo ("Escuela" o "Jardín", 010) solo sirve para armar resumenes; no
+	// se guarda.
+	Tipo string
 }
 
 // Entrada es lo que el handler arma; autor y momento los pone Escribir.

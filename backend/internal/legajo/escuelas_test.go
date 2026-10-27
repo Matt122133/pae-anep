@@ -243,6 +243,86 @@ func TestEscuelaProveedoresValidacion(t *testing.T) {
 	}
 }
 
+func TestJardinAltaEdicionYBaja(t *testing.T) {
+	pool := testdb.Abrir(t)
+	r := NuevoRepositorio(pool)
+	ctx := context.Background()
+	a := autorDePrueba(t, pool, "valentina")
+	resumenes := func() []string {
+		filas, _ := pool.Query(ctx, `SELECT resumen FROM bitacora ORDER BY momento, id`)
+		defer filas.Close()
+		var out []string
+		for filas.Next() {
+			var s string
+			filas.Scan(&s)
+			out = append(out, s)
+		}
+		return out
+	}
+
+	j := escuelaFicticia("jar-5", 5)
+	j.Name = "Jardín ficticio"
+	j.SchoolType = "Jardín"
+	s, err := r.CrearEscuela(ctx, a, j)
+	if err != nil || s.SchoolType != "Jardín" {
+		t.Fatalf("alta de jardin: %v %+v", err, s)
+	}
+	if res := resumenes(); len(res) != 1 || res[0] != "Alta del jardín N° 5 - Jardín ficticio" {
+		t.Errorf("resumen del alta = %v", res)
+	}
+
+	// Un PUT sin el tipo (borrador viejo) lo conserva (FR-006).
+	viejo := s
+	viejo.SchoolType = ""
+	viejo.Notes = "nota 010"
+	s, err = r.EditarEscuela(ctx, a, viejo)
+	if err != nil || s.SchoolType != "Jardín" {
+		t.Fatalf("edicion sin tipo: %v %+v", err, s)
+	}
+	if res := resumenes(); res[len(res)-1] != "Actualización del legajo del jardín N° 5" {
+		t.Errorf("resumen de la edicion = %v", res)
+	}
+
+	baja, err := r.CambiarActivaEscuela(ctx, a, s.ID, s.Version, false)
+	if err != nil || baja.Active {
+		t.Fatalf("baja: %v", err)
+	}
+	if res := resumenes(); res[len(res)-1] != "Baja del jardín N° 5 (queda consultable)" {
+		t.Errorf("resumen de la baja = %v", res)
+	}
+
+	// Alta sin tipo: escuela, y el reenvio identico no es conflicto.
+	e, err := r.CrearEscuela(ctx, a, escuelaFicticia("esc-6", 6))
+	if err != nil || e.SchoolType != "Escuela" {
+		t.Fatalf("alta sin tipo: %v %+v", err, e)
+	}
+	if _, err := r.CrearEscuela(ctx, a, escuelaFicticia("esc-6", 6)); err != nil {
+		t.Errorf("reenvio del alta sin tipo: %v", err)
+	}
+}
+
+func TestJardinValidacion(t *testing.T) {
+	pool := testdb.Abrir(t)
+	r := NuevoRepositorio(pool)
+	ctx := context.Background()
+	a := autorDePrueba(t, pool, "valentina")
+
+	raro := escuelaFicticia("x-1", 1)
+	raro.SchoolType = "Liceo"
+	var inv *ErrInvalido
+	if _, err := r.CrearEscuela(ctx, a, raro); !errors.As(err, &inv) || inv.Campos["schoolType"] == "" {
+		t.Errorf("tipo invalido: %v", err)
+	}
+
+	// El numero es unico entre todas las instituciones (FR-005).
+	r.CrearEscuela(ctx, a, escuelaFicticia("esc-5", 5))
+	j := escuelaFicticia("jar-5", 5)
+	j.SchoolType = "Jardín"
+	if _, err := r.CrearEscuela(ctx, a, j); !errors.As(err, &inv) || inv.Campos["number"] != "ya existe una institución con ese número" {
+		t.Errorf("jardin con numero de escuela: %v", err)
+	}
+}
+
 func contiene(s, sub string) bool {
 	for i := 0; i+len(sub) <= len(s); i++ {
 		if s[i:i+len(sub)] == sub {

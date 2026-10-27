@@ -149,8 +149,8 @@ func (r *Repositorio) enTx(ctx context.Context, f func(tx pgx.Tx) error) error {
 func escuelaDe(ctx context.Context, tx pgx.Tx, id string, exigirActiva bool) (*bitacora.Escuela, error) {
 	var e bitacora.Escuela
 	var activa bool
-	err := tx.QueryRow(ctx, `SELECT id, numero, nombre, activo FROM escuelas WHERE id = $1`, id).
-		Scan(&e.ID, &e.Numero, &e.Nombre, &activa)
+	err := tx.QueryRow(ctx, `SELECT id, numero, nombre, tipo, activo FROM escuelas WHERE id = $1`, id).
+		Scan(&e.ID, &e.Numero, &e.Nombre, &e.Tipo, &activa)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, invalido("schoolId", "la escuela no existe")
 	}

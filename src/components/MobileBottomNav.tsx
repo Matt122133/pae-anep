@@ -98,7 +98,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           <span className="text-[10px] mt-1 leading-none tracking-tight">Panel</span>
         </button>
 
-        {/* 2. Escuelas */}
+        {/* 2. Instituciones */}
         <button
           type="button"
           onClick={() => onNavigate('schools')}
@@ -119,7 +119,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-emerald-400 rounded-full" />
             )}
           </div>
-          <span className="text-[10px] mt-1 leading-none tracking-tight">Escuelas</span>
+          <span className="text-[10px] mt-1 leading-none tracking-tight">Instituciones</span>
         </button>
 
         {/* 3. Calendario de Visitas */}
@@ -160,14 +160,14 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           <span className="text-[10px] mt-1 leading-none tracking-tight">Bitácora</span>
         </button>
 
-        {/* 5. Nueva Escuela / Registro */}
+        {/* 5. Nueva Institución / Registro */}
         <button
           type="button"
           onClick={onOpenNewSchoolModal}
           className="flex flex-col items-center justify-center flex-1 h-full py-1 text-center text-slate-400 hover:text-emerald-400 transition"
         >
           <PlusCircle className="w-5 h-5 text-emerald-400" />
-          <span className="text-[10px] mt-1 leading-none tracking-tight">+ Escuela</span>
+          <span className="text-[10px] mt-1 leading-none tracking-tight">+ Institución</span>
         </button>
       </nav>
     </div>

@@ -188,6 +188,8 @@ export interface SchoolIssue {
 }
 
 export type SchoolAreaType = 'Rural' | 'Urbana';
+/** Tipo de institución (010). Misma lista en validar.go y en la migración 0003. */
+export type SchoolType = 'Escuela' | 'Jardín';
 export type MilkProgramType = 'Programa de Leche Escolar' | 'Programa de Copa de Leche' | 'Ambos' | 'Ninguno / Comedor Tradicional';
 
 export interface School {
@@ -227,6 +229,9 @@ export interface School {
    * legajo y los "no enviados" anteriores no lo traen, y sin el campo el
    * servidor conserva la lista guardada. */
   providers?: string[];
+  /** Escuela o jardín (010). Opcional por lo mismo que providers: sin el
+   * campo, el servidor conserva el guardado. Leerlo con tipoDe(). */
+  schoolType?: SchoolType;
   lastVisitDate?: string;
   totalVisits: number;
   activeIssuesCount: number;

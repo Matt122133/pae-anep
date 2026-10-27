@@ -7,11 +7,12 @@ import (
 	"unicode/utf8"
 )
 
-// Listas cerradas. Son las de src/types/index.ts y las de los CHECK de la
-// migracion 0001: si cambia una, cambian las tres.
+// Listas cerradas. Son las de src/types/index.ts y las de los CHECK de las
+// migraciones (0001, 0003): si cambia una, cambian las tres.
 var (
-	listaAmbito    = conjunto("Rural", "Urbana")
-	listaModalidad = conjunto("Tiempo Completo", "Tiempo Extendido", "Común", "Aprender",
+	listaTipoInstitucion = conjunto("Escuela", "Jardín")
+	listaAmbito          = conjunto("Rural", "Urbana")
+	listaModalidad       = conjunto("Tiempo Completo", "Tiempo Extendido", "Común", "Aprender",
 		"Escuelas de Educación Especial", "Escuelas de Educación Artística (EDEA)",
 		"TPA", "Rural", "Práctica")
 	listaLeche = conjunto("Programa de Leche Escolar", "Programa de Copa de Leche",
@@ -118,6 +119,9 @@ func ValidarEscuela(s *School) error {
 	e.noNegativo("milkPowderKg", s.MilkPowderKg)
 	if s.Department == "" {
 		s.Department = "Tacuarembó"
+	}
+	if s.SchoolType != "" {
+		e.enLista("schoolType", s.SchoolType, listaTipoInstitucion)
 	}
 	e.proveedores(s.Providers)
 	return e.err()

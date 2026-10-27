@@ -77,6 +77,31 @@ func TestTrasladoConservaHistorial(t *testing.T) {
 	}
 }
 
+func TestTrasladoAJardinNombraPorTipo(t *testing.T) {
+	pool := testdb.Abrir(t)
+	r := NuevoRepositorio(pool)
+	ctx := context.Background()
+	a := autorDePrueba(t, pool, "valentina")
+	r.CrearEscuela(ctx, a, escuelaFicticia("esc-1", 1))
+	jardin := escuelaFicticia("jar-7", 7)
+	jardin.SchoolType = "Jardín"
+	r.CrearEscuela(ctx, a, jardin)
+	p, _ := r.CrearPersonal(ctx, a, auxiliarFicticia("p-1", "esc-1"))
+
+	if _, err := r.Trasladar(ctx, a, "p-1", Traslado{SchoolID: "jar-7", Fecha: "2026-11-01", Version: p.Version}); err != nil {
+		t.Fatal(err)
+	}
+	var resumen string
+	var detalle []byte
+	pool.QueryRow(ctx, `SELECT resumen, detalle FROM bitacora WHERE resumen LIKE 'Traslado%' LIMIT 1`).Scan(&resumen, &detalle)
+	if !contiene(resumen, "escuela N° 1 → jardín N° 7") {
+		t.Errorf("resumen del traslado = %q", resumen)
+	}
+	if !contiene(string(detalle), "Escuela N° 1") || !contiene(string(detalle), "Jardín N° 7") {
+		t.Errorf("detalle del traslado = %s", detalle)
+	}
+}
+
 func TestPersonalEnEscuelaInactiva(t *testing.T) {
 	pool := testdb.Abrir(t)
 	r := NuevoRepositorio(pool)

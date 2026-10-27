@@ -135,10 +135,16 @@ son **espejo**, con los mismos nombres JSON; se sincronizan a mano. Las listas
 cerradas (modalidad, rol, severidad…) existen tres veces: en el tipo TS, en
 `validar.go` y en los `CHECK` de la migración. Si cambia una, cambian las tres.
 
-`School.providers` (009) es la única excepción a "el PUT trae la ficha
-entera": si no viene, el servidor **conserva** la lista guardada, para que un
-"no enviado" o una copia del legajo anteriores al campo no la borren; `[]`
-explícito sí la vacía. Por lo mismo, un campo nuevo en un cuerpo exige
+Un jardín (010) es una `School` con `schoolType: "Jardín"`: misma tabla y
+mismas relaciones (ADR [jardin-tipo-de-institucion](docs/decisions/jardin-tipo-de-institucion.md)).
+En el frontend, todo texto que nombra a una institución concreta pasa por
+`src/services/institucion.ts` ("Escuela N° 5" / "Jardín N° 5"); en la
+interfaz, el conjunto se llama "Instituciones".
+
+`School.providers` (009) y `School.schoolType` (010) son las excepciones a
+"el PUT trae la ficha entera": si no vienen, el servidor **conserva** lo
+guardado, para que un "no enviado" o una copia del legajo anteriores al campo
+no lo pisen; `[]` explícito sí vacía la lista de proveedores. Por lo mismo, un campo nuevo en un cuerpo exige
 desplegar Railway **antes** que Pages: el servidor viejo lo rechaza con 400.
 
 Los contadores de `School` (`totalVisits`, `lastVisitDate`, `activeIssuesCount`)

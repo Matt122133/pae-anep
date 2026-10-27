@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { School, Visit, VisitStatus } from '../types';
+import { aLa } from '../services/institucion';
 import { 
   Calendar as CalendarIcon, 
   ChevronLeft, 
@@ -470,7 +471,7 @@ export const VisitCalendar: React.FC<VisitCalendarProps> = ({
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Buscar N°, escuela..."
+              placeholder="Buscar N°, institución..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none w-full sm:w-48"
@@ -623,7 +624,7 @@ export const VisitCalendar: React.FC<VisitCalendarProps> = ({
                           >
                             <div className="flex items-center justify-between gap-1 font-bold">
                               <span className="truncate">
-                                {isRural ? '🌾' : '🏢'} N° {school?.number || '?'} {school?.name || 'Escuela'}
+                                {isRural ? '🌾' : '🏢'} N° {school?.number || '?'} {school?.name || 'Institución'}
                               </span>
                               <span className="text-[9px] shrink-0 font-extrabold opacity-80">
                                 {v.time}
@@ -803,7 +804,7 @@ export const VisitCalendar: React.FC<VisitCalendarProps> = ({
                             {onDeleteVisit && (
                               <button
                                 onClick={() => {
-                                  if (confirm(`¿Desea cancelar y eliminar la visita programada a la Escuela N° ${school?.number}?`)) {
+                                  if (confirm(`¿Desea cancelar y eliminar la visita programada ${school ? aLa(school) : 'a la institución'}?`)) {
                                     onDeleteVisit(v.id);
                                   }
                                 }}
@@ -833,7 +834,7 @@ export const VisitCalendar: React.FC<VisitCalendarProps> = ({
                           <button
                             onClick={() => onSelectSchool(school)}
                             className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition"
-                            title="Abrir Legajo de Escuela"
+                            title="Abrir Legajo de la Institución"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
@@ -1000,7 +1001,7 @@ export const VisitCalendar: React.FC<VisitCalendarProps> = ({
                                 className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg transition"
                               >
                                 <Eye className="w-3.5 h-3.5" />
-                                <span>Ver Legajo de Escuela</span>
+                                <span>Ver Legajo de la Institución</span>
                               </button>
                             )}
 

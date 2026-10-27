@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { School, StaffMember, Visit, SchoolIssue, formatTeamVisitors } from '../types';
+import { nombreInstitucion, tipoDe } from '../services/institucion';
 import { useEquipo } from '../services/equipo';
 import { getHealthCardStatus } from '../services/storage';
 import { 
@@ -93,7 +94,7 @@ export const SchoolReportModal: React.FC<SchoolReportModalProps> = ({
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Devolución de Visita - Escuela N° ${school.number} ${school.name}</title>
+  <title>Devolución de Visita - ${nombreInstitucion(school)} ${school.name}</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -145,7 +146,7 @@ export const SchoolReportModal: React.FC<SchoolReportModalProps> = ({
       text = `Tacuarembó, ${new Date(activeVisit.date + 'T12:00:00').toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })}\n\n`;
       text += `ORIENTACIONES SOBRE VISITAS A ESCUELAS\n\n`;
       text += `Fecha del día de la visita: ${activeVisit.date}\n`;
-      text += `En el día de la fecha se realiza la visita a cocina comedor de escuela N° ${school.number} a cargo del Maestro/a Director/a ${school.principalName} por parte de ${activeVisit.inspectorName || inspectorName}.\n\n`;
+      text += `En el día de la fecha se realiza la visita a cocina comedor ${tipoDe(school) === 'Jardín' ? 'del jardín' : 'de escuela'} N° ${school.number} a cargo del Maestro/a Director/a ${school.principalName} por parte de ${activeVisit.inspectorName || inspectorName}.\n\n`;
       text += `Se remiten las observaciones realizadas durante la visita a la ${activeVisit.nutritionistName || nutritionistName}, con el propósito de que las mismas sean posteriormente elevadas al inspector/a de zona (${activeVisit.assignedSchoolInspector || school.assignedInspector || 'Inspector/a de Zona'}).\n`;
       text += `Cabe destacar que todas las consideraciones formuladas y las orientaciones transmitidas a Maestro/a Director/a en relación con el menú escolar han sido previamente informadas y cuentan con la aprobación de la Licenciada en Nutrición Departamental.\n\n`;
       
@@ -216,7 +217,7 @@ export const SchoolReportModal: React.FC<SchoolReportModalProps> = ({
                   Devolución Oficial & Legajo Escolar
                 </h2>
                 <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-400/30">
-                  Escuela N° {school.number}
+                  {nombreInstitucion(school)}
                 </span>
                 <span className={`text-[11px] px-2 py-0.5 rounded-md font-bold ${
                   school.areaType === 'Rural' ? 'bg-amber-500/20 text-amber-300' : 'bg-blue-500/20 text-blue-300'
@@ -388,10 +389,10 @@ export const SchoolReportModal: React.FC<SchoolReportModalProps> = ({
                     <strong>Fecha del día de la visita:</strong> {activeVisit ? activeVisit.date : reportDate}
                   </p>
                   <p>
-                    En el día de la fecha se realiza la visita a cocina comedor de escuela <strong>N° {school.number}</strong> a cargo del Maestro/a Director/a <strong>{school.principalName}</strong> por parte de {activeVisit?.inspectorName || inspectorName}.
+                    En el día de la fecha se realiza la visita a cocina comedor {tipoDe(school) === 'Jardín' ? 'del jardín' : 'de escuela'} <strong>N° {school.number}</strong> a cargo del Maestro/a Director/a <strong>{school.principalName}</strong> por parte de {activeVisit?.inspectorName || inspectorName}.
                   </p>
                   <p className="text-slate-800">
-                    Se remiten las observaciones realizadas durante la visita a la <strong>{activeVisit?.nutritionistName || nutritionistName}</strong>, con el propósito de que las mismas sean posteriormente elevadas al inspector/a de zona (<strong>{activeVisit?.assignedSchoolInspector || school.assignedInspector || 'Inspector/a de Escuela'}</strong>).
+                    Se remiten las observaciones realizadas durante la visita a la <strong>{activeVisit?.nutritionistName || nutritionistName}</strong>, con el propósito de que las mismas sean posteriormente elevadas al inspector/a de zona (<strong>{activeVisit?.assignedSchoolInspector || school.assignedInspector || 'Inspector/a asignado/a'}</strong>).
                   </p>
                   <p className="text-slate-800">
                     Cabe destacar que todas las consideraciones formuladas y las orientaciones transmitidas a Maestro/a Director/a en relación con el menú escolar han sido previamente informadas y cuentan con la aprobación de la Licenciada en Nutrición Departamental.

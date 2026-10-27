@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { School } from '../types';
+import { nombreInstitucion } from '../services/institucion';
 import { useEquipo } from '../services/equipo';
 import { fechaCorta } from '../services/fechas';
 import { 
@@ -160,7 +161,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               onClick={() => onNavigate('schools')}
-              title={`${schools.length} Escuelas`}
+              title={`${schools.length} Instituciones`}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
                 currentView === 'schools' || currentView === 'school-detail'
                   ? 'bg-emerald-600 text-white shadow-xs'
@@ -168,7 +169,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <Building2 className="w-4 h-4" />
-              <span className="hidden xl:inline">{schools.length} Escuelas</span>
+              <span className="hidden xl:inline">{schools.length} Instituciones</span>
             </button>
 
             {onNavigateToCalendar && (
@@ -239,7 +240,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         className="p-2.5 hover:bg-slate-700/80 cursor-pointer transition flex items-center justify-between"
                       >
                         <div>
-                          <span className="font-bold text-white">Escuela N° {s.number}</span>
+                          <span className="font-bold text-white">{nombreInstitucion(s)}</span>
                           <span className="text-slate-400 block text-[11px] truncate">{s.name}</span>
                         </div>
                         <span className="text-[10px] text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded">
@@ -250,7 +251,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
                 ) : (
                   <div className="p-3 text-slate-400 text-center">
-                    No se encontró escuela con "{quickSearch}"
+                    No se encontró institución con "{quickSearch}"
                   </div>
                 )}
               </div>
@@ -264,8 +265,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={() => setShowMobileSearchInput(!showMobileSearchInput)}
               className="lg:hidden p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition"
-              title="Buscar escuela"
-              aria-label="Buscar escuela"
+              title="Buscar institución"
+              aria-label="Buscar institución"
             >
               <Search className="w-4 h-4 text-emerald-400" />
             </button>
@@ -355,12 +356,12 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               onClick={onOpenNewSchoolModal}
-              title="Nueva Escuela"
-              aria-label="Nueva Escuela"
+              title="Nueva Institución"
+              aria-label="Nueva Institución"
               className="px-2.5 sm:px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-xs"
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden xl:inline">Nueva Escuela</span>
+              <span className="hidden xl:inline">Nueva Institución</span>
             </button>
 
             {/* Mobile burger toggle */}
@@ -407,7 +408,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       className="p-3 hover:bg-slate-700/80 cursor-pointer transition flex items-center justify-between"
                     >
                       <div>
-                        <span className="font-bold text-white text-sm">Escuela N° {s.number}</span>
+                        <span className="font-bold text-white text-sm">{nombreInstitucion(s)}</span>
                         <span className="text-slate-300 block text-xs truncate">{s.name} ({s.zone})</span>
                       </div>
                       <ChevronRight className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -415,7 +416,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   ))
                 ) : (
                   <div className="p-3 text-slate-400 text-center">
-                    No se encontró escuela con "{quickSearch}"
+                    No se encontró institución con "{quickSearch}"
                   </div>
                 )}
               </div>
@@ -449,7 +450,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <Building2 className="w-4 h-4 text-emerald-400" />
-              <span>Directorio de {schools.length} Escuelas</span>
+              <span>Directorio de {schools.length} Instituciones</span>
             </button>
 
             {onNavigateToCalendar && (
@@ -524,7 +525,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 text-emerald-400 hover:bg-slate-800 transition"
             >
               <Plus className="w-4 h-4 text-emerald-400" />
-              <span>+ Registrar Nueva Escuela</span>
+              <span>+ Registrar Nueva Institución</span>
             </button>
 
             {/* Cuenta con sesión (móvil) */}
