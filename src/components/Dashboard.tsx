@@ -222,7 +222,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </span>
           </div>
           <div className="text-xs text-slate-500 mt-1">
-            <span>{pendingVisitsCount} escuelas por visitar este ciclo</span>
+            <span>{pendingVisitsCount} instituciones por visitar este ciclo</span>
           </div>
           <div className="text-[11px] text-sky-700 font-bold mt-3 flex items-center gap-1 group-hover:translate-x-0.5 transition">
             <span>Abrir Calendario Mensual</span>
@@ -350,7 +350,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   <div>
                     <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
                       <ShieldAlert className="w-5 h-5 text-rose-600" />
-                      Escuelas con Observaciones o Casos Pendientes de Resolución
+                      Instituciones con Observaciones o Casos Pendientes de Resolución
                     </h2>
                     <p className="text-xs text-slate-500">
                       Requieren seguimiento en la próxima visita para verificar si se resolvieron los desvíos.
@@ -367,7 +367,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                 {schoolsWithIssues.length === 0 ? (
                   <div className="py-8 text-center text-slate-400 text-xs bg-slate-50 rounded-xl">
-                    ¡Excelente! No hay escuelas con problemas pendientes en este momento.
+                    ¡Excelente! No hay instituciones con problemas pendientes en este momento.
                   </div>
                 ) : (
                   <div className="space-y-3">

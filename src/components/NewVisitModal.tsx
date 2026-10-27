@@ -513,7 +513,7 @@ export const NewVisitModal: React.FC<NewVisitModalProps> = ({
 
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Inspector/a de Escuela Asignado/a</label>
+                  <label className="block font-semibold text-slate-700 mb-1">Inspector/a Asignado/a</label>
                   <input
                     type="text"
                     value={assignedSchoolInspector}
@@ -577,7 +577,7 @@ export const NewVisitModal: React.FC<NewVisitModalProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setInitialFieldObservations(prev => prev + `\n• Escuela rural: ${school.waterPurchaseAllowance ? 'cuenta con rubro de compra de agua y bidones disponibles.' : 'agua corriente sin inconvenientes.'}`)}
+                    onClick={() => setInitialFieldObservations(prev => prev + `\n• ${tipoDe(school)} rural: ${school.waterPurchaseAllowance ? 'cuenta con rubro de compra de agua y bidones disponibles.' : 'agua corriente sin inconvenientes.'}`)}
                     className="text-[11px] bg-white border border-emerald-300 hover:bg-emerald-100 text-emerald-900 px-2 py-1 rounded-md transition"
                   >
                     + Estado del agua

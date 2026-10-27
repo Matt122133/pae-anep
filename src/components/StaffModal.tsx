@@ -326,7 +326,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
 
           {staffToEdit && onTrasladar && destinos.length > 0 && (
             <div className="border border-slate-200 rounded-lg p-3 space-y-2 bg-slate-50">
-              <span className="text-xs font-bold text-slate-700 block">Trasladar a otra escuela</span>
+              <span className="text-xs font-bold text-slate-700 block">Trasladar a otra institución</span>
               <div className="flex gap-2">
                 <select
                   value={destino}

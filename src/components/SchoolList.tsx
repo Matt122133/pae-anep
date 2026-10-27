@@ -518,7 +518,7 @@ export const SchoolList: React.FC<SchoolListProps> = ({
               type="text"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              placeholder="Buscar por N° escuela, nombre, modalidad (ej: Tiempo Completo), inspector, cocinera..."
+              placeholder="Buscar por N° de institución, nombre, modalidad (ej: Tiempo Completo), inspector, cocinera..."
               className="w-full pl-11 pr-24 py-3 bg-slate-50 border border-slate-300 hover:border-slate-400 focus:border-emerald-600 focus:bg-white rounded-2xl text-xs sm:text-sm font-medium text-slate-900 focus:ring-4 focus:ring-emerald-500/10 outline-none transition placeholder:text-slate-400 min-h-[46px]"
             />
             
@@ -634,7 +634,7 @@ export const SchoolList: React.FC<SchoolListProps> = ({
                   ? 'bg-sky-700 text-white border-sky-800 shadow-2xs'
                   : 'bg-white text-sky-900 hover:bg-sky-50 border-sky-300'
               }`}
-              title="Escuelas que reciben rubro PAE para compra de agua potable"
+              title="Instituciones que reciben rubro PAE para compra de agua potable"
             >
               <Droplets className="w-3.5 h-3.5 text-sky-500" />
               <span>Rubro Agua ({waterAllowanceCount})</span>
@@ -651,7 +651,7 @@ export const SchoolList: React.FC<SchoolListProps> = ({
                 onChange={e => setSortBy(e.target.value as any)}
                 className="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer w-full"
               >
-                <option value="number">N° Escuela</option>
+                <option value="number">Número</option>
                 <option value="last_visit_desc">Última Visita (Más reciente)</option>
                 <option value="last_visit_asc">Última Visita (Más antigua / Sin visita)</option>
                 <option value="issues">Nivel de Riesgo (Más casos abiertos)</option>
@@ -937,7 +937,7 @@ export const SchoolList: React.FC<SchoolListProps> = ({
                   <option value="ose">Conexión por Red OSE ({schools.length - waterAllowanceCount})</option>
                 </select>
                 <p className="text-[10px] text-slate-500 pt-0.5">
-                  Importante para escuelas rurales sin agua corriente de red.
+                  Importante para instituciones rurales sin agua corriente de red.
                 </p>
               </div>
 
@@ -1295,7 +1295,7 @@ export const SchoolList: React.FC<SchoolListProps> = ({
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[10px]">
                   <th className="p-3">N°</th>
-                  <th className="p-3">Nombre Escuela</th>
+                  <th className="p-3">Nombre</th>
                   <th className="p-3">Ámbito</th>
                   <th className="p-3">Modalidad</th>
                   <th className="p-3">Nivel de Riesgo</th>

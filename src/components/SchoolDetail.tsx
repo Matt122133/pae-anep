@@ -318,11 +318,11 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
                   <span className="font-semibold text-slate-900">{school.areaType} ({school.zone || 'Tacuarembó'})</span>
                 </div>
                 <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-                  <span className="text-xs text-slate-500 block">Inspector/a de Escuela Asignado/a</span>
+                  <span className="text-xs text-slate-500 block">Inspector/a Asignado/a</span>
                   <span className="font-semibold text-slate-900">{school.assignedInspector || 'No asignado/a'}</span>
                 </div>
                 <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-                  <span className="text-xs text-slate-500 block">Modalidad de la Escuela</span>
+                  <span className="text-xs text-slate-500 block">Modalidad</span>
                   <div className="flex items-center gap-2 mt-1">
                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
                       school.modality === 'Tiempo Completo'
@@ -437,7 +437,7 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
 
               <div>
                 <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Referencias y Antecedentes de la Escuela
+                  Referencias y Antecedentes de la Institución
                 </h3>
                 <div className="p-4 bg-amber-50/50 rounded-xl border border-amber-200/70 text-slate-700 text-sm leading-relaxed">
                   {school.notes || `No hay notas particulares registradas para ${estaInstitucion(school)}.`}
@@ -1094,7 +1094,7 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
                   Informes Técnicos & Exportación PDF
                 </h2>
                 <p className="text-xs text-slate-500">
-                  Compile toda la información de la escuela (ficha, auxiliares, visitas e incidencias) en formato limpio para informes o actas de supervisión.
+                  Compile toda la información de la institución (ficha, auxiliares, visitas e incidencias) en formato limpio para informes o actas de supervisión.
                 </p>
               </div>
 
@@ -1540,7 +1540,7 @@ export const SchoolDetail: React.FC<SchoolDetailProps> = ({
                         <p><strong>Acta de Visita N°:</strong> {currentActaVisit.visitNumber}</p>
                         <p><strong>Fecha y Hora:</strong> {currentActaVisit.date} - {currentActaVisit.time} hs</p>
                         <p><strong>Técnico Actuante:</strong> {currentActaVisit.inspectorName}</p>
-                        <p><strong>Presentes en Escuela:</strong> {currentActaVisit.attendedBy}</p>
+                        <p><strong>Presentes en la Institución:</strong> {currentActaVisit.attendedBy}</p>
                       </div>
                     </div>
 

@@ -392,7 +392,7 @@ export const SchoolReportModal: React.FC<SchoolReportModalProps> = ({
                     En el día de la fecha se realiza la visita a cocina comedor {tipoDe(school) === 'Jardín' ? 'del jardín' : 'de escuela'} <strong>N° {school.number}</strong> a cargo del Maestro/a Director/a <strong>{school.principalName}</strong> por parte de {activeVisit?.inspectorName || inspectorName}.
                   </p>
                   <p className="text-slate-800">
-                    Se remiten las observaciones realizadas durante la visita a la <strong>{activeVisit?.nutritionistName || nutritionistName}</strong>, con el propósito de que las mismas sean posteriormente elevadas al inspector/a de zona (<strong>{activeVisit?.assignedSchoolInspector || school.assignedInspector || 'Inspector/a de Escuela'}</strong>).
+                    Se remiten las observaciones realizadas durante la visita a la <strong>{activeVisit?.nutritionistName || nutritionistName}</strong>, con el propósito de que las mismas sean posteriormente elevadas al inspector/a de zona (<strong>{activeVisit?.assignedSchoolInspector || school.assignedInspector || 'Inspector/a asignado/a'}</strong>).
                   </p>
                   <p className="text-slate-800">
                     Cabe destacar que todas las consideraciones formuladas y las orientaciones transmitidas a Maestro/a Director/a en relación con el menú escolar han sido previamente informadas y cuentan con la aprobación de la Licenciada en Nutrición Departamental.

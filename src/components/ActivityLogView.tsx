@@ -547,7 +547,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({
               type="text"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              placeholder="Buscar por etiqueta de evento, detalle de cambio, escuela N°, autor/a o notas..."
+              placeholder="Buscar por etiqueta de evento, detalle de cambio, N° de institución, autor/a o notas..."
               className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition"
             />
             {searchTerm && (
@@ -654,14 +654,14 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({
           {!scopedSchoolId && (
             <div>
               <label className="text-[11px] font-bold text-slate-500 block mb-1">
-                Filtrar por Escuela
+                Filtrar por Institución
               </label>
               <select
                 value={selectedSchoolFilter}
                 onChange={e => setSelectedSchoolFilter(e.target.value)}
                 className="w-full py-1.5 px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500"
               >
-                <option value="all">Todas las Escuelas ({schools.length})</option>
+                <option value="all">Todas las Instituciones ({schools.length})</option>
                 {schools.map(s => (
                   <option key={s.id} value={s.id}>
                     {nombreInstitucion(s)} - {s.name.slice(0, 26)}
@@ -802,7 +802,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({
             No se encontraron registros de actividad con los filtros seleccionados
           </h3>
           <p className="text-xs text-slate-500 max-w-md mx-auto">
-            Intenta cambiar los términos de búsqueda o restablecer los filtros de fecha, escuela y categoría.
+            Intenta cambiar los términos de búsqueda o restablecer los filtros de fecha, institución y categoría.
           </p>
           <button
             type="button"
@@ -872,7 +872,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({
                                 }
                               }}
                               className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-emerald-50 text-slate-800 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 transition"
-                              title="Ver ficha completa de la escuela"
+                              title="Ver ficha completa de la institución"
                             >
                               <Building2 className="w-3 h-3 text-emerald-600" />
                               <span>{nombreInstitucionPorId(schools, log.schoolId, log.schoolNumber)}</span>
@@ -1000,7 +1000,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({
               {/* School Selector */}
               <div>
                 <label className="font-bold text-slate-700 block mb-1">
-                  Escuela a la que corresponde la nota <span className="text-rose-500">*</span>
+                  Institución a la que corresponde la nota <span className="text-rose-500">*</span>
                 </label>
                 <select
                   value={noteSchoolId}
@@ -1119,7 +1119,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({
                   value={noteDetailsText}
                   onChange={e => setNoteDetailsText(e.target.value)}
                   rows={4}
-                  placeholder="Describa los antecedentes, comunicaciones mantenidas, acuerdos con la escuela o resoluciones adoptadas..."
+                  placeholder="Describa los antecedentes, comunicaciones mantenidas, acuerdos con la institución o resoluciones adoptadas..."
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
                 />
               </div>

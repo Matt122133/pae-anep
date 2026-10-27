@@ -81,7 +81,7 @@ export const ExportImportModal: React.FC<ExportImportModalProps> = ({
                 className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-semibold transition border border-slate-300 flex flex-col items-center gap-1 text-center"
               >
                 <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-                <span>{databaseState.schools.length} Escuelas (.CSV)</span>
+                <span>{databaseState.schools.length} Instituciones (.CSV)</span>
               </button>
               <button
                 type="button"

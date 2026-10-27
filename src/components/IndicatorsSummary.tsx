@@ -257,7 +257,7 @@ export const IndicatorsSummary: React.FC<IndicatorsSummaryProps> = ({
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Ratio de Resolución ({schools.length} Escuelas)</span>
+                <span>Ratio de Resolución ({schools.length} Instituciones)</span>
               </h3>
               <span className="text-[10px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200">
                 {totalIssues} {totalIssues === 1 ? 'observación' : 'observaciones'}
@@ -363,14 +363,14 @@ export const IndicatorsSummary: React.FC<IndicatorsSummaryProps> = ({
               <div>
                 <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                   <SchoolIcon className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Modalidades de Escuelas y Cobertura</span>
+                  <span>Modalidades y Cobertura</span>
                 </h3>
                 <p className="text-[11px] text-slate-500 mt-0.5">
                   Distribución institucional (Tiempo Completo, Tiempo Extendido, Aprender, etc.) y comensales.
                 </p>
               </div>
               <span className="text-[10px] font-bold text-slate-600 bg-white px-2 py-1 rounded-lg border border-slate-200 shrink-0">
-                {totalFilteredSchools} escuelas
+                {totalFilteredSchools} instituciones
               </span>
             </div>
 
@@ -450,7 +450,7 @@ export const IndicatorsSummary: React.FC<IndicatorsSummaryProps> = ({
                           {mod.count}
                         </span>
                         <span className="text-[10px] text-slate-400 font-medium">
-                          escuelas
+                          instituciones
                         </span>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-800 transition shrink-0" />
@@ -465,13 +465,13 @@ export const IndicatorsSummary: React.FC<IndicatorsSummaryProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[10px] sm:text-[11px] text-slate-500 pt-3 border-t border-slate-200/80 mt-3">
             <span className="flex items-center gap-1">
               <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <span>Toca cualquier modalidad para filtrar directamente las escuelas del departamento.</span>
+              <span>Toca cualquier modalidad para filtrar directamente las instituciones del departamento.</span>
             </span>
             <button
               onClick={() => onNavigateToSchools('all')}
               className="text-emerald-700 hover:text-emerald-800 font-bold underline sm:no-underline text-left sm:text-right"
             >
-              Ver todas las escuelas →
+              Ver todas las instituciones →
             </button>
           </div>
 

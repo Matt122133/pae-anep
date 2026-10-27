@@ -264,7 +264,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
                 <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">
                   Clasificación Departamental (Tacuarembó)
                 </span>
-                <p className="text-xs text-slate-600">En Tacuarembó las escuelas se dividen directamente en Rurales o Urbanas.</p>
+                <p className="text-xs text-slate-600">En Tacuarembó las instituciones se dividen directamente en Rurales o Urbanas.</p>
               </div>
               <div className="flex items-center gap-2 bg-white p-1 rounded-xl border border-emerald-300 shadow-xs">
                 <button
@@ -339,7 +339,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1">
                 <UserCheck className="w-3.5 h-3.5 text-emerald-700" />
-                Inspector/a de Escuela Asignado/a *
+                Inspector/a Asignado/a *
               </label>
               <input
                 type="text"
@@ -347,7 +347,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
                 required
                 value={assignedInspector}
                 onChange={e => setAssignedInspector(e.target.value)}
-                placeholder="Nombre del inspector/a de escuela o zona"
+                placeholder="Nombre del inspector/a o zona"
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
               />
               <datalist id="inspectors-list">
@@ -466,7 +466,7 @@ export const SchoolModal: React.FC<SchoolModalProps> = ({
                 </label>
                 <p className="text-[11px] text-amber-700 pl-6">
                   {areaType === 'Rural' 
-                    ? 'Clave para escuelas rurales de Tacuarembó sin OSE que compran bidones de agua.' 
+                    ? 'Clave para instituciones rurales de Tacuarembó sin OSE que compran bidones de agua.' 
                     : 'Instituciones autorizadas para compra de agua.'}
                 </p>
               </div>

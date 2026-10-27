@@ -251,7 +251,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
                 ) : (
                   <div className="p-3 text-slate-400 text-center">
-                    No se encontró escuela con "{quickSearch}"
+                    No se encontró institución con "{quickSearch}"
                   </div>
                 )}
               </div>
@@ -265,8 +265,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={() => setShowMobileSearchInput(!showMobileSearchInput)}
               className="lg:hidden p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition"
-              title="Buscar escuela"
-              aria-label="Buscar escuela"
+              title="Buscar institución"
+              aria-label="Buscar institución"
             >
               <Search className="w-4 h-4 text-emerald-400" />
             </button>
@@ -416,7 +416,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   ))
                 ) : (
                   <div className="p-3 text-slate-400 text-center">
-                    No se encontró escuela con "{quickSearch}"
+                    No se encontró institución con "{quickSearch}"
                   </div>
                 )}
               </div>
