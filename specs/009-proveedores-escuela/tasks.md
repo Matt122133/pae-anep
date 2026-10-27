@@ -41,8 +41,8 @@ Sin tareas: no hay dependencias ni estructura nueva.
 
 - [X] T015 En `ARCHITECTURE.md`, sección "Modelo de dominio", anotar la regla de `providers`: ausente en un PUT = conservar lo guardado (R2)
 - [X] T016 Correr `verify:` del plan con Postgres de pruebas en `:55442`; corregir hasta verde
-- [ ] T017 Recorrer `specs/009-proveedores-escuela/quickstart.md` en navegador contra backend local; anotar resultado en el plan
-- [ ] T018 Chequeo de datos reales sobre el diff (`git diff master..HEAD | grep "^+" | grep -oE ...` de AGENTS.md) y nombres de prueba ficticios
+- [X] T017 Recorrer `specs/009-proveedores-escuela/quickstart.md` en navegador contra backend local; anotar resultado en el plan
+- [X] T018 Chequeo de datos reales sobre el diff (`git diff master..HEAD | grep "^+" | grep -oE ...` de AGENTS.md) y nombres de prueba ficticios
 
 - [ ] T019 Antes de mergear el PR: desplegar `backend/` a Railway (`railway up` desde `backend/`), confirmar que `GET /legajo` en producción trae `providers` en las escuelas, y recién ahí mergear (Pages publica en cada push a `master`)
 

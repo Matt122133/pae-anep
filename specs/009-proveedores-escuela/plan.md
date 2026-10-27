@@ -110,3 +110,10 @@ src/
 ## Complexity Tracking
 
 Sin violaciones que justificar.
+
+## Resultado (2026-10-26)
+
+- `verify:` en verde: lint, 37 pruebas de vitest, build, `go vet` y `go test` contra Postgres en `:55442` (3 pruebas nuevas de proveedores).
+- Quickstart recorrido en Edge headless (`playwright-core`) contra backend y frontend locales: pasos 1–8 OK (alta con dos, vacío y repetido no entran, pantalla, quitar uno, otra cuenta, "No enviados" sin señal y envío solo al volver la red, PUT sin el campo conserva, bitácora con "Proveedores", escuelas existentes con lista vacía).
+- Chequeo de datos reales sobre `master..HEAD`: sin cédulas ni correos.
+- Pendiente T019: publicar Railway antes de mergear.
